@@ -1,0 +1,21 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+## This project is Go + Ebitengine game
+
+Use Go language and Ebitengine (github.com/hajimehoshi/ebiten/v2)
+
+Also use Bamenn (github.com/noppikinatta/bamenn)
+
+## Develop with TDD
+
+Develop with TDD.
+
+1. Write feature and test list on .tdd.md
+2. Develop red green refactor cycle
+
+## OSS project
+
+This project is an OSS, translate all files to English
