@@ -16,6 +16,10 @@ Develop with TDD.
 1. Write feature and test list on .tdd.md
 2. Develop red green refactor cycle
 
+## You do not have to actually run with `go run` to see how it works.
+
+The actual operation is checked by a human and issues are added
+
 ## OSS project
 
 This project is an OSS, translate all files to English
