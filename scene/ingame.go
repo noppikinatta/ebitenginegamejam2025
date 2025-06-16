@@ -1,6 +1,7 @@
 package scene
 
 import (
+	"fmt"
 	"image/color"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -65,11 +66,11 @@ func NewInGame() *InGame {
 
 	return &InGame{
 		layout:       layout,
-		resourceView: component.NewResourceView(resourceViewBounds[0], resourceViewBounds[1], resourceViewBounds[2], resourceViewBounds[3]),
+		resourceView: component.NewResourceView(resourceManager, resourceViewBounds[0], resourceViewBounds[1], resourceViewBounds[2], resourceViewBounds[3]),
 		calendar:     component.NewCalendar(calendarBounds[0], calendarBounds[1], calendarBounds[2], calendarBounds[3]),
 		history:      component.NewHistory(historyBounds[0], historyBounds[1], historyBounds[2], historyBounds[3]),
-		cardDeck:     component.NewCardDeck(cardDeckBounds[0], cardDeckBounds[1], cardDeckBounds[2], cardDeckBounds[3]),
-		gameMain:     component.NewGameMain(gameMainBounds[0], gameMainBounds[1], gameMainBounds[2], gameMainBounds[3]),
+		cardDeck:     component.NewCardDeck(cardManager, cardDeckBounds[0], cardDeckBounds[1], cardDeckBounds[2], cardDeckBounds[3]),
+		gameMain:     component.NewGameMain(combatManager, gameMainBounds[0], gameMainBounds[1], gameMainBounds[2], gameMainBounds[3]),
 
 		// System managers
 		resourceManager:  resourceManager,
@@ -82,6 +83,26 @@ func NewInGame() *InGame {
 }
 
 func (g *InGame) Update() error {
+	// 1. ターン進行
+	g.turnManager.AdvanceTurn()
+	// Calendar は TurnManager の進捗に合わせて AdvanceMonth せず、表示だけ同期する (実装簡易)
+
+	// 2. 資源生成 (制圧地から取得)
+	g.territoryManager.GenerateResources()
+
+	// 2.5 同盟ボーナスの適用
+	bonuses := g.allianceManager.GetAllianceBonuses()
+	// 資源追加
+	for rtype, amt := range bonuses.ResourceBonus {
+		g.resourceManager.AddResource(rtype, amt)
+	}
+	// 戦闘ボーナス
+	g.combatManager.SetPlayerAttackBonus(bonuses.MilitaryBonus)
+
+	// 3. 歴史ログ追加 (簡易)
+	entry := fmt.Sprintf("Kingdom Year %d, Month %d: Turn %d", g.turnManager.GetCurrentYear(), g.turnManager.GetCurrentMonth(), g.turnManager.GetTurnCount())
+	g.history.AddEntry(entry)
+
 	return nil
 }
 

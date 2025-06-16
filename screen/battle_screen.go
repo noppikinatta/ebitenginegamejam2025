@@ -1,9 +1,8 @@
 package screen
 
-type Battlefield struct {
-	frontRow [5]string
-	backRow  [5]string
-}
+import (
+	"github.com/noppikinatta/ebitenginegamejam2025/system"
+)
 
 type Enemy struct {
 	Name    string
@@ -13,60 +12,36 @@ type Enemy struct {
 }
 
 type BattleScreen struct {
-	battlefield *Battlefield
-	enemies     []*Enemy
+	combatManager *system.CombatManager
+	enemies       []*Enemy
 }
 
-func NewBattleScreen() *BattleScreen {
-	battlefield := &Battlefield{
-		frontRow: [5]string{"", "", "", "", ""},
-		backRow:  [5]string{"", "", "", "", ""},
-	}
-
-	enemies := []*Enemy{
+func NewBattleScreen(cm *system.CombatManager) *BattleScreen {
+	defaultEnemies := []*Enemy{
 		{Name: "Goblin Warrior", Attack: 3, Defense: 2, Health: 5},
 		{Name: "Orc Brute", Attack: 5, Defense: 3, Health: 8},
 		{Name: "Dark Mage", Attack: 4, Defense: 1, Health: 4},
 	}
 
 	return &BattleScreen{
-		battlefield: battlefield,
-		enemies:     enemies,
+		combatManager: cm,
+		enemies:       defaultEnemies,
 	}
 }
 
-func (bs *BattleScreen) GetBattlefield() *Battlefield {
-	return bs.battlefield
+// Proxy methods ------------------------------------------------------------
+
+func (bs *BattleScreen) GetBattlefield() *system.CombatBattlefield {
+	return bs.combatManager.GetBattlefield()
 }
 
 func (bs *BattleScreen) GetEnemies() []*Enemy {
 	return bs.enemies
 }
 
-func (bf *Battlefield) GetFrontRow() *[5]string {
-	return &bf.frontRow
-}
+// Backward compatible helpers (for tests that place cards directly)
 
-func (bf *Battlefield) GetBackRow() *[5]string {
-	return &bf.backRow
-}
-
-func (bf *Battlefield) PlaceCard(cardName, row string, position int) bool {
-	if position < 0 || position >= 5 {
-		return false
-	}
-
-	if row == "front" {
-		if bf.frontRow[position] == "" {
-			bf.frontRow[position] = cardName
-			return true
-		}
-	} else if row == "back" {
-		if bf.backRow[position] == "" {
-			bf.backRow[position] = cardName
-			return true
-		}
-	}
-
-	return false
+func (bs *BattleScreen) PlaceCard(cardName, row string, position int) bool {
+	bf := bs.combatManager.GetBattlefield()
+	return bf.PlaceCard(cardName, row, position)
 }

@@ -6,45 +6,41 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"github.com/noppikinatta/ebitenginegamejam2025/system"
 )
 
 type ResourceView struct {
-	resources map[string]int
-	x, y      int
-	width     int
-	height    int
+	resourceManager *system.ResourceManager
+	x, y            int
+	width           int
+	height          int
 }
 
-func NewResourceView(x, y, width, height int) *ResourceView {
+func NewResourceView(rm *system.ResourceManager, x, y, width, height int) *ResourceView {
 	return &ResourceView{
-		resources: map[string]int{
-			"Gold":  100,
-			"Iron":  50,
-			"Wood":  75,
-			"Grain": 60,
-			"Mana":  25,
-		},
-		x:      x,
-		y:      y,
-		width:  width,
-		height: height,
+		resourceManager: rm,
+		x:               x,
+		y:               y,
+		width:           width,
+		height:          height,
 	}
 }
 
 func (rv *ResourceView) GetResourceTypes() []string {
-	types := make([]string, 0, len(rv.resources))
-	for resourceType := range rv.resources {
+	resources := rv.resourceManager.GetAllResources()
+	types := make([]string, 0, len(resources))
+	for resourceType := range resources {
 		types = append(types, resourceType)
 	}
 	return types
 }
 
 func (rv *ResourceView) GetResourceAmount(resourceType string) int {
-	return rv.resources[resourceType]
+	return rv.resourceManager.GetResource(resourceType)
 }
 
 func (rv *ResourceView) SetResourceAmount(resourceType string, amount int) {
-	rv.resources[resourceType] = amount
+	rv.resourceManager.SetResource(resourceType, amount)
 }
 
 func (rv *ResourceView) Draw(screen *ebiten.Image) {
@@ -59,7 +55,7 @@ func (rv *ResourceView) Draw(screen *ebiten.Image) {
 	// Draw resource information
 	resourceOrder := []string{"Gold", "Iron", "Wood", "Grain", "Mana"}
 	for i, resourceType := range resourceOrder {
-		amount := rv.resources[resourceType]
+		amount := rv.resourceManager.GetResource(resourceType)
 		text := fmt.Sprintf("%s: %d", resourceType, amount)
 		ebitenutil.DebugPrintAt(screen, text, rv.x+i*100+5, rv.y+5)
 	}

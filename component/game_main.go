@@ -6,6 +6,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/noppikinatta/ebitenginegamejam2025/screen"
+	"github.com/noppikinatta/ebitenginegamejam2025/system"
 )
 
 type GameMain struct {
@@ -18,7 +19,7 @@ type GameMain struct {
 	battleScreen    *screen.BattleScreen
 }
 
-func NewGameMain(x, y, width, height int) *GameMain {
+func NewGameMain(cm *system.CombatManager, x, y, width, height int) *GameMain {
 	return &GameMain{
 		currentScreen:   "Map", // Start with Map screen
 		x:               x,
@@ -27,7 +28,7 @@ func NewGameMain(x, y, width, height int) *GameMain {
 		height:          height,
 		mapScreen:       screen.NewMapScreen(),
 		diplomacyScreen: screen.NewDiplomacyScreen(),
-		battleScreen:    screen.NewBattleScreen(),
+		battleScreen:    screen.NewBattleScreen(cm),
 	}
 }
 

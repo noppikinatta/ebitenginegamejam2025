@@ -5,6 +5,8 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"github.com/noppikinatta/ebitenginegamejam2025/entity"
+	"github.com/noppikinatta/ebitenginegamejam2025/system"
 )
 
 type CardLayout struct {
@@ -14,23 +16,28 @@ type CardLayout struct {
 }
 
 type CardDeck struct {
-	cards  []string
-	x, y   int
-	width  int
-	height int
-	layout *CardLayout
+	cards       []*entity.Card
+	cardManager *system.CardManager
+	x, y        int
+	width       int
+	height      int
+	layout      *CardLayout
 }
 
-func NewCardDeck(x, y, width, height int) *CardDeck {
+func NewCardDeck(cm *system.CardManager, x, y, width, height int) *CardDeck {
+	// 初期カードをテンプレートから生成
+	initialCards := []*entity.Card{
+		cm.CreateCard("Warrior", "Unit", map[string]int{"Gold": 50}),
+		cm.CreateCard("Shield Guard", "Unit", map[string]int{"Gold": 40}),
+	}
+
 	return &CardDeck{
-		cards: []string{
-			"Basic Sword Unit",
-			"Shield Guard",
-		},
-		x:      x,
-		y:      y,
-		width:  width,
-		height: height,
+		cards:       initialCards,
+		cardManager: cm,
+		x:           x,
+		y:           y,
+		width:       width,
+		height:      height,
 		layout: &CardLayout{
 			cardWidth:  80,
 			cardHeight: 50,
@@ -38,12 +45,20 @@ func NewCardDeck(x, y, width, height int) *CardDeck {
 	}
 }
 
-func (cd *CardDeck) GetCards() []string {
+func (cd *CardDeck) GetCards() []*entity.Card {
 	return cd.cards
 }
 
+// Backward-compatible AddCard accepting name only (tests use this)
 func (cd *CardDeck) AddCard(cardName string) {
-	cd.cards = append(cd.cards, cardName)
+	// デフォルトを Unit として作成
+	card := cd.cardManager.CreateCard(cardName, "Unit", map[string]int{"Gold": 0})
+	cd.cards = append(cd.cards, card)
+	cd.updateLayout()
+}
+
+func (cd *CardDeck) AddCardEntity(card *entity.Card) {
+	cd.cards = append(cd.cards, card)
 	cd.updateLayout()
 }
 
@@ -84,7 +99,7 @@ func (cd *CardDeck) Draw(screen *ebiten.Image) {
 	cd.updateLayout()
 
 	// Draw cards
-	for i, cardName := range cd.cards {
+	for i, card := range cd.cards {
 		if i < len(cd.layout.cardPositions) {
 			pos := cd.layout.cardPositions[i]
 
@@ -97,7 +112,7 @@ func (cd *CardDeck) Draw(screen *ebiten.Image) {
 			screen.DrawImage(cardBg, cardOp)
 
 			// Draw card name (truncated if too long)
-			displayName := cardName
+			displayName := card.Name
 			if len(displayName) > 10 {
 				displayName = displayName[:7] + "..."
 			}

@@ -29,12 +29,13 @@ type VictoryRewards struct {
 }
 
 type CombatManager struct {
-	battlefield *CombatBattlefield
-	enemies     map[string]*CombatEnemy
-	combatState string // "ongoing", "victory", "defeat"
-	combatStats *CombatStats
-	placedCards []*entity.Card
-	rewards     *VictoryRewards
+	battlefield       *CombatBattlefield
+	enemies           map[string]*CombatEnemy
+	combatState       string // "ongoing", "victory", "defeat"
+	combatStats       *CombatStats
+	placedCards       []*entity.Card
+	rewards           *VictoryRewards
+	playerAttackBonus int
 }
 
 func NewCombatManager() *CombatManager {
@@ -121,6 +122,7 @@ func (cm *CombatManager) CalculatePlayerDamage() int {
 	for _, card := range cm.placedCards {
 		totalDamage += card.Attack
 	}
+	totalDamage += cm.playerAttackBonus
 	return totalDamage
 }
 
@@ -228,4 +230,16 @@ func (cm *CombatManager) ClearPlayerCards() {
 
 func (cm *CombatManager) ClearEnemies() {
 	cm.enemies = make(map[string]*CombatEnemy)
+}
+
+func (cm *CombatManager) GetAllEnemies() []*CombatEnemy {
+	enemies := make([]*CombatEnemy, 0, len(cm.enemies))
+	for _, e := range cm.enemies {
+		enemies = append(enemies, e)
+	}
+	return enemies
+}
+
+func (cm *CombatManager) SetPlayerAttackBonus(bonus int) {
+	cm.playerAttackBonus = bonus
 }
