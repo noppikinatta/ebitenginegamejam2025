@@ -581,3 +581,396 @@ func TestBattleScreenAllowsCardPlacement(t *testing.T) {
 		t.Error("Battle should have enemies")
 	}
 }
+
+// T5.1: Test resource values update correctly
+func TestResourceValuesUpdateCorrectly(t *testing.T) {
+	game := scene.CreateSequence()
+	game.SetCurrentScene("ingame")
+
+	inGameScene := game.GetInGameScene()
+	resourceManager := inGameScene.GetResourceManager()
+	if resourceManager == nil {
+		t.Error("ResourceManager should not be nil")
+	}
+
+	// Test initial resources
+	gold := resourceManager.GetResource("Gold")
+	if gold < 0 {
+		t.Error("Gold should be non-negative initially")
+	}
+
+	// Test resource modification
+	initialGold := gold
+	resourceManager.AddResource("Gold", 50)
+	newGold := resourceManager.GetResource("Gold")
+	if newGold != initialGold+50 {
+		t.Errorf("Expected gold to be %d, got %d", initialGold+50, newGold)
+	}
+
+	// Test resource consumption
+	success := resourceManager.ConsumeResources(map[string]int{"Gold": 25})
+	if !success {
+		t.Error("Should be able to consume available resources")
+	}
+
+	finalGold := resourceManager.GetResource("Gold")
+	if finalGold != initialGold+25 {
+		t.Errorf("Expected gold to be %d after consumption, got %d", initialGold+25, finalGold)
+	}
+}
+
+// T5.2: Test turn counter increments monthly
+func TestTurnCounterIncrementsMonthly(t *testing.T) {
+	game := scene.CreateSequence()
+	game.SetCurrentScene("ingame")
+
+	inGameScene := game.GetInGameScene()
+	turnManager := inGameScene.GetTurnManager()
+	if turnManager == nil {
+		t.Error("TurnManager should not be nil")
+	}
+
+	// Test initial state
+	year := turnManager.GetCurrentYear()
+	month := turnManager.GetCurrentMonth()
+	if year != 1000 || month != 4 {
+		t.Errorf("Expected year 1000, month 4, got year %d, month %d", year, month)
+	}
+
+	// Test turn advancement
+	turnManager.AdvanceTurn()
+	newYear := turnManager.GetCurrentYear()
+	newMonth := turnManager.GetCurrentMonth()
+
+	if newMonth != 5 || newYear != 1000 {
+		t.Errorf("Expected year 1000, month 5 after one turn, got year %d, month %d", newYear, newMonth)
+	}
+
+	// Test year rollover
+	for i := 0; i < 8; i++ { // Advance 8 more months to reach month 13 -> year 1001, month 1
+		turnManager.AdvanceTurn()
+	}
+
+	finalYear := turnManager.GetCurrentYear()
+	finalMonth := turnManager.GetCurrentMonth()
+	if finalYear != 1001 || finalMonth != 1 {
+		t.Errorf("Expected year 1001, month 1 after year rollover, got year %d, month %d", finalYear, finalMonth)
+	}
+}
+
+// T5.3: Test card types have correct properties
+func TestCardTypesHaveCorrectProperties(t *testing.T) {
+	game := scene.CreateSequence()
+	game.SetCurrentScene("ingame")
+
+	inGameScene := game.GetInGameScene()
+	cardManager := inGameScene.GetCardManager()
+	if cardManager == nil {
+		t.Error("CardManager should not be nil")
+	}
+
+	// Test Unit card creation
+	unitCard := cardManager.CreateCard("Warrior", "Unit", map[string]int{"Gold": 50})
+	if unitCard.Type != "Unit" {
+		t.Errorf("Expected Unit type, got %s", unitCard.Type)
+	}
+	if unitCard.Attack <= 0 {
+		t.Error("Unit cards should have positive attack")
+	}
+
+	// Test Enchant card creation
+	enchantCard := cardManager.CreateCard("Magic Shield", "Enchant", map[string]int{"Mana": 30})
+	if enchantCard.Type != "Enchant" {
+		t.Errorf("Expected Enchant type, got %s", enchantCard.Type)
+	}
+
+	// Test Building card creation
+	buildingCard := cardManager.CreateCard("Farm", "Building", map[string]int{"Wood": 40})
+	if buildingCard.Type != "Building" {
+		t.Errorf("Expected Building type, got %s", buildingCard.Type)
+	}
+
+	// Test card database
+	allCards := cardManager.GetAllCardTemplates()
+	if len(allCards) == 0 {
+		t.Error("Should have card templates available")
+	}
+}
+
+// T5.4: Test territory control affects resource generation
+func TestTerritoryControlAffectsResourceGeneration(t *testing.T) {
+	game := scene.CreateSequence()
+	game.SetCurrentScene("ingame")
+
+	inGameScene := game.GetInGameScene()
+	territoryManager := inGameScene.GetTerritoryManager()
+	if territoryManager == nil {
+		t.Error("TerritoryManager should not be nil")
+	}
+
+	// Test initial controlled territories
+	controlledTerritories := territoryManager.GetControlledTerritories()
+	if len(controlledTerritories) == 0 {
+		t.Error("Should start with at least home territory")
+	}
+
+	// Test resource generation from controlled territories
+	resourceManager := inGameScene.GetResourceManager()
+	initialGold := resourceManager.GetResource("Gold")
+
+	// Simulate territory conquest
+	territoryManager.ConquerTerritory(1, 6) // Adjacent to home
+
+	// Test that new territory is controlled
+	newControlledTerritories := territoryManager.GetControlledTerritories()
+	if len(newControlledTerritories) <= len(controlledTerritories) {
+		t.Error("Should have more controlled territories after conquest")
+	}
+
+	// Test resource generation increase
+	territoryManager.GenerateResources()
+	newGold := resourceManager.GetResource("Gold")
+	if newGold <= initialGold {
+		t.Error("Resource generation should increase with more territories")
+	}
+}
+
+// T5.5: Test alliance formation with NPCs
+func TestAllianceFormationWithNPCs(t *testing.T) {
+	game := scene.CreateSequence()
+	game.SetCurrentScene("ingame")
+
+	inGameScene := game.GetInGameScene()
+	allianceManager := inGameScene.GetAllianceManager()
+	if allianceManager == nil {
+		t.Error("AllianceManager should not be nil")
+	}
+
+	// Test initial alliance state
+	allies := allianceManager.GetAllies()
+	if allies == nil {
+		t.Error("Allies list should not be nil")
+	}
+
+	// Test NPC relationship
+	relationship := allianceManager.GetRelationship("Iron Republic")
+	if relationship < 0 || relationship > 100 {
+		t.Errorf("Relationship should be between 0-100, got %d", relationship)
+	}
+
+	// Test alliance formation
+	success := allianceManager.FormAlliance("Iron Republic")
+	if !success && relationship >= 70 {
+		t.Error("Should be able to form alliance with high relationship NPCs")
+	}
+
+	// Test alliance benefits
+	if success {
+		newAllies := allianceManager.GetAllies()
+		found := false
+		for _, ally := range newAllies {
+			if ally == "Iron Republic" {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Error("NPC should be in allies list after forming alliance")
+		}
+
+		// Test alliance bonuses
+		bonuses := allianceManager.GetAllianceBonuses()
+		if bonuses == nil {
+			t.Error("Should have alliance bonuses")
+		}
+	}
+}
+
+// T6.1: Test cards can be placed in front/back rows (max 10 total)
+func TestCardsCanBePlacedInFrontBackRows(t *testing.T) {
+	game := scene.CreateSequence()
+	game.SetCurrentScene("ingame")
+
+	inGameScene := game.GetInGameScene()
+	combatManager := inGameScene.GetCombatManager()
+	if combatManager == nil {
+		t.Error("CombatManager should not be nil")
+	}
+
+	// Test initial battlefield state
+	battlefield := combatManager.GetBattlefield()
+	if battlefield == nil {
+		t.Error("Battlefield should not be nil")
+	}
+
+	// Test front row capacity
+	frontRow := battlefield.GetFrontRow()
+	if len(*frontRow) != 5 {
+		t.Errorf("Front row should have 5 slots, got %d", len(*frontRow))
+	}
+
+	// Test back row capacity
+	backRow := battlefield.GetBackRow()
+	if len(*backRow) != 5 {
+		t.Errorf("Back row should have 5 slots, got %d", len(*backRow))
+	}
+
+	// Test filling all slots
+	cardManager := inGameScene.GetCardManager()
+
+	// Fill front row
+	for i := 0; i < 5; i++ {
+		card := cardManager.CreateCard("Warrior", "Unit", map[string]int{"Gold": 50})
+		success := combatManager.PlaceCardInBattle(card, "front", i)
+		if !success {
+			t.Errorf("Should be able to place card in front row slot %d", i)
+		}
+	}
+
+	// Fill back row
+	for i := 0; i < 5; i++ {
+		card := cardManager.CreateCard("Archer", "Unit", map[string]int{"Gold": 40})
+		success := combatManager.PlaceCardInBattle(card, "back", i)
+		if !success {
+			t.Errorf("Should be able to place card in back row slot %d", i)
+		}
+	}
+
+	// Test that all 10 slots are filled
+	placedCards := combatManager.GetPlacedCards()
+	if len(placedCards) != 10 {
+		t.Errorf("Expected 10 placed cards, got %d", len(placedCards))
+	}
+}
+
+// T6.2: Test combat calculates damage correctly
+func TestCombatCalculatesDamageCorrectly(t *testing.T) {
+	game := scene.CreateSequence()
+	game.SetCurrentScene("ingame")
+
+	inGameScene := game.GetInGameScene()
+	combatManager := inGameScene.GetCombatManager()
+
+	// Set up a simple combat scenario
+	cardManager := inGameScene.GetCardManager()
+
+	// Place player cards
+	warrior := cardManager.CreateCard("Warrior", "Unit", map[string]int{"Gold": 50})
+	combatManager.PlaceCardInBattle(warrior, "front", 0)
+
+	// Add enemy
+	combatManager.AddEnemy("Goblin", 3, 2, 5) // Attack: 3, Defense: 2, Health: 5
+
+	// Test damage calculation
+	playerDamage := combatManager.CalculatePlayerDamage()
+	if playerDamage <= 0 {
+		t.Error("Player should deal positive damage with placed cards")
+	}
+
+	enemyDamage := combatManager.CalculateEnemyDamage()
+	if enemyDamage <= 0 {
+		t.Error("Enemies should deal positive damage")
+	}
+
+	// Test actual combat round
+	initialEnemyHealth := combatManager.GetEnemyHealth("Goblin")
+	combatManager.ExecuteCombatRound()
+
+	newEnemyHealth := combatManager.GetEnemyHealth("Goblin")
+	if newEnemyHealth >= initialEnemyHealth {
+		t.Error("Enemy health should decrease after combat round")
+	}
+
+	// Test combat stats
+	combatStats := combatManager.GetCombatStats()
+	if combatStats == nil {
+		t.Error("Combat stats should not be nil")
+	}
+
+	if combatStats.RoundsCompleted == 0 {
+		t.Error("Should have completed at least one combat round")
+	}
+}
+
+// T6.3: Test victory/defeat conditions trigger properly
+func TestVictoryDefeatConditionsTriggerProperly(t *testing.T) {
+	game := scene.CreateSequence()
+	game.SetCurrentScene("ingame")
+
+	inGameScene := game.GetInGameScene()
+	combatManager := inGameScene.GetCombatManager()
+
+	// Test initial combat state
+	combatState := combatManager.GetCombatState()
+	if combatState != "ongoing" {
+		t.Errorf("Expected combat state 'ongoing', got '%s'", combatState)
+	}
+
+	// Test victory condition
+	cardManager := inGameScene.GetCardManager()
+
+	// Place powerful player card
+	mage := cardManager.CreateCard("Mage", "Unit", map[string]int{"Gold": 60, "Mana": 20})
+	combatManager.PlaceCardInBattle(mage, "front", 0)
+
+	// Add weak enemy
+	combatManager.AddEnemy("Weak Goblin", 1, 1, 1) // Very weak enemy
+
+	// Execute combat until conclusion
+	maxRounds := 10
+	for i := 0; i < maxRounds; i++ {
+		combatManager.ExecuteCombatRound()
+		state := combatManager.GetCombatState()
+		if state == "victory" {
+			break
+		}
+		if state == "defeat" {
+			t.Error("Should not be defeated with strong cards vs weak enemy")
+			break
+		}
+	}
+
+	// Check final state
+	finalState := combatManager.GetCombatState()
+	if finalState != "victory" {
+		t.Errorf("Expected victory, got '%s'", finalState)
+	}
+
+	// Test victory rewards
+	rewards := combatManager.GetVictoryRewards()
+	if rewards == nil {
+		t.Error("Should have victory rewards")
+	}
+
+	if len(rewards.Resources) == 0 {
+		t.Error("Victory should provide resource rewards")
+	}
+
+	// Test defeat condition setup
+	combatManager.ResetCombat()
+
+	// Place weak player card
+	combatManager.ClearPlayerCards()
+	weakCard := cardManager.CreateCard("Peasant", "Unit", map[string]int{"Gold": 10})
+	weakCard.SetStats(1, 1) // Very weak
+	combatManager.PlaceCardInBattle(weakCard, "front", 0)
+
+	// Add strong enemy
+	combatManager.ClearEnemies()
+	combatManager.AddEnemy("Dragon", 20, 10, 50) // Very strong enemy
+
+	// Execute a few rounds (should lead to defeat)
+	for i := 0; i < 5; i++ {
+		combatManager.ExecuteCombatRound()
+		state := combatManager.GetCombatState()
+		if state == "defeat" {
+			break
+		}
+	}
+
+	// Should be defeated now
+	defeatState := combatManager.GetCombatState()
+	if defeatState != "defeat" && defeatState != "ongoing" {
+		t.Errorf("Expected defeat or ongoing, got '%s'", defeatState)
+	}
+}

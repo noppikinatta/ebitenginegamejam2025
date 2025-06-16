@@ -5,6 +5,7 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/noppikinatta/ebitenginegamejam2025/component"
+	"github.com/noppikinatta/ebitenginegamejam2025/system"
 )
 
 type UILayout struct {
@@ -34,10 +35,26 @@ type InGame struct {
 	history      *component.History
 	cardDeck     *component.CardDeck
 	gameMain     *component.GameMain
+
+	// System managers
+	resourceManager  *system.ResourceManager
+	turnManager      *system.TurnManager
+	cardManager      *system.CardManager
+	territoryManager *system.TerritoryManager
+	allianceManager  *system.AllianceManager
+	combatManager    *system.CombatManager
 }
 
 func NewInGame() *InGame {
 	layout := NewUILayout()
+
+	// Create system managers
+	resourceManager := system.NewResourceManager()
+	turnManager := system.NewTurnManager()
+	cardManager := system.NewCardManager()
+	territoryManager := system.NewTerritoryManager(resourceManager)
+	allianceManager := system.NewAllianceManager()
+	combatManager := system.NewCombatManager()
 
 	// Create components with their layout positions
 	resourceViewBounds := layout.GetComponentBounds("ResourceView")
@@ -53,6 +70,14 @@ func NewInGame() *InGame {
 		history:      component.NewHistory(historyBounds[0], historyBounds[1], historyBounds[2], historyBounds[3]),
 		cardDeck:     component.NewCardDeck(cardDeckBounds[0], cardDeckBounds[1], cardDeckBounds[2], cardDeckBounds[3]),
 		gameMain:     component.NewGameMain(gameMainBounds[0], gameMainBounds[1], gameMainBounds[2], gameMainBounds[3]),
+
+		// System managers
+		resourceManager:  resourceManager,
+		turnManager:      turnManager,
+		cardManager:      cardManager,
+		territoryManager: territoryManager,
+		allianceManager:  allianceManager,
+		combatManager:    combatManager,
 	}
 }
 
@@ -98,4 +123,29 @@ func (g *InGame) GetCardDeck() *component.CardDeck {
 
 func (g *InGame) GetGameMain() *component.GameMain {
 	return g.gameMain
+}
+
+// System manager getters
+func (g *InGame) GetResourceManager() *system.ResourceManager {
+	return g.resourceManager
+}
+
+func (g *InGame) GetTurnManager() *system.TurnManager {
+	return g.turnManager
+}
+
+func (g *InGame) GetCardManager() *system.CardManager {
+	return g.cardManager
+}
+
+func (g *InGame) GetTerritoryManager() *system.TerritoryManager {
+	return g.territoryManager
+}
+
+func (g *InGame) GetAllianceManager() *system.AllianceManager {
+	return g.allianceManager
+}
+
+func (g *InGame) GetCombatManager() *system.CombatManager {
+	return g.combatManager
 }
