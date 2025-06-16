@@ -40,3 +40,21 @@ func (g *Game) Update() error {
 
 	return g.Sequence.Update()
 }
+
+func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
+	return 640, 360
+}
+
+func (g *Game) GetCurrentScene() string {
+	return g.current
+}
+
+func (g *Game) SetCurrentScene(sceneName string) {
+	g.current = sceneName
+	switch sceneName {
+	case "title":
+		g.Sequence.Switch(g.title)
+	case "ingame":
+		g.Sequence.Switch(g.inGame)
+	}
+}

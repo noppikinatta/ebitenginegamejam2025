@@ -30,7 +30,7 @@ func (t *Title) Draw(screen *ebiten.Image) {
 }
 
 func (t *Title) Layout(outsideWidth, outsideHeight int) (int, int) {
-	return 640, 480
+	return 640, 360
 }
 
 func (t *Title) GetNextScene() string {
