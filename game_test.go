@@ -364,3 +364,220 @@ func TestGameMainContainerSwitchesBetweenSubScreens(t *testing.T) {
 		t.Errorf("Expected 'Map' screen, got '%s'", gameMain.GetCurrentScreen())
 	}
 }
+
+// T4.1: Test Map screen generates 13x7 grid correctly
+func TestMapScreenGenerates13x7GridCorrectly(t *testing.T) {
+	game := scene.CreateSequence()
+	game.SetCurrentScene("ingame")
+
+	inGameScene := game.GetInGameScene()
+	gameMain := inGameScene.GetGameMain()
+
+	// Should start with Map screen
+	if gameMain.GetCurrentScreen() != "Map" {
+		t.Error("GameMain should start with Map screen")
+	}
+
+	// Get map data
+	mapScreen := gameMain.GetMapScreen()
+	if mapScreen == nil {
+		t.Error("MapScreen should not be nil")
+	}
+
+	grid := mapScreen.GetGrid()
+	if grid == nil {
+		t.Error("Map grid should not be nil")
+	}
+
+	// Test grid dimensions
+	if grid.GetWidth() != 13 || grid.GetHeight() != 7 {
+		t.Errorf("Expected 13x7 grid, got %dx%d", grid.GetWidth(), grid.GetHeight())
+	}
+
+	// Test total points
+	totalPoints := grid.GetTotalPoints()
+	expectedPoints := 13 * 7 // 91 points
+	if totalPoints != expectedPoints {
+		t.Errorf("Expected %d total points, got %d", expectedPoints, totalPoints)
+	}
+}
+
+// T4.2: Test point types are assigned correctly
+func TestPointTypesAreAssignedCorrectly(t *testing.T) {
+	game := scene.CreateSequence()
+	game.SetCurrentScene("ingame")
+
+	inGameScene := game.GetInGameScene()
+	gameMain := inGameScene.GetGameMain()
+	mapScreen := gameMain.GetMapScreen()
+	grid := mapScreen.GetGrid()
+
+	// Test Home point (should be at bottom-left: 0,6)
+	homePoint := grid.GetPoint(0, 6)
+	if homePoint == nil {
+		t.Error("Home point should exist at (0,6)")
+	}
+	if homePoint.GetType() != "Home" {
+		t.Errorf("Expected Home point type, got %s", homePoint.GetType())
+	}
+
+	// Test Boss point (should be at top-right: 12,0)
+	bossPoint := grid.GetPoint(12, 0)
+	if bossPoint == nil {
+		t.Error("Boss point should exist at (12,0)")
+	}
+	if bossPoint.GetType() != "Boss" {
+		t.Errorf("Expected Boss point type, got %s", bossPoint.GetType())
+	}
+
+	// Test that there are Wild and NPC points
+	wildCount := 0
+	npcCount := 0
+
+	for x := 0; x < 13; x++ {
+		for y := 0; y < 7; y++ {
+			point := grid.GetPoint(x, y)
+			switch point.GetType() {
+			case "Wild":
+				wildCount++
+			case "NPC":
+				npcCount++
+			}
+		}
+	}
+
+	if wildCount == 0 {
+		t.Error("Should have at least one Wild point")
+	}
+	if npcCount == 0 {
+		t.Error("Should have at least one NPC point")
+	}
+}
+
+// T4.3: Test point connectivity rules
+func TestPointConnectivityRules(t *testing.T) {
+	game := scene.CreateSequence()
+	game.SetCurrentScene("ingame")
+
+	inGameScene := game.GetInGameScene()
+	gameMain := inGameScene.GetGameMain()
+	mapScreen := gameMain.GetMapScreen()
+
+	// Test path finding
+	pathfinder := mapScreen.GetPathfinder()
+	if pathfinder == nil {
+		t.Error("Pathfinder should not be nil")
+	}
+
+	// Test that Home is accessible initially
+	homeAccessible := pathfinder.IsPointAccessible(0, 6)
+	if !homeAccessible {
+		t.Error("Home point should be accessible")
+	}
+
+	// Test that Boss is not accessible initially (blocked by enemies)
+	bossAccessible := pathfinder.IsPointAccessible(12, 0)
+	if bossAccessible {
+		t.Error("Boss point should not be accessible initially")
+	}
+
+	// Test path calculation
+	path := pathfinder.FindPath(0, 6, 1, 6) // Home to adjacent point
+	if path == nil {
+		t.Error("Should be able to find path from Home to adjacent point")
+	}
+}
+
+// T4.4: Test Diplomacy screen shows available cards
+func TestDiplomacyScreenShowsAvailableCards(t *testing.T) {
+	game := scene.CreateSequence()
+	game.SetCurrentScene("ingame")
+
+	inGameScene := game.GetInGameScene()
+	gameMain := inGameScene.GetGameMain()
+
+	// Switch to Diplomacy screen
+	gameMain.SwitchToScreen("Diplomacy")
+
+	diplomacyScreen := gameMain.GetDiplomacyScreen()
+	if diplomacyScreen == nil {
+		t.Error("DiplomacyScreen should not be nil")
+	}
+
+	// Test available cards
+	availableCards := diplomacyScreen.GetAvailableCards()
+	if availableCards == nil {
+		t.Error("Available cards should not be nil")
+	}
+
+	if len(availableCards) == 0 {
+		t.Error("Should have at least one available card")
+	}
+
+	// Test card purchase functionality
+	firstCard := availableCards[0]
+	cost := diplomacyScreen.GetCardCost(firstCard.Name)
+	if cost == nil {
+		t.Error("Card should have a cost")
+	}
+
+	// Test NPC nation info
+	npcInfo := diplomacyScreen.GetCurrentNPCInfo()
+	if npcInfo == nil {
+		t.Error("Should have current NPC info")
+	}
+}
+
+// T4.5: Test Battle screen allows card placement
+func TestBattleScreenAllowsCardPlacement(t *testing.T) {
+	game := scene.CreateSequence()
+	game.SetCurrentScene("ingame")
+
+	inGameScene := game.GetInGameScene()
+	gameMain := inGameScene.GetGameMain()
+
+	// Switch to Battle screen
+	gameMain.SwitchToScreen("Battle")
+
+	battleScreen := gameMain.GetBattleScreen()
+	if battleScreen == nil {
+		t.Error("BattleScreen should not be nil")
+	}
+
+	// Test battlefield layout
+	battlefield := battleScreen.GetBattlefield()
+	if battlefield == nil {
+		t.Error("Battlefield should not be nil")
+	}
+
+	// Test front row (should allow 5 cards)
+	frontRow := battlefield.GetFrontRow()
+	if len(*frontRow) != 5 {
+		t.Errorf("Front row should have 5 slots, got %d", len(*frontRow))
+	}
+
+	// Test back row (should allow 5 cards)
+	backRow := battlefield.GetBackRow()
+	if len(*backRow) != 5 {
+		t.Errorf("Back row should have 5 slots, got %d", len(*backRow))
+	}
+
+	// Test card placement
+	testCard := "Test Warrior"
+	success := battlefield.PlaceCard(testCard, "front", 0)
+	if !success {
+		t.Error("Should be able to place card in front row")
+	}
+
+	// Test that card was placed
+	placedCard := (*frontRow)[0]
+	if placedCard != testCard {
+		t.Errorf("Expected '%s' in front row slot 0, got '%s'", testCard, placedCard)
+	}
+
+	// Test enemy setup
+	enemies := battleScreen.GetEnemies()
+	if enemies == nil || len(enemies) == 0 {
+		t.Error("Battle should have enemies")
+	}
+}
