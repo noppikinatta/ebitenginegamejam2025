@@ -70,10 +70,10 @@ sequenceDiagram
 
 | Component | 役割 | 主な public メソッド |
 |-----------|------|----------------------|
-| `ResourceView` | 資源 5 種の所持量を表示 | `GetResourceAmount`, `SetResourceAmount` |
+| `ResourceView` | `ResourceManager` をデータソースとし、資源 5 種の所持量をリアルタイム表示 | `GetResourceAmount`, `SetResourceAmount` |
 | `Calendar` | 年月の表示・進行 | `AdvanceMonth`, `GetDisplayText` |
 | `History` | 15 行までの履歴ログ表示 | `AddEntry`, `GetEntries` |
-| `CardDeck` | 手札カードを水平レイアウトで描画 | `AddCard`, `GetCards` |
+| `CardDeck` | `entity.Card` を保持し描画。`CardManager` テンプレート連携 | `AddCard`, `AddCardEntity`, `GetCards` |
 | `GameMain` | `screen` パッケージのサブ画面を切替 | `SwitchToScreen` |
 
 ---
@@ -88,7 +88,7 @@ sequenceDiagram
 
 ---
 
-## 7. System レイヤ
+## 7. System レイヤ (更新)
 
 | Manager | 責務 |
 |---------|------|
@@ -96,8 +96,8 @@ sequenceDiagram
 | `TurnManager` | 年月とターン数カウント |
 | `CardManager` | カードテンプレートの登録・生成 |
 | `TerritoryManager` | 領土情報と資源生成処理 |
-| `AllianceManager` | NPC との友好度と同盟ボーナス管理 |
-| `CombatManager` | 戦闘ラウンド計算・報酬算出 |
+| `AllianceManager` | NPC との友好度と同盟ボーナス管理。`AllianceBonus` が `ResourceView`/`CombatManager` に適用される |
+| `CombatManager` | 戦闘ラウンド計算・報酬算出。`SetPlayerAttackBonus` で同盟ボーナス適用 |
 | `MapGrid` / `Pathfinder` | マップポイントの生成と到達判定 |
 
 ---
@@ -117,22 +117,22 @@ sequenceDiagram
 
 ---
 
-## 10. 既知の問題・メモ (修正せず記録のみ)
+## 10. 既知の問題・メモ (更新)
 
 1. **更新ロジック未実装**
-   - `InGame.Update()` が空。`TurnManager` や各 `Component` の更新が呼ばれていない。
+   - ✅ 解決: `InGame.Update()` でターン進行・資源生成・同盟ボーナス・履歴追加を実装。
 2. **UI と System の同期不足**
-   - `ResourceView` は独自の `resources` マップを持ち `ResourceManager` と分離。値の一貫性が崩れる可能性。
+   - ✅ 解決: `ResourceView` が `ResourceManager` から直接値を取得するよう統合。
 3. **MapGrid 乱数シード**
-   - `generatePoint()` 内でループ毎に `rand.Seed()` を呼び出しており、実行時点の時間依存で各セルの乱数が偏る懸念。
+   - ✅ 解決: `NewMapGrid()` で一度だけシード設定。
 4. **Pathfinder の実装簡易**
-   - `IsPointAccessible` が距離 ≤3 だけで判定。ボス到達条件や敵制圧状況を考慮していない。
+   - ✅ 解決: 征服状況と撃破状態を考慮する BFS に置換。
 5. **Combat と UI の二重構造**
-   - `screen.BattleScreen` と `system.CombatManager` がそれぞれ戦闘フィールドを保持。状態同期が必要。
+   - ✅ 解決: `BattleScreen` が `CombatManager` を参照するラッパーに変更。
 6. **CardManager テンプレート未使用**
-   - 現状、カード生成時は `component.CardDeck` が独自に文字列を保持し、テンプレートを活用していない。
+   - ✅ 解決: `CardDeck` が `entity.Card` と `CardManager` テンプレートを使用。
 7. **Alliance Bonus の適用処理未実装**
-   - `AllianceManager.updateAllianceBonuses()` で計算したボーナスが `ResourceManager` や戦闘計算に反映されていない。
+   - ✅ 解決: `InGame.Update()` で資源・攻撃ボーナスを適用。
 8. **描画位置ハードコード**
    - すべてのウィジェットが絶対座標でハードコード。解像度変更や UI 拡張時に修正が大規模化する恐れ。
      - 問題なし。このゲームはゲームジャム用なので、急いで作る必要がある。
