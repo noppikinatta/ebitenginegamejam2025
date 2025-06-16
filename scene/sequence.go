@@ -8,16 +8,19 @@ type Game struct {
 	*bamenn.Sequence
 	title   *Title
 	inGame  *InGame
+	result  *Result
 	current string
 }
 
 func CreateSequence() *Game {
-	title := &Title{}
-	inGame := &InGame{}
+	title := NewTitle()
+	inGame := NewInGame()
+	result := NewResult()
 
 	game := &Game{
 		title:   title,
 		inGame:  inGame,
+		result:  result,
 		current: "title",
 	}
 
@@ -56,5 +59,23 @@ func (g *Game) SetCurrentScene(sceneName string) {
 		g.Sequence.Switch(g.title)
 	case "ingame":
 		g.Sequence.Switch(g.inGame)
+	case "result":
+		g.Sequence.Switch(g.result)
 	}
+}
+
+func (g *Game) GetTitleScene() *Title {
+	return g.title
+}
+
+func (g *Game) GetInGameScene() *InGame {
+	return g.inGame
+}
+
+func (g *Game) GetResultScene() *Result {
+	return g.result
+}
+
+func (g *Game) TransitionTo(sceneName string) {
+	g.SetCurrentScene(sceneName)
 }

@@ -4,10 +4,56 @@ import (
 	"image/color"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"github.com/noppikinatta/ebitenginegamejam2025/component"
 )
 
+type UILayout struct {
+	components map[string][4]int // [x, y, width, height]
+}
+
+func NewUILayout() *UILayout {
+	return &UILayout{
+		components: map[string][4]int{
+			"GameMain":     {0, 20, 520, 280},
+			"ResourceView": {0, 0, 520, 20},
+			"Calendar":     {520, 0, 120, 40},
+			"History":      {520, 80, 120, 320},
+			"CardDeck":     {0, 300, 520, 60},
+		},
+	}
+}
+
+func (ul *UILayout) GetComponentBounds(componentName string) [4]int {
+	return ul.components[componentName]
+}
+
 type InGame struct {
+	layout       *UILayout
+	resourceView *component.ResourceView
+	calendar     *component.Calendar
+	history      *component.History
+	cardDeck     *component.CardDeck
+	gameMain     *component.GameMain
+}
+
+func NewInGame() *InGame {
+	layout := NewUILayout()
+
+	// Create components with their layout positions
+	resourceViewBounds := layout.GetComponentBounds("ResourceView")
+	calendarBounds := layout.GetComponentBounds("Calendar")
+	historyBounds := layout.GetComponentBounds("History")
+	cardDeckBounds := layout.GetComponentBounds("CardDeck")
+	gameMainBounds := layout.GetComponentBounds("GameMain")
+
+	return &InGame{
+		layout:       layout,
+		resourceView: component.NewResourceView(resourceViewBounds[0], resourceViewBounds[1], resourceViewBounds[2], resourceViewBounds[3]),
+		calendar:     component.NewCalendar(calendarBounds[0], calendarBounds[1], calendarBounds[2], calendarBounds[3]),
+		history:      component.NewHistory(historyBounds[0], historyBounds[1], historyBounds[2], historyBounds[3]),
+		cardDeck:     component.NewCardDeck(cardDeckBounds[0], cardDeckBounds[1], cardDeckBounds[2], cardDeckBounds[3]),
+		gameMain:     component.NewGameMain(gameMainBounds[0], gameMainBounds[1], gameMainBounds[2], gameMainBounds[3]),
+	}
 }
 
 func (g *InGame) Update() error {
@@ -15,15 +61,41 @@ func (g *InGame) Update() error {
 }
 
 func (g *InGame) Draw(screen *ebiten.Image) {
-	// 背景色を設定
+	// Background color
 	screen.Fill(color.RGBA{40, 40, 60, 255})
 
-	// ゲーム画面のテキストを表示
-	ebitenutil.DebugPrintAt(screen, "IN GAME", 280, 100)
-	ebitenutil.DebugPrintAt(screen, "Game scene - coming soon!", 200, 200)
-	ebitenutil.DebugPrintAt(screen, "Press ESC to return to Title", 200, 400)
+	// Draw all UI components
+	g.resourceView.Draw(screen)
+	g.calendar.Draw(screen)
+	g.history.Draw(screen)
+	g.cardDeck.Draw(screen)
+	g.gameMain.Draw(screen)
 }
 
 func (g *InGame) Layout(outsideWidth, outsideHeight int) (int, int) {
 	return 640, 360
+}
+
+func (g *InGame) GetUILayout() *UILayout {
+	return g.layout
+}
+
+func (g *InGame) GetResourceView() *component.ResourceView {
+	return g.resourceView
+}
+
+func (g *InGame) GetCalendar() *component.Calendar {
+	return g.calendar
+}
+
+func (g *InGame) GetHistory() *component.History {
+	return g.history
+}
+
+func (g *InGame) GetCardDeck() *component.CardDeck {
+	return g.cardDeck
+}
+
+func (g *InGame) GetGameMain() *component.GameMain {
+	return g.gameMain
 }
