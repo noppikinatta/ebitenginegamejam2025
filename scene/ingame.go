@@ -6,6 +6,7 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/noppikinatta/ebitenginegamejam2025/component"
+	"github.com/noppikinatta/ebitenginegamejam2025/loader"
 	"github.com/noppikinatta/ebitenginegamejam2025/system"
 )
 
@@ -52,10 +53,27 @@ func NewInGame() *InGame {
 	// Create system managers
 	resourceManager := system.NewResourceManager()
 	turnManager := system.NewTurnManager()
-	cardManager := system.NewCardManager()
+	// Try to load card templates from CSV; fall back to defaults on error.
+	var cardManager *system.CardManager
+	if cards, err := loader.LoadCards("data/cards.csv"); err == nil {
+		cardManager = system.NewCardManagerFromData(cards)
+	} else {
+		cardManager = system.NewCardManager()
+	}
 	territoryManager := system.NewTerritoryManager(resourceManager)
-	allianceManager := system.NewAllianceManager()
-	combatManager := system.NewCombatManager()
+	var allianceManager *system.AllianceManager
+	if nations, err := loader.LoadNations("data/nations.csv"); err == nil {
+		allianceManager = system.NewAllianceManagerFromData(nations)
+	} else {
+		allianceManager = system.NewAllianceManager()
+	}
+	var combatManager *system.CombatManager
+	if enemyMap, errE := loader.LoadEnemies("data/enemies.csv"); errE == nil {
+		bossMap, _ := loader.LoadBosses("data/bosses.csv")
+		combatManager = system.NewCombatManagerWithTemplates(enemyMap, bossMap)
+	} else {
+		combatManager = system.NewCombatManager()
+	}
 
 	// Create components with their layout positions
 	resourceViewBounds := layout.GetComponentBounds("ResourceView")

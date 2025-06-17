@@ -100,3 +100,43 @@ NPC国の特色によって販売されるカードの種類が変わる。ラ�
 - ユニットカード:先頭に参加するカード
 - エンチャントカード:ユニットに合体させて強化する
 - 建物カード:自国や制圧した野外ポイントの性能を高める
+
+## CSV-Driven Data Integration (Phase 8)
+
+To decouple hard-coded values we will switch core managers to rely on the CSV data described in `csv_design.md`.
+
+### Loader Initialisation Flow
+1. `app/main.go` start-up creates a `loader.Config{DataDir: "data"}` (or simply pass paths).
+2. Call loaders in order:
+   ```go
+   cards   , _ := loader.LoadCards(filepath.Join(dataDir, "cards.csv"))
+   nations , _ := loader.LoadNations(filepath.Join(dataDir, "nations.csv"))
+   enemies , _ := loader.LoadEnemies(filepath.Join(dataDir, "enemies.csv"))
+   bosses  , _ := loader.LoadBosses(filepath.Join(dataDir, "bosses.csv"))
+   ```
+3. Inject the maps into system managers on construction:
+   * `system.NewCardManager(cards)` – replaces internal template generation.
+   * `system.NewAllianceManager(nations)` – sets initial relationship values & bonuses.
+   * `system.NewCombatManager(enemies, bosses)` – provides factory methods for enemy/boss instances.
+
+### Manager Changes
+| Manager | New Responsibility |
+|---------|--------------------|
+| **CardManager** | Store `map[string]*entity.Card` templates from CSV. `CreateCard(id)` clones template by id. |
+| **AllianceManager** | Holds `map[string]*entity.Nation`. Uses `InitialRelationship`, `AllyBonusGold`, `AllyBonusAttack`. |
+| **CombatManager** | Hold enemy & boss templates. `AddEnemyByID(id)` pulls stats from template. Victory rewards use `RewardGold` / `RewardCardID`. |
+| **MapGrid / Point** | Replace random enemy stats: each Wild point stores an `EnemyID`. Boss point stores a `BossID`. During click, GameMain asks CombatManager to spawn using ID. |
+
+### Data Consistency Rules
+* IDs in `enemies.csv` & `bosses.csv` must be unique and referenced by MapGrid.
+* `reward_card_id` must exist in `cards.csv`.
+* Loader silently trims unknown columns → forward compatible.
+
+### Hot Reload (Optional)
+`loader.Watch(files…)` will use `fsnotify` to reload CSV and push updates to observers (`CardManager.Refresh`). Not required for jam deadline but API left open.
+
+### Acceptance Tests
+* Phase 8 tests listed in `.tdd.md` (`T8.1‒T8.6`) will use small fixture CSV files placed under `testdata/`.
+* Existing gameplay tests must still pass using fixture data.
+
+---

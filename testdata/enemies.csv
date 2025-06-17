@@ -1,0 +1,3 @@
+id,name,atk,def,hp,reward_gold,reward_card
+E1,Goblin,3,1,10,5,C1
+E2,Orc,5,2,15,8,C1 

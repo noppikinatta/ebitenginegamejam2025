@@ -31,6 +31,8 @@ type VictoryRewards struct {
 type CombatManager struct {
 	battlefield       *CombatBattlefield
 	enemies           map[string]*CombatEnemy
+	enemyTemplates    map[string]*entity.Enemy
+	bossTemplates     map[string]*entity.Boss
 	combatState       string // "ongoing", "victory", "defeat"
 	combatStats       *CombatStats
 	placedCards       []*entity.Card
@@ -53,6 +55,8 @@ func NewCombatManager() *CombatManager {
 			Cards:      []*entity.Card{},
 			Experience: 0,
 		},
+		enemyTemplates: make(map[string]*entity.Enemy),
+		bossTemplates:  make(map[string]*entity.Boss),
 	}
 }
 
@@ -242,4 +246,29 @@ func (cm *CombatManager) GetAllEnemies() []*CombatEnemy {
 
 func (cm *CombatManager) SetPlayerAttackBonus(bonus int) {
 	cm.playerAttackBonus = bonus
+}
+
+// NewCombatManagerWithTemplates injects enemy/boss template maps.
+func NewCombatManagerWithTemplates(enemies map[string]*entity.Enemy, bosses map[string]*entity.Boss) *CombatManager {
+	cm := NewCombatManager()
+	if len(enemies) > 0 {
+		cm.enemyTemplates = enemies
+	}
+	if len(bosses) > 0 {
+		cm.bossTemplates = bosses
+	}
+	return cm
+}
+
+// AddEnemyByID pulls stats from enemy or boss template maps.
+func (cm *CombatManager) AddEnemyByID(id string) bool {
+	if e, ok := cm.enemyTemplates[id]; ok {
+		cm.AddEnemy(e.Name, e.Attack, e.Defense, e.Health)
+		return true
+	}
+	if b, ok := cm.bossTemplates[id]; ok {
+		cm.AddEnemy(b.Name, b.Attack, b.Defense, b.Health)
+		return true
+	}
+	return false
 }

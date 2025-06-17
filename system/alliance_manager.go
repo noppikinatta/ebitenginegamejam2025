@@ -1,5 +1,7 @@
 package system
 
+import "github.com/noppikinatta/ebitenginegamejam2025/entity"
+
 type AllianceBonus struct {
 	ResourceBonus map[string]int
 	MilitaryBonus int
@@ -7,9 +9,10 @@ type AllianceBonus struct {
 }
 
 type AllianceManager struct {
-	relationships map[string]int // NPC name -> relationship (0-100)
-	allies        []string       // List of allied NPCs
+	relationships map[string]int           // NPC name -> relationship (0-100)
+	allies        []string                 // List of allied NPCs
 	bonuses       *AllianceBonus
+	nationData    map[string]*entity.Nation // Optional: loaded from CSV, keyed by NPC name
 }
 
 func NewAllianceManager() *AllianceManager {
@@ -20,12 +23,9 @@ func NewAllianceManager() *AllianceManager {
 			"Desert Emirate":  40,
 			"Mountain Clans":  35,
 		},
-		allies: []string{},
-		bonuses: &AllianceBonus{
-			ResourceBonus: make(map[string]int),
-			MilitaryBonus: 0,
-			TradingBonus:  0,
-		},
+		allies:     []string{},
+		bonuses:    &AllianceBonus{ResourceBonus: make(map[string]int)},
+		nationData: make(map[string]*entity.Nation),
 	}
 }
 
@@ -74,8 +74,22 @@ func (am *AllianceManager) updateAllianceBonuses() {
 	am.bonuses.MilitaryBonus = 0
 	am.bonuses.TradingBonus = 0
 
-	// Calculate bonuses based on allies
+	// Calculate bonuses based on allies. Prefer CSV-loaded data if available,
+	// otherwise fall back to the original hard-coded values so existing
+	// behaviour (and tests) stay unchanged.
 	for _, ally := range am.allies {
+		if n, ok := am.nationData[ally]; ok {
+			if n.AllyBonusGold != 0 {
+				am.bonuses.ResourceBonus["Gold"] += n.AllyBonusGold
+			}
+			if n.AllyBonusAttack != 0 {
+				am.bonuses.MilitaryBonus += n.AllyBonusAttack
+			}
+			// Extend easily later with more resource types
+			continue
+		}
+
+		// Fallback
 		switch ally {
 		case "Iron Republic":
 			am.bonuses.ResourceBonus["Iron"] += 5
@@ -123,4 +137,22 @@ func (am *AllianceManager) GetAllRelationships() map[string]int {
 		result[k] = v
 	}
 	return result
+}
+
+// NewAllianceManagerFromData initialises relationships from CSV-loaded nations map.
+func NewAllianceManagerFromData(nations map[string]*entity.Nation) *AllianceManager {
+	am := NewAllianceManager()
+	if len(nations) == 0 {
+		return am
+	}
+	for _, n := range nations {
+		am.relationships[n.Name] = n.InitialRelationship
+		am.nationData[n.Name] = n
+	}
+
+	// Ensure bonuses map is initialised (if caller constructs via FromData)
+	if am.bonuses == nil {
+		am.bonuses = &AllianceBonus{ResourceBonus: make(map[string]int)}
+	}
+	return am
 }
