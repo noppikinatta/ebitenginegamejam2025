@@ -1,0 +1,53 @@
+story-1, 観測可能宇宙暦201306151707年、観測可能宇宙帝国の暗黒卿\nディナー・エビテンダーは、鼻持ちならない反乱軍を全滅させるため、\n圧倒的に強力な究極兵器を建造することを計画した...
+story-2, 圧倒的に信頼できるベンダーに武装の提案を依頼し...
+story-3, 圧倒的に天才的な中間管理職からの報告を待った...
+story-4, 究極兵器建造計画が今始まる...
+managers-title, 圧倒的に天才的な中間管理職たち：
+manager-1, マッハ・ソニック
+manager-1-desc, 素早い決断こそ全てと考えている。説明が明瞭。
+manager-1-perk-1, 提案の速度を２倍にする
+manager-1-perk-2, 提案の見た目の変化を元に戻す
+manager-2, バーディー・パット
+manager-2-desc, コスト削減の専門家。いつもゴルフのことを考えている。
+manager-2-perk-1, 提案されたのコストを下げる
+manager-2-perk-2, 提案の見た目がゴルフになる
+manager-3, ロング・ウィンデッド
+manager-3-desc, 技術に造詣が深い。説明が回りくどい。
+manager-3-perk-1, 提案された装備の性能を上げる
+manager-3-perk-2, 提案が高速回転する
+vendors-title, 圧倒的に信頼できるベンダーたち：
+vendor-1, サムライ・アビオニクス
+vendor-1-desc, 大砲やミサイルを開発する。隙あらば侍の精神を体現した武器を提案する。
+vendor-2, サラミス・インダストリー
+vendor-2-desc, バリアや装甲を開発する。やたらと排熱孔を作るのが好き。
+vendor-3, 文化勝利社
+vendor-3-desc, 宇宙要塞のことは何もわからない。
+equip-1-laser, レーザーカノン
+equip-1-laser-desc, 約{{.IntervalSec}}秒おきに{{.LastSec}}秒間光線を発射　ダメージ：{{.Power}}/秒
+equip-2-missile, スペースミサイル
+equip-2-missile-desc, {{.IntervalSec}}秒おきに誘導ミサイルを発射　ダメージ：{{.Power}}
+equip-3-harakiri, ハラキリシステム
+equip-3-harakiri-desc, {{.MaxSanity}}回敵を追尾する刀　最後には母船に戻ってくる諸刃の剣　ダメージ：{{.Power}}
+equip-4-barrier, バリアー
+equip-4-barrier-desc, {{.Durability}}回攻撃を防ぐ　壊れても{{.IntervalSec}}秒後に復活する
+equip-5-armor, 増加装甲
+equip-5-armor-desc, 宇宙要塞の初期HPを{{.Armor}}増加させる
+equip-6-exhaust, 排熱孔
+equip-6-exhaust-desc, 伝統的な弱点　受けるダメージを{{.Multiplier}}倍してしまうが、隣の装備を強化する
+equip-7-stonehenge, ストーンヘンジ
+equip-7-stonehenge-desc, 巨石を{{.Value}}個組み合わせた構造物　夏至がわかる
+equip-8-sushibar, スシ・バー
+equip-8-sushibar-desc, {{.Value}}種類の産地直送メニュー
+equip-9-operahouse, オペラハウス
+equip-9-operahouse-desc, 収容人数{{.Value}}人の大規模劇場
+negotiation-title-1, 交渉開始
+negotiation-title-2, 交渉終了
+negotiation-title-3, 性能諸元
+negotiation-desc-1, 画面下部からベンダーの提案が中間管理職経由で上がってきます。\n画面上部のバーをマウス移動で操作して、受け入れたい装備を通してください。\n資金がなくなると終了です。
+shooter-title-1, そして、戦いの時が来た...
+shooter-title-2, 戦闘開始
+shooter-desc-1, 宇宙要塞の装備をマウス移動で回転させて、反乱軍を全滅させてください。\n反乱軍が全滅するか、宇宙要塞のHPがなくなると終了です。
+shooter-result-1, 帝国の勝利
+shooter-result-1-epilogue, 観測可能宇宙帝国は勝利した。\n帝国の栄光は永遠のものとなるだろう...
+shooter-result-2, 反乱軍の勝利
+shooter-result-2-epilogue, 反乱軍は勝利した。\n超光速通信相互監視民主主義の時代が始まる...

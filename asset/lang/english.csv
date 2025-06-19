@@ -1,0 +1,53 @@
+story-1, "In the year 201306151707 of the Observable Universe Calendar, \nDark Lord Dinner Ebitender of the Observable Universe Empire \ndevised a plan to annihilate the insufferable Rebel Army \nby constructing an overwhelmingly powerful ultimate weapon..."
+story-2, "He requested proposals for armaments from \nhis totally reliable vendors..."
+story-3, "And awaited reports from his totally genius middle managers..."
+story-4, "The ultimate weapon construction project is about to begin..."
+managers-title, " TheTotally genius middle managers:"
+manager-1, Mach Sonic
+manager-1-desc, Believes that quick decisions are everything. His explanations are clear.
+manager-1-perk-1, Doubles the speed of proposals
+manager-1-perk-2, Reverts the appearance changes of proposals
+manager-2, Birdie Putt
+manager-2-desc, A cost-cutting expert. Always thinking about golf.
+manager-2-perk-1, Lowers the cost of proposals
+manager-2-perk-2, Makes the appearance of proposals golf-themed
+manager-3, Long Winded
+manager-3-desc, Knowledgeable in technology. Her explanations are long-winded.
+manager-3-perk-1, Increases the performance of proposed equipment
+manager-3-perk-2, Makes proposals spin rapidly
+vendors-title, The Totally Reliable Vendors:
+vendor-1, Samurai Avionics
+vendor-1-desc, Develops cannons and missiles.\nProposes weapons embodying the spirit of the samurai whenever possible.
+vendor-2, Salamis Industry
+vendor-2-desc, Develops barriers and armor. Has a penchant for creating thermal exhaust ports.
+vendor-3, Cultural Victory Co.
+vendor-3-desc, Knows nothing about space fortresses.
+equip-1-laser, Laser Cannon
+equip-1-laser-desc, Fires a beam every {{.IntervalSec}} seconds for {{.LastSec}} seconds. Damage: {{.Power}} per second
+equip-2-missile, Space Missile
+equip-2-missile-desc, Launches a homing missile every {{.IntervalSec}} seconds. Damage: {{.Power}}
+equip-3-harakiri, Harakiri System
+equip-3-harakiri-desc, "A katana that tracks enemies up to {{.MaxSanity}} times and eventually returns to the mothership.\nDamage: {{.Power}}"
+equip-4-barrier, Barrier
+equip-4-barrier-desc, Blocks {{.Durability}} attacks and regenerates after {{.IntervalSec}} seconds if broken
+equip-5-armor, Additional Armor
+equip-5-armor-desc, Increases the initial HP of the space fortress by {{.Armor}}
+equip-6-exhaust, Exhaust Port
+equip-6-exhaust-desc, "A traditional weak point.\nMultiplies incoming damage by {{.Multiplier}}, but enhances adjacent equipment."
+equip-7-stonehenge, Stonehenge
+equip-7-stonehenge-desc, A structure composed of {{.Value}} megaliths that can determine the summer solstice
+equip-8-sushibar, Sushi Bar
+equip-8-sushibar-desc, {{.Value}} types of fresh-from-the-source menu items
+equip-9-operahouse, Opera House
+equip-9-operahouse-desc, A large theater with a capacity of {{.Value}} people
+negotiation-title-1, Negotiations Begin
+negotiation-title-2, Negotiations End
+negotiation-title-3, Performance Specifications
+negotiation-desc-1, Vendor proposals will come up\nfrom the bottom of the screen via the middle managers.\nUse mouse movements to operate the bar at the top of the screen\nand pass through the equipment you want to accept.\nThe negotiation ends when you run out of money.
+shooter-title-1, "And Now, the Battle Begins..."
+shooter-title-2, Commencement of combat
+shooter-desc-1, Rotate the space fortress's equipment\nwith mouse movements to annihilate the Rebel Army.\nThe game ends when either the Rebel Army is annihilated\nor the space fortress's HP is depleted.
+shooter-result-1, Imperial Victory
+shooter-result-1-epilogue, The Observable Universe Empire has triumphed.\nThe glory of the Empire shall be eternal...
+shooter-result-2, Rebel Victory
+shooter-result-2-epilogue, The Rebel Army has triumphed.\nThe era of hyperspace communication\nmutual surveillance democracy begins...
