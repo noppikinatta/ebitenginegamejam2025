@@ -3,4 +3,6 @@ description:
 globs: ui/**/*.go
 alwaysApply: false
 ---
-# uiのルール
+## do not mind hard coded layout
+
+resolution is fixed as 640x360

@@ -6,6 +6,7 @@ package core
 // - func CanInteract(x, y int) bool 引数x, yの座標にあるPointを操作できるかどうかを返す。
 //   - MyNationPointは常に操作できる。
 //   - MyNationPointに隣接するPointは操作できる。
+//   - 隣接とは、(x,y)に対する(x+1,y)、(x-1,y)、(x,y+1)、(x,y-1)の4つの座標。
 //   - MyNationPointから座標を辿っていくとき、WildernessPoint(Controled=false)を通った場合は操作できない。
 //     * MyNationPointから遠回りしていくパターンをテストすべき。
 //     * WildernessPointのControledは制圧時に切り替わるので、その時点で操作できるかどうかのキャッシュを作る方がいい。
