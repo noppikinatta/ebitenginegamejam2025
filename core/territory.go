@@ -12,4 +12,4 @@ package core
 // - BaseYield ResourceQuantity
 // - func AppendCard(card *StructureCard) bool
 // - func RemoveCard(index int) (*StructureCard, bool)
-// - func Yield() ResourceQuantity
+// - func Yield() ResourceQuantity BaseYieldを置かれているStructureCardのYieldModifierに通して結果を返す。
