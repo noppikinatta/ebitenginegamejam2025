@@ -13,14 +13,12 @@ Also use Bamenn (github.com/noppikinatta/bamenn)
 
 I must submit the game until a week, ignore a little hard code or lack of expandability
 
-## Develop with TDD
-
-Develop with TDD.
-
-1. Write feature and test list on .tdd.md
-2. Develop red green refactor cycle
-
 ## You do not have to actually run with `go run` to see how it works.
 
 The actual operation is checked by a human and issues are added
 
+## Test codes and testdata must be in same package
+
+For example, test codes for core/battle.go must be in core/battle_test.go
+
+Directory for test data also must be in sae package, core/testdata/ stores test data for core/ package

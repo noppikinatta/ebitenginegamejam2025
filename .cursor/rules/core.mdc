@@ -1,0 +1,12 @@
+---
+description: 
+globs: core/*.go
+alwaysApply: false
+---
+
+## Develop with TDD
+
+Develop with TDD.
+
+1. Write feature and test list on .tdd.md
+2. Develop red green refactor cycle
