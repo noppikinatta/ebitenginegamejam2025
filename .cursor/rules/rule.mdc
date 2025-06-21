@@ -11,7 +11,7 @@ Also use Bamenn (github.com/noppikinatta/bamenn)
 
 ## This project is the game for the Game Jam
 
-I must submit the game until 6/29, ignore a little hard code or lack of expandability
+I must submit the game until a week, ignore a little hard code or lack of expandability
 
 ## Develop with TDD
 
@@ -24,6 +24,3 @@ Develop with TDD.
 
 The actual operation is checked by a human and issues are added
 
-## OSS project
-
-This project is an OSS, translate all files to English
