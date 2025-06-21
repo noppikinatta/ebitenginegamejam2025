@@ -5,6 +5,7 @@ go 1.24.0
 require (
 	github.com/hajimehoshi/ebiten/v2 v2.8.8
 	github.com/noppikinatta/bamenn v0.2.0
+	github.com/noppikinatta/nyuuryoku v0.1.0
 )
 
 require (
@@ -18,7 +19,7 @@ require (
 	github.com/jfreymuth/oggvorbis v1.0.5 // indirect
 	github.com/jfreymuth/vorbis v1.0.2 // indirect
 	golang.org/x/image v0.20.0 // indirect
-	golang.org/x/sync v0.8.0 // indirect
+	golang.org/x/sync v0.11.0 // indirect
 	golang.org/x/sys v0.25.0 // indirect
 	golang.org/x/text v0.18.0 // indirect
 )
