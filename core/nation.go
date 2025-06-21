@@ -11,6 +11,7 @@ package core
 
 // struct MyNation プレイヤー国家を表す。
 // - Nation (embedded struct)
+// - BasicYield ResourceQuantity 基本Yield。
 // - func AppendMarketItem(item *MarketItem) 引数itemをMarket.Itemsに追加する。これは、Enemy撃破時の報酬として自国で買えるカードパックを増やす機能。
 // - func AppendLevel(marketLevel float64) 引数marketLevelをMarket.Levelに加算する。これは、Enemy撃破時の報酬として自国で買えるカードパックを増やす機能。
 

@@ -6,6 +6,7 @@ package core
 // - EnemyType EnemyType
 // - Power float64
 // - Skills []*EnemySkill
+// - BattleCardSlot int このEnemyとの戦闘で、プレイヤーが出せるBattleCardの枚数。
 
 // string EnemyType
 // struct EnemySkill
