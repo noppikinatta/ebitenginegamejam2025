@@ -6,3 +6,11 @@ alwaysApply: false
 ## do not mind hard coded layout
 
 resolution is fixed as 640x360
+
+## do not have to do TDD
+
+UI is difficult to test with test code, so test code is not written.
+
+`ecene.InGame` has each UI, so you can actually run the application and check the operation.
+
+AI does not perform the operation check accompanied by `go run`.
