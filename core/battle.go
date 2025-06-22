@@ -6,4 +6,6 @@ package core
 // - SupportPower float64 周囲のTerritoryに置いたStructureCardの影響で増加したPower。
 // - BattleCards []*BattleCard 戦闘中に出すBattleCardの集合。
 // - CardSlot int BattleCardを置くことができる枚数。
+// - func CanBeat() bool 戦闘を勝利できるかどうかを返す。
+// - func Beat() 戦闘を勝利する。
 // Battlefieldのインスタンスを作る関数がどこかに必要。
