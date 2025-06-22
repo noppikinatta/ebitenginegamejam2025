@@ -10,6 +10,25 @@ UI操作時に、保持しているcoreパッケージのオブジェクトイ�
 適切なユースケース用のオブジェクトが存在しない場合、coreパッケージに新しく追加する。
 実装がわからない場合はスタブメソッドを追加するだけでも良い。
 
+## ダミー画像について
+
+構造体のメンバとして `*ebiten.Image` を保持するのがよい。
+
+実装例
+```
+type ResourceView struct {
+  dummyResourceIcon *ebiten.Image
+}
+
+func NewResourceView() *ResourceView {
+  v := &ResourceView{}
+  v.dummyResourceIcon = ebiten.NewImage(20,20)
+  v.dummyResourceIcon.Fill(/*suitable color*/)
+
+  return v
+}
+```
+
 ## UIレイアウト
 
 画面の幅と高さは640x360

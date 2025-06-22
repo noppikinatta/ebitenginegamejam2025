@@ -1,6 +1,6 @@
 ---
 description: 
-globs: ui/**/*.go
+globs: ui/**/*.go,.uiplan.md
 alwaysApply: false
 ---
 ## do not mind hard coded layout
