@@ -8,10 +8,10 @@ import (
 
 func TestTreasury_Add(t *testing.T) {
 	tests := []struct {
-		name      string
-		initial   core.ResourceQuantity
-		toAdd     core.ResourceQuantity
-		expected  core.ResourceQuantity
+		name     string
+		initial  core.ResourceQuantity
+		toAdd    core.ResourceQuantity
+		expected core.ResourceQuantity
 	}{
 		{
 			name: "正常な加算",
@@ -44,7 +44,7 @@ func TestTreasury_Add(t *testing.T) {
 			}
 
 			treasury.Add(tt.toAdd)
-			
+
 			if treasury.Resources != tt.expected {
 				t.Errorf("Add() result = %v, want %v", treasury.Resources, tt.expected)
 			}
@@ -54,10 +54,10 @@ func TestTreasury_Add(t *testing.T) {
 
 func TestTreasury_Sub(t *testing.T) {
 	tests := []struct {
-		name      string
-		initial   core.ResourceQuantity
-		toSub     core.ResourceQuantity
-		expected  core.ResourceQuantity
+		name       string
+		initial    core.ResourceQuantity
+		toSub      core.ResourceQuantity
+		expected   core.ResourceQuantity
 		expectedOk bool
 	}{
 		{
@@ -95,7 +95,7 @@ func TestTreasury_Sub(t *testing.T) {
 			}
 
 			ok := treasury.Sub(tt.toSub)
-			
+
 			if ok != tt.expectedOk {
 				t.Errorf("Sub() ok = %v, want %v", ok, tt.expectedOk)
 			}
@@ -149,13 +149,13 @@ func TestNation_VisibleCardPacks(t *testing.T) {
 	}
 
 	visiblePacks := nation.VisibleCardPacks()
-	
+
 	// レベル1.5なので、RequiredLevel 1.0の基本パックのみ見える
 	if len(visiblePacks) != 1 {
 		t.Errorf("VisibleCardPacks() returned %d packs, want 1", len(visiblePacks))
 		return
 	}
-	
+
 	if visiblePacks[0].CardPackID != "basic_pack" {
 		t.Errorf("VisibleCardPacks()[0] = %v, want basic_pack", visiblePacks[0].CardPackID)
 	}
@@ -299,7 +299,7 @@ func TestNation_Purchase(t *testing.T) {
 			}
 
 			cardPack, ok := nation.Purchase(tt.index, treasury)
-			
+
 			if ok != tt.expectedOk {
 				t.Errorf("Purchase() ok = %v, want %v", ok, tt.expectedOk)
 			}
@@ -463,4 +463,4 @@ func TestOtherNation_Purchase(t *testing.T) {
 	if otherNation.Market.Level != expectedLevel {
 		t.Errorf("Market level after purchase = %v, want %v", otherNation.Market.Level, expectedLevel)
 	}
-} 
+}

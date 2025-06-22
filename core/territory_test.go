@@ -285,4 +285,4 @@ type mockYieldModifier struct {
 
 func (m *mockYieldModifier) Modify(quantity core.ResourceQuantity) core.ResourceQuantity {
 	return m.modifyFunc(quantity)
-} 
+}

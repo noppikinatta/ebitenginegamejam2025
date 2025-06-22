@@ -9,8 +9,8 @@ import (
 // 位置: (0,0,300,20)
 // 5種類の資源を60x20ずつで表示
 type ResourceView struct {
-	Treasury  *core.Treasury           // 国庫情報
-	Increment core.ResourceQuantity    // 増分情報
+	Treasury  *core.Treasury        // 国庫情報
+	Increment core.ResourceQuantity // 増分情報
 }
 
 // NewResourceView ResourceViewを作成する
@@ -38,20 +38,20 @@ func (rv *ResourceView) Draw(screen *ebiten.Image) {
 	}
 
 	resources := rv.Treasury.Resources
-	
+
 	// 5種類の資源を60x20ずつで表示
 	// Money (0, 0, 60, 20)
 	DrawResource(screen, 0, 0, GetResourceIcon("Money"), resources.Money, rv.Increment.Money)
-	
-	// Food (60, 0, 60, 20)  
+
+	// Food (60, 0, 60, 20)
 	DrawResource(screen, 60, 0, GetResourceIcon("Food"), resources.Food, rv.Increment.Food)
-	
+
 	// Wood (120, 0, 60, 20)
 	DrawResource(screen, 120, 0, GetResourceIcon("Wood"), resources.Wood, rv.Increment.Wood)
-	
+
 	// Iron (180, 0, 60, 20)
 	DrawResource(screen, 180, 0, GetResourceIcon("Iron"), resources.Iron, rv.Increment.Iron)
-	
+
 	// Mana (240, 0, 60, 20)
 	DrawResource(screen, 240, 0, GetResourceIcon("Mana"), resources.Mana, rv.Increment.Mana)
 }

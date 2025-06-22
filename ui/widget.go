@@ -32,7 +32,7 @@ func DrawResource(screen *ebiten.Image, x, y float64, resourceType string, value
 	} else {
 		text = fmt.Sprintf("%d", value)
 	}
-	
+
 	opt = &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(x+20, y)
 	drawing.DrawText(screen, text, 12, opt)

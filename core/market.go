@@ -5,20 +5,20 @@ type MarketLevel float64
 
 // Market カードパックを購入するためのMarket。
 type Market struct {
-	Level MarketLevel     // このMarketのレベル。
-	Items []*MarketItem   // カードパックの一覧。
+	Level MarketLevel   // このMarketのレベル。
+	Items []*MarketItem // カードパックの一覧。
 }
 
 // VisibleCardPacks カードパックの一覧を返す。
 func (m *Market) VisibleCardPacks() []*CardPack {
 	var visiblePacks []*CardPack
-	
+
 	for _, item := range m.Items {
 		if m.Level >= item.RequiredLevel {
 			visiblePacks = append(visiblePacks, item.CardPack)
 		}
 	}
-	
+
 	return visiblePacks
 }
 
@@ -27,14 +27,14 @@ func (m *Market) CanPurchase(index int, treasury *Treasury) bool {
 	if index < 0 || index >= len(m.Items) {
 		return false
 	}
-	
+
 	item := m.Items[index]
-	
+
 	// マーケットレベルチェック
 	if m.Level < item.RequiredLevel {
 		return false
 	}
-	
+
 	// アイテム自体の購入可能性チェック
 	return item.CanPurchase(treasury)
 }
@@ -44,14 +44,14 @@ func (m *Market) Purchase(index int, treasury *Treasury) (*CardPack, bool) {
 	if !m.CanPurchase(index, treasury) {
 		return nil, false
 	}
-	
+
 	item := m.Items[index]
-	
+
 	// 国庫から価格を引く
 	if !treasury.Sub(item.Price) {
 		return nil, false
 	}
-	
+
 	return item.CardPack, true
 }
 

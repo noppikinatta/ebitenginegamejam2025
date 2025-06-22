@@ -128,7 +128,7 @@ func TestCardDatabase_GetCards(t *testing.T) {
 		},
 		ResourceCards: map[core.CardID]*core.ResourceCard{
 			"resource_1": {
-				CardID: "resource_1",
+				CardID:           "resource_1",
 				ResourceQuantity: core.ResourceQuantity{Money: 100},
 			},
 		},
@@ -307,4 +307,4 @@ func (m *mockBattleCardPowerModifier) CanAffect(battleCard *core.BattleCard) boo
 
 func (m *mockBattleCardPowerModifier) Modify(battleCard *core.BattleCard) float64 {
 	return m.modifyFunc(battleCard)
-} 
+}

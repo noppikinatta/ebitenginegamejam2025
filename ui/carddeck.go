@@ -12,12 +12,12 @@ import (
 // 位置: (0,300,640,60)
 // カードを40x60で最大16枚表示
 type CardDeckView struct {
-	CardDeck         *core.CardDeck     // 表示するカードデッキ
-	SelectedIndex    int                // 選択中のカードインデックス (-1は未選択)
-	OnCardSelected   func(interface{})  // カード選択時のコールバック
-	
+	CardDeck       *core.CardDeck    // 表示するカードデッキ
+	SelectedIndex  int               // 選択中のカードインデックス (-1は未選択)
+	OnCardSelected func(interface{}) // カード選択時のコールバック
+
 	// マウスカーソル位置（外部から設定）
-	MouseX, MouseY   int
+	MouseX, MouseY int
 }
 
 // NewCardDeckView CardDeckViewを作成する
@@ -39,12 +39,12 @@ func (cdv *CardDeckView) GetSelectedCard() interface{} {
 	if cdv.CardDeck == nil || cdv.SelectedIndex < 0 {
 		return nil
 	}
-	
+
 	allCards := cdv.getAllCards()
 	if cdv.SelectedIndex >= len(allCards) {
 		return nil
 	}
-	
+
 	return allCards[cdv.SelectedIndex]
 }
 
@@ -53,24 +53,24 @@ func (cdv *CardDeckView) getAllCards() []interface{} {
 	if cdv.CardDeck == nil {
 		return []interface{}{}
 	}
-	
+
 	allCards := make([]interface{}, 0)
-	
+
 	// BattleCardsを追加
 	for _, card := range cdv.CardDeck.BattleCards {
 		allCards = append(allCards, card)
 	}
-	
+
 	// StructureCardsを追加
 	for _, card := range cdv.CardDeck.StructureCards {
 		allCards = append(allCards, card)
 	}
-	
+
 	// ResourceCardsを追加
 	for _, card := range cdv.CardDeck.ResourceCards {
 		allCards = append(allCards, card)
 	}
-	
+
 	return allCards
 }
 
@@ -79,7 +79,7 @@ func (cdv *CardDeckView) SelectCard(index int) {
 	if cdv.CardDeck == nil {
 		return
 	}
-	
+
 	allCards := cdv.getAllCards()
 	if index < 0 || index >= len(allCards) {
 		cdv.SelectedIndex = -1
@@ -88,7 +88,7 @@ func (cdv *CardDeckView) SelectCard(index int) {
 		}
 		return
 	}
-	
+
 	cdv.SelectedIndex = index
 	if cdv.OnCardSelected != nil {
 		cdv.OnCardSelected(allCards[index])
@@ -108,15 +108,15 @@ func (cdv *CardDeckView) RemoveSelectedCard() interface{} {
 	if cdv.CardDeck == nil || cdv.SelectedIndex < 0 {
 		return nil
 	}
-	
+
 	allCards := cdv.getAllCards()
 	if cdv.SelectedIndex >= len(allCards) {
 		return nil
 	}
-	
+
 	// 選択中のカードを取得
 	selectedCard := allCards[cdv.SelectedIndex]
-	
+
 	// カードをデッキから除去
 	switch card := selectedCard.(type) {
 	case *core.BattleCard:
@@ -126,10 +126,10 @@ func (cdv *CardDeckView) RemoveSelectedCard() interface{} {
 	case *core.ResourceCard:
 		cdv.removeResourceCard(card)
 	}
-	
+
 	// 選択をクリア
 	cdv.ClearSelection()
-	
+
 	return selectedCard
 }
 
@@ -168,7 +168,7 @@ func (cdv *CardDeckView) AddCard(card interface{}) {
 	if cdv.CardDeck == nil {
 		return
 	}
-	
+
 	switch c := card.(type) {
 	case *core.BattleCard:
 		cdv.CardDeck.BattleCards = append(cdv.CardDeck.BattleCards, c)
@@ -190,7 +190,7 @@ func (cdv *CardDeckView) HandleInput(input *Input) error {
 func (cdv *CardDeckView) Draw(screen *ebiten.Image) {
 	// 背景描画
 	cdv.drawBackground(screen)
-	
+
 	// カード描画
 	cdv.drawCards(screen)
 }
@@ -217,9 +217,9 @@ func (cdv *CardDeckView) drawCards(screen *ebiten.Image) {
 		drawing.DrawText(screen, "No card deck", 12, opt)
 		return
 	}
-	
+
 	allCards := cdv.getAllCards()
-	
+
 	if len(allCards) == 0 {
 		// カードがない場合のメッセージ
 		opt := &ebiten.DrawImageOptions{}
@@ -227,19 +227,19 @@ func (cdv *CardDeckView) drawCards(screen *ebiten.Image) {
 		drawing.DrawText(screen, "No cards in deck", 12, opt)
 		return
 	}
-	
+
 	// カードを40x60サイズで描画（最大16枚）
 	for i, card := range allCards {
 		if i >= 16 { // 最大16枚まで
 			break
 		}
-		
+
 		x := float32(i * 40)
 		y := float32(300)
-		
+
 		cdv.drawCard(screen, card, x, y, i == cdv.SelectedIndex)
 	}
-	
+
 	// 16枚を超える場合は省略表示
 	if len(allCards) > 16 {
 		opt := &ebiten.DrawImageOptions{}
@@ -260,14 +260,14 @@ func (cdv *CardDeckView) drawCard(screen *ebiten.Image, card interface{}, x, y f
 	default:
 		colorR, colorG, colorB = 0.5, 0.5, 0.5 // グレー
 	}
-	
+
 	// 選択中の場合は明るくする
 	if selected {
 		colorR = min(colorR*1.5, 1.0)
 		colorG = min(colorG*1.5, 1.0)
 		colorB = min(colorB*1.5, 1.0)
 	}
-	
+
 	// カード背景描画 (40x60)
 	vertices := []ebiten.Vertex{
 		{DstX: x, DstY: y, SrcX: 0, SrcY: 0, ColorR: colorR, ColorG: colorG, ColorB: colorB, ColorA: 1},
@@ -277,12 +277,12 @@ func (cdv *CardDeckView) drawCard(screen *ebiten.Image, card interface{}, x, y f
 	}
 	indices := []uint16{0, 1, 2, 0, 2, 3}
 	screen.DrawTriangles(vertices, indices, drawing.WhitePixel, &ebiten.DrawTrianglesOptions{})
-	
+
 	// 選択中の場合は枠を描画
 	if selected {
 		cdv.drawCardBorder(screen, x, y)
 	}
-	
+
 	// カード情報描画
 	switch c := card.(type) {
 	case *core.BattleCard:
@@ -303,7 +303,7 @@ func (cdv *CardDeckView) drawCardBorder(screen *ebiten.Image, x, y float32) {
 	}
 	indices := []uint16{0, 1, 2, 0, 2, 3}
 	screen.DrawTriangles(vertices, indices, drawing.WhitePixel, &ebiten.DrawTrianglesOptions{})
-	
+
 	// 下枠
 	vertices = []ebiten.Vertex{
 		{DstX: x, DstY: y + 58, SrcX: 0, SrcY: 0, ColorR: 1, ColorG: 1, ColorB: 0, ColorA: 1},
@@ -312,7 +312,7 @@ func (cdv *CardDeckView) drawCardBorder(screen *ebiten.Image, x, y float32) {
 		{DstX: x, DstY: y + 60, SrcX: 0, SrcY: 0, ColorR: 1, ColorG: 1, ColorB: 0, ColorA: 1},
 	}
 	screen.DrawTriangles(vertices, indices, drawing.WhitePixel, &ebiten.DrawTrianglesOptions{})
-	
+
 	// 左枠
 	vertices = []ebiten.Vertex{
 		{DstX: x, DstY: y, SrcX: 0, SrcY: 0, ColorR: 1, ColorG: 1, ColorB: 0, ColorA: 1},
@@ -321,7 +321,7 @@ func (cdv *CardDeckView) drawCardBorder(screen *ebiten.Image, x, y float32) {
 		{DstX: x, DstY: y + 60, SrcX: 0, SrcY: 0, ColorR: 1, ColorG: 1, ColorB: 0, ColorA: 1},
 	}
 	screen.DrawTriangles(vertices, indices, drawing.WhitePixel, &ebiten.DrawTrianglesOptions{})
-	
+
 	// 右枠
 	vertices = []ebiten.Vertex{
 		{DstX: x + 38, DstY: y, SrcX: 0, SrcY: 0, ColorR: 1, ColorG: 1, ColorB: 0, ColorA: 1},
@@ -342,12 +342,12 @@ func (cdv *CardDeckView) drawBattleCardInfo(screen *ebiten.Image, card *core.Bat
 		cardID = cardID[:5] + "..."
 	}
 	drawing.DrawText(screen, cardID, 8, opt)
-	
+
 	// Power (中央、12pt)
 	opt = &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(float64(x+12), float64(y+25))
 	drawing.DrawText(screen, fmt.Sprintf("%.1f", card.Power), 12, opt)
-	
+
 	// Type (下部、8pt)
 	opt = &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(float64(x+2), float64(y+45))
@@ -368,7 +368,7 @@ func (cdv *CardDeckView) drawStructureCardInfo(screen *ebiten.Image, card *core.
 		cardID = cardID[:5] + "..."
 	}
 	drawing.DrawText(screen, cardID, 8, opt)
-	
+
 	// 効果マーク (中央、14pt)
 	opt = &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(float64(x+15), float64(y+25))
@@ -377,7 +377,7 @@ func (cdv *CardDeckView) drawStructureCardInfo(screen *ebiten.Image, card *core.
 	} else {
 		drawing.DrawText(screen, "○", 14, opt) // 効果なしマーク
 	}
-	
+
 	// "STR" (下部、8pt)
 	opt = &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(float64(x+10), float64(y+45))

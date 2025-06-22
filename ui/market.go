@@ -11,12 +11,12 @@ import (
 // MarketView Market表示Widget
 // 位置: MainView内で描画
 type MarketView struct {
-	Nation    interface{}      // MyNationまたはOtherNation
-	Treasury  *core.Treasury   // 購入可能性判定用
-	GameState *core.GameState  // ゲーム状態
-	
+	Nation    interface{}     // MyNationまたはOtherNation
+	Treasury  *core.Treasury  // 購入可能性判定用
+	GameState *core.GameState // ゲーム状態
+
 	// View切り替えのコールバック
-	OnBackClicked func() // MapGridViewに戻る
+	OnBackClicked func()                        // MapGridViewに戻る
 	OnPurchase    func(cardPack *core.CardPack) // CardPack購入時
 }
 
@@ -56,10 +56,10 @@ func (mv *MarketView) Draw(screen *ebiten.Image) {
 
 	// ヘッダ描画 (0,20,480,40)
 	mv.drawHeader(screen)
-	
+
 	// 戻るボタン描画 (480,20,40,40)
 	mv.drawBackButton(screen)
-	
+
 	// CardPack一覧描画
 	mv.drawCardPacks(screen)
 }
@@ -67,7 +67,7 @@ func (mv *MarketView) Draw(screen *ebiten.Image) {
 // drawHeader Nation名ヘッダを描画
 func (mv *MarketView) drawHeader(screen *ebiten.Image) {
 	var nationName string
-	
+
 	switch n := mv.Nation.(type) {
 	case *core.MyNation:
 		nationName = "My Nation"
@@ -76,7 +76,7 @@ func (mv *MarketView) drawHeader(screen *ebiten.Image) {
 	default:
 		nationName = "Unknown Nation"
 	}
-	
+
 	// ヘッダ背景
 	vertices := []ebiten.Vertex{
 		{DstX: 0, DstY: 20, SrcX: 0, SrcY: 0, ColorR: 0.3, ColorG: 0.3, ColorB: 0.3, ColorA: 1},
@@ -86,7 +86,7 @@ func (mv *MarketView) drawHeader(screen *ebiten.Image) {
 	}
 	indices := []uint16{0, 1, 2, 0, 2, 3}
 	screen.DrawTriangles(vertices, indices, drawing.WhitePixel, &ebiten.DrawTrianglesOptions{})
-	
+
 	// Nation名テキスト
 	opt := &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(10, 30)
@@ -101,23 +101,23 @@ func (mv *MarketView) drawBackButton(screen *ebiten.Image) {
 // drawCardPacks CardPack一覧を描画
 func (mv *MarketView) drawCardPacks(screen *ebiten.Image) {
 	cardPacks := mv.getVisibleCardPacks()
-	
+
 	// CardPack表示領域: 260x80 × 6個
 	// 配置: (0,60,260,80), (260,60,260,80), (0,140,260,80), (260,140,260,80), (0,220,260,80), (260,220,260,80)
 	positions := [][4]float64{
-		{0, 60, 260, 80},     // 左上
-		{260, 60, 260, 80},   // 右上
-		{0, 140, 260, 80},    // 左中
-		{260, 140, 260, 80},  // 右中
-		{0, 220, 260, 80},    // 左下
-		{260, 220, 260, 80},  // 右下
+		{0, 60, 260, 80},    // 左上
+		{260, 60, 260, 80},  // 右上
+		{0, 140, 260, 80},   // 左中
+		{260, 140, 260, 80}, // 右中
+		{0, 220, 260, 80},   // 左下
+		{260, 220, 260, 80}, // 右下
 	}
-	
+
 	for i, cardPack := range cardPacks {
 		if i >= 6 { // 最大6つまで表示
 			break
 		}
-		
+
 		pos := positions[i]
 		mv.drawCardPack(screen, cardPack, i, pos[0], pos[1], pos[2], pos[3])
 	}
@@ -134,22 +134,22 @@ func (mv *MarketView) drawCardPack(screen *ebiten.Image, cardPack *core.CardPack
 	}
 	indices := []uint16{0, 1, 2, 0, 2, 3}
 	screen.DrawTriangles(vertices, indices, drawing.WhitePixel, &ebiten.DrawTrianglesOptions{})
-	
+
 	// CardPack画像 (0,60,40,40) -> 相対位置(0,0,40,40)
 	mv.drawCardPackImage(screen, x, y, 40, 40)
-	
+
 	// CardPack名 (40,60,220,20) -> 相対位置(40,0,220,20)
 	opt := &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(x+40, y)
 	cardPackName := fmt.Sprintf("Pack %s", cardPack.CardPackID)
 	drawing.DrawText(screen, cardPackName, 14, opt)
-	
+
 	// CardPack説明 (40,80,220,40) -> 相対位置(40,20,220,40)
 	opt = &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(x+40, y+20)
 	description := "Card pack with various cards" // ダミーテキスト
 	drawing.DrawText(screen, description, 10, opt)
-	
+
 	// CardPackの値段 (0,120,260,20) -> 相対位置(0,60,260,20)
 	mv.drawCardPackPrice(screen, index, x, y+60, 260, 20)
 }
@@ -159,7 +159,7 @@ func (mv *MarketView) drawCardPackImage(screen *ebiten.Image, x, y, width, heigh
 	// 24x32の画像（ダミーとして矩形）
 	imageX := x + (width-24)/2
 	imageY := y + (height-32)/2
-	
+
 	vertices := []ebiten.Vertex{
 		{DstX: float32(imageX), DstY: float32(imageY), SrcX: 0, SrcY: 0, ColorR: 0.6, ColorG: 0.4, ColorB: 0.2, ColorA: 1},
 		{DstX: float32(imageX + 24), DstY: float32(imageY), SrcX: 0, SrcY: 0, ColorR: 0.6, ColorG: 0.4, ColorB: 0.2, ColorA: 1},
@@ -177,7 +177,7 @@ func (mv *MarketView) drawCardPackPrice(screen *ebiten.Image, index int, x, y, w
 	if price == nil {
 		return
 	}
-	
+
 	// Resource1種類につき60x20で表示
 	resourceTypes := []struct {
 		name  string
@@ -189,18 +189,18 @@ func (mv *MarketView) drawCardPackPrice(screen *ebiten.Image, index int, x, y, w
 		{"Iron", price.Iron},
 		{"Mana", price.Mana},
 	}
-	
+
 	currentX := x
 	for _, resource := range resourceTypes {
 		if resource.value > 0 && currentX < x+width-60 {
 			// Resource画像(20x20)とPrice数字(40x20)
 			icon := GetResourceIcon(resource.name)
-			
+
 			// Resourceアイコン
 			opt := &ebiten.DrawImageOptions{}
 			opt.GeoM.Translate(currentX, y)
 			drawing.DrawText(screen, icon, 12, opt)
-			
+
 			// Price数字（購入不可能な場合は赤文字）
 			opt = &ebiten.DrawImageOptions{}
 			opt.GeoM.Translate(currentX+20, y)
@@ -209,7 +209,7 @@ func (mv *MarketView) drawCardPackPrice(screen *ebiten.Image, index int, x, y, w
 			}
 			priceText := fmt.Sprintf("%d", resource.value)
 			drawing.DrawText(screen, priceText, 12, opt)
-			
+
 			currentX += 60
 		}
 	}
@@ -232,7 +232,7 @@ func (mv *MarketView) getCardPackPrice(index int) (*core.ResourceQuantity, bool)
 	if mv.Treasury == nil {
 		return nil, false
 	}
-	
+
 	switch n := mv.Nation.(type) {
 	case *core.MyNation:
 		if n.Market != nil && index < len(n.Market.Items) {
@@ -247,6 +247,6 @@ func (mv *MarketView) getCardPackPrice(index int) (*core.ResourceQuantity, bool)
 			return &item.Price, canPurchase
 		}
 	}
-	
+
 	return nil, false
 }

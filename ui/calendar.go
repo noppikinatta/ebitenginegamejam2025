@@ -37,10 +37,10 @@ func (cv *CalendarView) Draw(screen *ebiten.Image) {
 	// Turnから年月を取得
 	turn := core.Turn(cv.CurrentTurn)
 	year, month := turn.YearMonth()
-	
+
 	// YYYY/MM形式で表示
 	text := fmt.Sprintf("%04d/%02d", year, month)
-	
+
 	// 位置: (520,0,120,20)
 	opt := &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(520, 0)

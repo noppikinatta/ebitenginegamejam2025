@@ -17,9 +17,9 @@ type OtherNationPoint struct {
 
 // WildernessPoint 制圧可能な野生のPoint
 type WildernessPoint struct {
-	Controlled bool        // 制圧済みかどうか
-	Enemy      *Enemy      // 守っているEnemy
-	Territory  *Territory  // 制圧後のTerritory
+	Controlled bool       // 制圧済みかどうか
+	Enemy      *Enemy     // 守っているEnemy
+	Territory  *Territory // 制圧後のTerritory
 }
 
 // BossPoint ボスのPoint
@@ -40,12 +40,12 @@ func (mg *MapGrid) GetPoint(x, y int) Point {
 	if x < 0 || x >= mg.SizeX || y < 0 || y >= mg.SizeY {
 		return nil
 	}
-	
+
 	index := y*mg.SizeX + x
 	if index >= len(mg.Points) {
 		return nil
 	}
-	
+
 	return mg.Points[index]
 }
 
@@ -86,9 +86,9 @@ func (mg *MapGrid) CanInteract(x, y int) bool {
 	for len(queue) > 0 {
 		current := queue[0]
 		queue = queue[1:]
-		
+
 		currentX, currentY := current[0], current[1]
-		
+
 		// 目標座標に到達した場合
 		if currentX == x && currentY == y {
 			return true
@@ -98,22 +98,22 @@ func (mg *MapGrid) CanInteract(x, y int) bool {
 		directions := [][2]int{{0, 1}, {1, 0}, {0, -1}, {-1, 0}}
 		for _, dir := range directions {
 			nextX, nextY := currentX+dir[0], currentY+dir[1]
-			
+
 			// 範囲内チェック
 			if nextX < 0 || nextX >= mg.SizeX || nextY < 0 || nextY >= mg.SizeY {
 				continue
 			}
-			
+
 			nextIndex := nextY*mg.SizeX + nextX
 			if visited[nextIndex] {
 				continue
 			}
-			
+
 			point := mg.GetPoint(nextX, nextY)
 			if point == nil {
 				continue
 			}
-			
+
 			// 操作可能なPointかどうかチェック
 			canPass := false
 			switch p := point.(type) {
@@ -126,7 +126,7 @@ func (mg *MapGrid) CanInteract(x, y int) bool {
 			case *WildernessPoint:
 				canPass = p.Controlled // 制圧済みのみ通過可能
 			}
-			
+
 			if canPass {
 				visited[nextIndex] = true
 				queue = append(queue, [2]int{nextX, nextY})

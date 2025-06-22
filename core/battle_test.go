@@ -38,9 +38,9 @@ func TestBattlefield_CanBeat(t *testing.T) {
 	}
 
 	tests := []struct {
-		name         string
-		battlefield  *core.Battlefield
-		expected     bool
+		name        string
+		battlefield *core.Battlefield
+		expected    bool
 	}{
 		{
 			name: "戦闘力が足りない場合",
@@ -289,4 +289,4 @@ func TestBattlefield_WithEnemySkills(t *testing.T) {
 	}
 }
 
-// mockEnemySkillはenemy_test.goで定義されています 
+// mockEnemySkillはenemy_test.goで定義されています

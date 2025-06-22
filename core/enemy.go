@@ -11,10 +11,10 @@ type EnemySkillID string
 
 // Enemy は敵を表す構造体
 type Enemy struct {
-	EnemyID       EnemyID
-	EnemyType     EnemyType
-	Power         float64
-	Skills        []EnemySkill
+	EnemyID        EnemyID
+	EnemyType      EnemyType
+	Power          float64
+	Skills         []EnemySkill
 	BattleCardSlot int // このEnemyとの戦闘で、プレイヤーが出せるBattleCardの枚数。
 }
 

@@ -78,7 +78,7 @@ func TestMapGrid_CanInteract(t *testing.T) {
 		&core.MyNationPoint{MyNation: myNation},
 		controlledWilderness,
 		uncontrolledWilderness,
-		// Row 1  
+		// Row 1
 		&core.OtherNationPoint{OtherNation: otherNation},
 		controlledWilderness,
 		&core.BossPoint{Boss: boss},
@@ -352,7 +352,7 @@ func TestMapGrid_GetPoint(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			point := mapGrid.GetPoint(tt.x, tt.y)
-			
+
 			if tt.expectedNil {
 				if point != nil {
 					t.Errorf("GetPoint(%d, %d) = %v, want nil", tt.x, tt.y, point)
@@ -366,4 +366,4 @@ func TestMapGrid_GetPoint(t *testing.T) {
 			}
 		})
 	}
-} 
+}

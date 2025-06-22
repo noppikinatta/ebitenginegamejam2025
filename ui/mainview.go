@@ -24,7 +24,7 @@ type MainView struct {
 	Market      *MarketView
 	Battle      *BattleView
 	Territory   *TerritoryView
-	
+
 	// ゲーム状態
 	GameState *core.GameState
 }

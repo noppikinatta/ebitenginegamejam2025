@@ -18,10 +18,10 @@ func TestMarketItem_CanPurchase(t *testing.T) {
 	}
 
 	tests := []struct {
-		name      string
-		item      *core.MarketItem
-		treasury  *core.Treasury
-		expected  bool
+		name     string
+		item     *core.MarketItem
+		treasury *core.Treasury
+		expected bool
 	}{
 		{
 			name: "十分な資源がある場合",
@@ -384,7 +384,7 @@ func TestMarket_Purchase(t *testing.T) {
 			}
 
 			cardPack, ok := market.Purchase(tt.index, treasury)
-			
+
 			if ok != tt.expectedOk {
 				t.Errorf("Purchase() ok = %v, want %v", ok, tt.expectedOk)
 			}
@@ -402,4 +402,4 @@ func TestMarket_Purchase(t *testing.T) {
 			}
 		})
 	}
-} 
+}
