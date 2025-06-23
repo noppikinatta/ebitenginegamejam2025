@@ -4,32 +4,38 @@ import (
 	"strconv"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/noppikinatta/bamenn"
 	"github.com/noppikinatta/ebitenginegamejam2025/core"
 	"github.com/noppikinatta/ebitenginegamejam2025/ui"
-	"github.com/noppikinatta/nyuuryoku"
 )
 
 type InGame struct {
-	gameState *core.GameState
-	gameUI    *ui.GameUI
-	mouse     *nyuuryoku.Mouse
+	gameState  *core.GameState
+	gameUI     *ui.GameUI
+	input      *ui.Input
+	nextScene  ebiten.Game
+	sequence   *bamenn.Sequence
+	transition bamenn.Transition
 }
 
-func NewInGame() *InGame {
+func NewInGame(input *ui.Input) *InGame {
 	// ダミーGameStateを作成（Game Jam向け簡易実装）
 	gameState := createDummyGameState()
 
 	// GameUIを初期化
 	gameUI := ui.NewGameUI(gameState)
 
-	// nyuuryoku Mouseを初期化
-	mouse := nyuuryoku.NewMouse()
-
 	return &InGame{
 		gameState: gameState,
 		gameUI:    gameUI,
-		mouse:     mouse,
+		input:     input,
 	}
+}
+
+func (g *InGame) Init(nextScene ebiten.Game, sequence *bamenn.Sequence, transition bamenn.Transition) {
+	g.nextScene = nextScene
+	g.sequence = sequence
+	g.transition = transition
 }
 
 func (g *InGame) Update() error {
@@ -37,13 +43,8 @@ func (g *InGame) Update() error {
 	mouseX, mouseY := ebiten.CursorPosition()
 	g.gameUI.SetMousePosition(mouseX, mouseY)
 
-	// Input構造体を作成
-	input := &ui.Input{
-		Mouse: g.mouse,
-	}
-
 	// GameUIの入力処理
-	if err := g.gameUI.HandleInput(input); err != nil {
+	if err := g.gameUI.HandleInput(g.input); err != nil {
 		return err
 	}
 

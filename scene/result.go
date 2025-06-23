@@ -5,6 +5,7 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"github.com/noppikinatta/ebitenginegamejam2025/ui"
 )
 
 type GameHistory struct {
@@ -13,9 +14,10 @@ type GameHistory struct {
 
 type Result struct {
 	history *GameHistory
+	input   *ui.Input
 }
 
-func NewResult() *Result {
+func NewResult(input *ui.Input) *Result {
 	return &Result{
 		history: &GameHistory{
 			entries: []string{
@@ -24,6 +26,7 @@ func NewResult() *Result {
 				"Kingdom Year 1000, Month 8: Boss Defeated",
 			},
 		},
+		input: input,
 	}
 }
 
