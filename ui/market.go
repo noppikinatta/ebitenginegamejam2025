@@ -21,8 +21,10 @@ type MarketView struct {
 }
 
 // NewMarketView MarketViewを作成する
-func NewMarketView() *MarketView {
-	return &MarketView{}
+func NewMarketView(onBackClicked func()) *MarketView {
+	return &MarketView{
+		OnBackClicked: onBackClicked,
+	}
 }
 
 // SetNation 表示する国家を設定
@@ -42,9 +44,19 @@ func (mv *MarketView) SetGameState(gameState *core.GameState) {
 
 // HandleInput 入力処理
 func (mv *MarketView) HandleInput(input *Input) error {
-	// TODO: マウスクリック処理
-	// - 戻るボタンのクリック判定
-	// - CardPackのクリック判定と購入処理
+	if input.Mouse.IsJustReleased(ebiten.MouseButtonLeft) {
+		cursorX, cursorY := input.Mouse.CursorPosition()
+
+		// 戻るボタンのクリック判定 (480,20,40,40)
+		if cursorX >= 480 && cursorX < 520 && cursorY >= 20 && cursorY < 60 {
+			if mv.OnBackClicked != nil {
+				mv.OnBackClicked()
+				return nil
+			}
+		}
+
+		// TODO: CardPackのクリック判定と購入処理
+	}
 	return nil
 }
 

@@ -21,8 +21,10 @@ type TerritoryView struct {
 }
 
 // NewTerritoryView TerritoryViewを作成する
-func NewTerritoryView() *TerritoryView {
-	return &TerritoryView{}
+func NewTerritoryView(onBackClicked func()) *TerritoryView {
+	return &TerritoryView{
+		OnBackClicked: onBackClicked,
+	}
 }
 
 // SetTerritory 表示するTerritoryを設定
@@ -70,9 +72,19 @@ func (tv *TerritoryView) GetCurrentYield() core.ResourceQuantity {
 
 // HandleInput 入力処理
 func (tv *TerritoryView) HandleInput(input *Input) error {
-	// TODO: マウスクリック処理
-	// - 戻るボタンのクリック判定
-	// - StructureCardのクリック判定（CardDeckに戻す）
+	if input.Mouse.IsJustReleased(ebiten.MouseButtonLeft) {
+		cursorX, cursorY := input.Mouse.CursorPosition()
+
+		// 戻るボタンのクリック判定 (480,20,40,40)
+		if cursorX >= 480 && cursorX < 520 && cursorY >= 20 && cursorY < 60 {
+			if tv.OnBackClicked != nil {
+				tv.OnBackClicked()
+				return nil
+			}
+		}
+
+		// TODO: StructureCardのクリック判定（CardDeckに戻す）
+	}
 	return nil
 }
 

@@ -19,11 +19,11 @@ type MapGridView struct {
 	CellLocations []geom.PointF
 
 	// View切り替えのコールバック
-	OnPointClicked func(point core.Point, viewType ViewType)
+	OnPointClicked func(point core.Point)
 }
 
 // NewMapGridView MapGridViewを作成する
-func NewMapGridView(gameState *core.GameState) *MapGridView {
+func NewMapGridView(gameState *core.GameState, onPointClicked func(point core.Point)) *MapGridView {
 	cellSize := geom.PointF{X: 520.0 / 5.0, Y: 280.0 / 5.0}
 	cellLocations := make([]geom.PointF, 25)
 	for y := 0; y < 5; y++ {
@@ -38,6 +38,7 @@ func NewMapGridView(gameState *core.GameState) *MapGridView {
 		TopLeft:       geom.PointF{X: 0, Y: 20},
 		CellSize:      cellSize,
 		CellLocations: cellLocations,
+		OnPointClicked: onPointClicked,
 	}
 }
 
@@ -70,7 +71,9 @@ func (mgv *MapGridView) HandleInput(input *Input) error {
 		return nil
 	}
 
-	// TODO: Pointの種類によって処理を分岐する
+	if mgv.OnPointClicked != nil {
+		mgv.OnPointClicked(point)
+	}
 	return nil
 }
 

@@ -31,14 +31,40 @@ type MainView struct {
 
 // NewMainView MainViewを作成する
 func NewMainView(gameState *core.GameState) *MainView {
-	return &MainView{
+	mv := &MainView{
 		CurrentView: ViewTypeMapGrid, // 初期表示はMapGridView
-		MapGrid:     NewMapGridView(gameState),
-		Market:      NewMarketView(),
-		Battle:      NewBattleView(),
-		Territory:   NewTerritoryView(),
 		GameState:   gameState,
 	}
+
+	onBack := func() {
+		mv.SwitchView(ViewTypeMapGrid)
+	}
+
+	mv.Market = NewMarketView(onBack)
+	mv.Battle = NewBattleView(onBack)
+	mv.Territory = NewTerritoryView(onBack)
+
+	mv.MapGrid = NewMapGridView(gameState, func(point core.Point) {
+		mv.SetSelectedPoint(point)
+		switch p := point.(type) {
+		case *core.MyNationPoint:
+			mv.SetSelectedNation(p.MyNation)
+			mv.SwitchView(ViewTypeMarket)
+		case *core.OtherNationPoint:
+			mv.SetSelectedNation(p.OtherNation)
+			mv.SwitchView(ViewTypeMarket)
+		case *core.WildernessPoint:
+			if p.Controlled {
+				mv.SwitchView(ViewTypeTerritory)
+			} else {
+				mv.SwitchView(ViewTypeBattle)
+			}
+		case *core.BossPoint:
+			mv.SwitchView(ViewTypeBattle)
+		}
+	})
+
+	return mv
 }
 
 // SwitchView 表示するViewを切り替える

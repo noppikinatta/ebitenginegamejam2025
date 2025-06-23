@@ -23,9 +23,10 @@ type BattleView struct {
 }
 
 // NewBattleView BattleViewを作成する
-func NewBattleView() *BattleView {
+func NewBattleView(onBackClicked func()) *BattleView {
 	return &BattleView{
-		BattleCards: make([]*core.BattleCard, 0, 12), // 最大12枚
+		BattleCards:   make([]*core.BattleCard, 0, 12), // 最大12枚
+		OnBackClicked: onBackClicked,
 	}
 }
 
@@ -89,10 +90,20 @@ func (bv *BattleView) CanDefeatEnemy() bool {
 
 // HandleInput 入力処理
 func (bv *BattleView) HandleInput(input *Input) error {
-	// TODO: マウスクリック処理
-	// - 戻るボタンのクリック判定
-	// - 敵画像のクリック判定（勝利処理）
-	// - BattleCardのクリック判定（CardDeckに戻す）
+	if input.Mouse.IsJustReleased(ebiten.MouseButtonLeft) {
+		cursorX, cursorY := input.Mouse.CursorPosition()
+
+		// 戻るボタンのクリック判定 (480,20,40,40)
+		if cursorX >= 480 && cursorX < 520 && cursorY >= 20 && cursorY < 60 {
+			if bv.OnBackClicked != nil {
+				bv.OnBackClicked()
+				return nil
+			}
+		}
+
+		// TODO: 敵画像のクリック判定（勝利処理）
+		// TODO: BattleCardのクリック判定（CardDeckに戻す）
+	}
 	return nil
 }
 
