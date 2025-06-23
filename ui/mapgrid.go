@@ -35,11 +35,22 @@ func (mgv *MapGridView) HandleInput(input *Input) error {
 	}
 
 	cursorX, cursorY := input.Mouse.CursorPosition()
-	// FIXME: この計算がおかしい
-	cellX := int(cursorX / (520.0 / 5.0))
-	cellY := int(cursorY / (280.0 / 5.0))
+	// MapGridViewの領域は (0, 20) から始まり、サイズは (520, 280)
+	if cursorX < 0 || cursorX >= 520 || cursorY < 20 || cursorY >= 300 {
+		return nil
+	}
 
-	point := mgv.GameState.MapGrid.GetPoint(cellX, cellY)
+	cellWidth := 520.0 / 5.0
+	cellHeight := 280.0 / 5.0
+
+	cellX := int(float64(cursorX) / cellWidth)
+	// Y座標はMapGridView内での相対位置に変換
+	cellY := int((float64(cursorY) - 20) / cellHeight)
+
+	// (0,0)が左下なのでY座標を反転
+	gridY := 4 - cellY
+
+	point := mgv.GameState.MapGrid.GetPoint(cellX, gridY)
 	if point == nil {
 		return nil
 	}
@@ -66,8 +77,9 @@ func (mgv *MapGridView) Draw(screen *ebiten.Image) {
 			cellX := float64(x) * cellWidth
 			cellY := float64(y)*cellHeight + 20 // MainViewのY座標オフセット
 
-			// Pointを取得
-			point := mapGrid.GetPoint(x, y)
+			// Pointを取得 (0,0)が左下, (4,4)が右上になるようにY座標を反転
+			gridY := 4 - y
+			point := mapGrid.GetPoint(x, gridY)
 			if point == nil {
 				continue
 			}
@@ -80,15 +92,15 @@ func (mgv *MapGridView) Draw(screen *ebiten.Image) {
 			// Point名を描画（Point画像の下）
 			textX := cellX + cellWidth/2 - 20 // 中央寄せ（概算）
 			textY := imageY + 24 + 5
-			pointName := mgv.getPointName(x, y, point)
+			pointName := mgv.getPointName(x, gridY, point)
 
 			opt := &ebiten.DrawImageOptions{}
 			opt.GeoM.Translate(textX, textY)
 			drawing.DrawText(screen, pointName, 12, opt)
 
 			// 到達可能性の線を描画
-			if mgv.GameState.CanInteract(x, y) {
-				mgv.drawConnectionLines(screen, x, y, cellX+cellWidth/2, cellY+cellHeight/2)
+			if mgv.GameState.CanInteract(x, gridY) {
+				mgv.drawConnectionLines(screen, x, gridY, cellX+cellWidth/2, cellY+cellHeight/2)
 			}
 		}
 	}
@@ -166,8 +178,10 @@ func (mgv *MapGridView) drawConnectionLines(screen *ebiten.Image, x, y int, cent
 		// 隣接Pointが到達可能かチェック
 		if mgv.GameState.CanInteract(nextX, nextY) {
 			// 線を描画
+			// 描画Y座標は(0,0)が左下になるように反転
+			drawY := 4 - nextY
 			nextCenterX := float64(nextX)*cellWidth + cellWidth/2
-			nextCenterY := float64(nextY)*cellHeight + cellHeight/2 + 20
+			nextCenterY := float64(drawY)*cellHeight + cellHeight/2 + 20
 
 			mgv.drawLine(screen, centerX, centerY, nextCenterX, nextCenterY)
 		}

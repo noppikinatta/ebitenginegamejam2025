@@ -1,6 +1,8 @@
 package scene
 
 import (
+	"strconv"
+
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/noppikinatta/ebitenginegamejam2025/core"
 	"github.com/noppikinatta/ebitenginegamejam2025/ui"
@@ -87,17 +89,6 @@ func createDummyGameState() *core.GameState {
 		},
 	}
 
-	// ダミーのOtherNation作成
-	otherNation := &core.OtherNation{
-		Nation: core.Nation{
-			NationID: "ally_nation",
-			Market: &core.Market{
-				Level: 0.8,
-				Items: createDummyMarketItems(),
-			},
-		},
-	}
-
 	// ダミーのEnemy作成
 	enemy := &core.Enemy{
 		EnemyID:        "forest_orc",
@@ -115,48 +106,51 @@ func createDummyGameState() *core.GameState {
 		Skills:         []core.EnemySkill{},
 	}
 
-	// ダミーのTerritory作成
-	territory := &core.Territory{
-		TerritoryID: "forest_territory",
-		Cards:       []*core.StructureCard{},
-		CardSlot:    3,
-		BaseYield: core.ResourceQuantity{
-			Money: 8,
-			Food:  4,
-			Wood:  2,
-		},
-	}
-
 	// 5x5マップのPoint配置
 	points := make([]core.Point, 25)
 
-	// 中央にMyNationPoint
-	points[12] = &core.MyNationPoint{MyNation: myNation} // (2, 2)
-
-	// 隣接位置にOtherNationPoint
-	points[7] = &core.OtherNationPoint{OtherNation: otherNation} // (2, 1)
-
-	// 制圧済みWildernessPoint
-	points[11] = &core.WildernessPoint{ // (1, 2)
-		Controlled: true,
-		Enemy:      enemy,
-		Territory:  territory,
+	// 全てのインデックスにPointを配置
+	for i := 0; i < 25; i++ {
+		if i == 0 {
+			// points[0] = MyNationPoint
+			points[i] = &core.MyNationPoint{MyNation: myNation}
+		} else if i%3 == 0 && i != 24 {
+			// インデックスが3の倍数かつ24でない場合 = OtherNationPoint
+			otherNation := &core.OtherNation{
+				Nation: core.Nation{
+					NationID: core.NationID("ally_nation" + strconv.Itoa(i)),
+					Market: &core.Market{
+						Level: 0.8,
+						Items: createDummyMarketItems(),
+					},
+				},
+			}
+			points[i] = &core.OtherNationPoint{OtherNation: otherNation}
+		} else if i == 24 {
+			// points[24] = BossPoint
+			points[i] = &core.BossPoint{
+				Boss:     boss,
+				Defeated: false,
+			}
+		} else {
+			// その他 = WildernessPoint
+			territory := &core.Territory{
+				TerritoryID: core.TerritoryID("wilderness" + strconv.Itoa(i)),
+				Cards:       []*core.StructureCard{},
+				CardSlot:    3,
+				BaseYield: core.ResourceQuantity{
+					Money: 8,
+					Food:  4,
+					Wood:  2,
+				},
+			}
+			points[i] = &core.WildernessPoint{
+				Controlled: false,
+				Enemy:      enemy,
+				Territory:  territory,
+			}
+		}
 	}
-
-	// 未制圧WildernessPoint
-	points[13] = &core.WildernessPoint{ // (3, 2)
-		Controlled: false,
-		Enemy:      enemy,
-		Territory:  territory,
-	}
-
-	// BossPoint
-	points[24] = &core.BossPoint{ // (4, 4)
-		Boss:     boss,
-		Defeated: false,
-	}
-
-	// 残りはnilのまま（何もないマス）
 
 	// MapGrid作成
 	mapGrid := &core.MapGrid{
