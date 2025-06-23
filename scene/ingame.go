@@ -176,10 +176,31 @@ func createDummyGameState() *core.GameState {
 		MyNation:    myNation,
 		MapGrid:     mapGrid,
 		Treasury:    treasury,
+		CardDeck:    createDummyCardDeck(),
 		CurrentTurn: 1,
 	}
 
 	return gameState
+}
+
+func createDummyCardDeck() *core.CardDeck {
+	return &core.CardDeck{
+		Cards: core.Cards{
+			BattleCards: []*core.BattleCard{
+				{CardID: "swordsman", Power: 10, Type: "human"},
+				{CardID: "archer", Power: 8, Type: "human"},
+				{CardID: "cavalry", Power: 15, Type: "human"},
+			},
+			StructureCards: []*core.StructureCard{
+				{CardID: "wooden_wall"},
+				{CardID: "watch_tower"},
+			},
+			ResourceCards: []*core.ResourceCard{
+				{CardID: "gold_coin", ResourceQuantity: core.ResourceQuantity{Money: 10}},
+				{CardID: "bread", ResourceQuantity: core.ResourceQuantity{Food: 10}},
+			},
+		},
+	}
 }
 
 // createDummyMarketItems ダミーのMarketItem配列を作成
