@@ -123,14 +123,13 @@ func (mgv *MapGridView) drawPointImage(screen *ebiten.Image, x, y float64, point
 	// 24x24の矩形を描画（後でイラストに差し替え）
 	var color [4]float32
 
-	switch point.(type) {
+	switch typedPoint := point.(type) {
 	case *core.MyNationPoint:
 		color = [4]float32{0.2, 0.8, 0.2, 1} // 緑
 	case *core.OtherNationPoint:
 		color = [4]float32{0.2, 0.2, 0.8, 1} // 青
 	case *core.WildernessPoint:
-		wilderness := point.(*core.WildernessPoint)
-		if wilderness.Controlled {
+		if typedPoint.Controlled {
 			color = [4]float32{0.8, 0.8, 0.2, 1} // 黄（制圧済み）
 		} else {
 			color = [4]float32{0.8, 0.2, 0.2, 1} // 赤（未制圧）
