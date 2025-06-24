@@ -3,16 +3,26 @@ package core
 // MapGrid関連の実装（旧仕様コメントを削除し、実装に置き換え済み）
 
 // Point は、MapGrid上のPointを表すインターフェース
-type Point interface{}
+type Point interface {
+	Passable() bool
+}
 
 // MyNationPoint プレイヤー国家のPoint
 type MyNationPoint struct {
 	MyNation *MyNation
 }
 
+func (p *MyNationPoint) Passable() bool {
+	return true
+}
+
 // OtherNationPoint NPC国家のPoint
 type OtherNationPoint struct {
 	OtherNation *OtherNation
+}
+
+func (p *OtherNationPoint) Passable() bool {
+	return true
 }
 
 // WildernessPoint 制圧可能な野生のPoint
@@ -22,117 +32,106 @@ type WildernessPoint struct {
 	Territory  *Territory // 制圧後のTerritory
 }
 
+func (p *WildernessPoint) Passable() bool {
+	return p.Controlled
+}
+
 // BossPoint ボスのPoint
 type BossPoint struct {
 	Boss     *Enemy
 	Defeated bool // ボスが撃破されているかどうか
 }
 
+func (p *BossPoint) Passable() bool {
+	return false
+}
+
 // MapGrid ゲームのマップグリッド
 type MapGrid struct {
-	SizeX  int     // X方向のサイズ
-	SizeY  int     // Y方向のサイズ
-	Points []Point // Pointの一覧。インデックスは y*SizeX + x で計算
+	SizeX      int     // X方向のサイズ
+	SizeY      int     // Y方向のサイズ
+	Points     []Point // Pointの一覧。インデックスは y*SizeX + x で計算
+	accesibles []bool
 }
 
 // GetPoint 指定座標のPointを取得する
 func (m *MapGrid) GetPoint(x, y int) Point {
-	if x < 0 || x >= m.SizeX || y < 0 || y >= m.SizeY {
+	index, ok := m.IndexFromPoint(x, y)
+	if !ok {
 		return nil
 	}
-
-	index := y*m.SizeX + x
-	if index >= len(m.Points) {
-		return nil
-	}
-
 	return m.Points[index]
+}
+
+func (m *MapGrid) IndexFromPoint(x, y int) (int, bool) {
+	if x < 0 || x >= m.SizeX || y < 0 || y >= m.SizeY {
+		return 0, false
+	}
+	return y*m.SizeX + x, true
+}
+
+func (m *MapGrid) PointFromIndex(index int) (int, int, bool) {
+	if index < 0 || index >= len(m.Points) {
+		return 0, 0, false
+	}
+	return index % m.SizeX, index / m.SizeX, true
+}
+
+func (m *MapGrid) UpdateAccesibles() {
+	remainingIdxs := make([]int, 0, len(m.Points))
+	var ri int
+
+	if m.accesibles == nil {
+		m.accesibles = make([]bool, len(m.Points))
+	}
+
+	for i := range len(m.Points) {
+		m.accesibles[i] = false
+	}
+	m.accesibles[0] = true
+	remainingIdxs = append(remainingIdxs, 0)
+
+	for ri < len(remainingIdxs) {
+		idx := remainingIdxs[ri]
+		ri++
+
+		x, y, ok := m.PointFromIndex(idx)
+		if !ok {
+			continue
+		}
+
+		rightIdx, ok := m.IndexFromPoint(x+1, y)
+		if ok && !m.accesibles[rightIdx] {
+			p := m.Points[rightIdx]
+			m.accesibles[rightIdx] = true
+			if p.Passable() {
+				remainingIdxs = append(remainingIdxs, rightIdx)
+			}
+		}
+
+		upIdx, ok := m.IndexFromPoint(x, y+1)
+		if ok && !m.accesibles[upIdx] {
+			p := m.Points[upIdx]
+			m.accesibles[upIdx] = true
+			if p.Passable() {
+				remainingIdxs = append(remainingIdxs, upIdx)
+			}
+		}
+	}
 }
 
 // CanInteract 指定座標のPointが操作可能かどうかを判定する
 // MyNationPointから制圧済みのWildernessPointやOtherNationPoint、BossPointへの
 // 連続した制圧済みのルートが存在する場合のみ操作可能
 func (m *MapGrid) CanInteract(x, y int) bool {
-	// 範囲外チェック
-	if x < 0 || x >= m.SizeX || y < 0 || y >= m.SizeY {
+	if m.accesibles == nil {
+		m.UpdateAccesibles()
+	}
+
+	idx, ok := m.IndexFromPoint(x, y)
+	if !ok {
 		return false
 	}
 
-	// BFS (幅優先探索) で到達可能性を判定
-	visited := make([]bool, m.SizeX*m.SizeY)
-	queue := make([][2]int, 0)
-
-	// MyNationPointを探して開始点に設定
-	for startY := 0; startY < m.SizeY; startY++ {
-		for startX := 0; startX < m.SizeX; startX++ {
-			point := m.GetPoint(startX, startY)
-			if _, ok := point.(*MyNationPoint); ok {
-				queue = append(queue, [2]int{startX, startY})
-				visited[startY*m.SizeX+startX] = true
-				break
-			}
-		}
-		if len(queue) > 0 {
-			break // MyNationPointが見つかったら探索を開始
-		}
-	}
-
-	// MyNationPointが見つからない場合は操作不可
-	if len(queue) == 0 {
-		return false
-	}
-
-	// BFS実行
-	for len(queue) > 0 {
-		current := queue[0]
-		queue = queue[1:]
-
-		currentX, currentY := current[0], current[1]
-
-		// 目標座標に到達した場合
-		if currentX == x && currentY == y {
-			return true
-		}
-
-		// 隣接する4方向をチェック
-		directions := [][2]int{{0, 1}, {1, 0}, {0, -1}, {-1, 0}}
-		for _, dir := range directions {
-			nextX, nextY := currentX+dir[0], currentY+dir[1]
-
-			// 範囲内チェック
-			if nextX < 0 || nextX >= m.SizeX || nextY < 0 || nextY >= m.SizeY {
-				continue
-			}
-
-			nextIndex := nextY*m.SizeX + nextX
-			if visited[nextIndex] {
-				continue
-			}
-
-			point := m.GetPoint(nextX, nextY)
-			if point == nil {
-				continue
-			}
-
-			// 操作可能なPointかどうかチェック
-			canPass := false
-			switch p := point.(type) {
-			case *MyNationPoint:
-				canPass = true
-			case *OtherNationPoint:
-				canPass = true
-			case *BossPoint:
-				canPass = true
-			case *WildernessPoint:
-				canPass = p.Controlled // 制圧済みのみ通過可能
-			}
-
-			if canPass {
-				visited[nextIndex] = true
-				queue = append(queue, [2]int{nextX, nextY})
-			}
-		}
-	}
-
-	return false
+	return m.accesibles[idx]
 }
