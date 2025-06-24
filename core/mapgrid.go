@@ -36,39 +36,39 @@ type MapGrid struct {
 }
 
 // GetPoint 指定座標のPointを取得する
-func (mg *MapGrid) GetPoint(x, y int) Point {
-	if x < 0 || x >= mg.SizeX || y < 0 || y >= mg.SizeY {
+func (m *MapGrid) GetPoint(x, y int) Point {
+	if x < 0 || x >= m.SizeX || y < 0 || y >= m.SizeY {
 		return nil
 	}
 
-	index := y*mg.SizeX + x
-	if index >= len(mg.Points) {
+	index := y*m.SizeX + x
+	if index >= len(m.Points) {
 		return nil
 	}
 
-	return mg.Points[index]
+	return m.Points[index]
 }
 
 // CanInteract 指定座標のPointが操作可能かどうかを判定する
 // MyNationPointから制圧済みのWildernessPointやOtherNationPoint、BossPointへの
 // 連続した制圧済みのルートが存在する場合のみ操作可能
-func (mg *MapGrid) CanInteract(x, y int) bool {
+func (m *MapGrid) CanInteract(x, y int) bool {
 	// 範囲外チェック
-	if x < 0 || x >= mg.SizeX || y < 0 || y >= mg.SizeY {
+	if x < 0 || x >= m.SizeX || y < 0 || y >= m.SizeY {
 		return false
 	}
 
 	// BFS (幅優先探索) で到達可能性を判定
-	visited := make([]bool, mg.SizeX*mg.SizeY)
+	visited := make([]bool, m.SizeX*m.SizeY)
 	queue := make([][2]int, 0)
 
 	// MyNationPointを探して開始点に設定
-	for startY := 0; startY < mg.SizeY; startY++ {
-		for startX := 0; startX < mg.SizeX; startX++ {
-			point := mg.GetPoint(startX, startY)
+	for startY := 0; startY < m.SizeY; startY++ {
+		for startX := 0; startX < m.SizeX; startX++ {
+			point := m.GetPoint(startX, startY)
 			if _, ok := point.(*MyNationPoint); ok {
 				queue = append(queue, [2]int{startX, startY})
-				visited[startY*mg.SizeX+startX] = true
+				visited[startY*m.SizeX+startX] = true
 				break
 			}
 		}
@@ -100,16 +100,16 @@ func (mg *MapGrid) CanInteract(x, y int) bool {
 			nextX, nextY := currentX+dir[0], currentY+dir[1]
 
 			// 範囲内チェック
-			if nextX < 0 || nextX >= mg.SizeX || nextY < 0 || nextY >= mg.SizeY {
+			if nextX < 0 || nextX >= m.SizeX || nextY < 0 || nextY >= m.SizeY {
 				continue
 			}
 
-			nextIndex := nextY*mg.SizeX + nextX
+			nextIndex := nextY*m.SizeX + nextX
 			if visited[nextIndex] {
 				continue
 			}
 
-			point := mg.GetPoint(nextX, nextY)
+			point := m.GetPoint(nextX, nextY)
 			if point == nil {
 				continue
 			}

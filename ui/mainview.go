@@ -31,122 +31,122 @@ type MainView struct {
 
 // NewMainView MainViewを作成する
 func NewMainView(gameState *core.GameState) *MainView {
-	mv := &MainView{
+	m := &MainView{
 		CurrentView: ViewTypeMapGrid, // 初期表示はMapGridView
 		GameState:   gameState,
 	}
 
 	onBack := func() {
-		mv.SwitchView(ViewTypeMapGrid)
+		m.SwitchView(ViewTypeMapGrid)
 	}
 
-	mv.Market = NewMarketView(onBack)
-	mv.Battle = NewBattleView(onBack)
-	mv.Territory = NewTerritoryView(onBack)
+	m.Market = NewMarketView(onBack)
+	m.Battle = NewBattleView(onBack)
+	m.Territory = NewTerritoryView(onBack)
 
-	mv.MapGrid = NewMapGridView(gameState, func(point core.Point) {
-		mv.SetSelectedPoint(point)
+	m.MapGrid = NewMapGridView(gameState, func(point core.Point) {
+		m.SetSelectedPoint(point)
 		switch p := point.(type) {
 		case *core.MyNationPoint:
-			mv.SetSelectedNation(p.MyNation)
-			mv.SwitchView(ViewTypeMarket)
+			m.SetSelectedNation(p.MyNation)
+			m.SwitchView(ViewTypeMarket)
 		case *core.OtherNationPoint:
-			mv.SetSelectedNation(p.OtherNation)
-			mv.SwitchView(ViewTypeMarket)
+			m.SetSelectedNation(p.OtherNation)
+			m.SwitchView(ViewTypeMarket)
 		case *core.WildernessPoint:
 			if p.Controlled {
-				mv.SwitchView(ViewTypeTerritory)
+				m.SwitchView(ViewTypeTerritory)
 			} else {
-				mv.SwitchView(ViewTypeBattle)
+				m.SwitchView(ViewTypeBattle)
 			}
 		case *core.BossPoint:
-			mv.SwitchView(ViewTypeBattle)
+			m.SwitchView(ViewTypeBattle)
 		}
 	})
 
-	return mv
+	return m
 }
 
 // SwitchView 表示するViewを切り替える
-func (mv *MainView) SwitchView(viewType ViewType) {
-	mv.CurrentView = viewType
+func (m *MainView) SwitchView(viewType ViewType) {
+	m.CurrentView = viewType
 }
 
 // HandleInput 入力処理
-func (mv *MainView) HandleInput(input *Input) error {
+func (m *MainView) HandleInput(input *Input) error {
 	// 現在のViewに入力を転送
-	switch mv.CurrentView {
+	switch m.CurrentView {
 	case ViewTypeMapGrid:
-		if mv.MapGrid != nil {
-			return mv.MapGrid.HandleInput(input)
+		if m.MapGrid != nil {
+			return m.MapGrid.HandleInput(input)
 		}
 	case ViewTypeMarket:
-		if mv.Market != nil {
-			return mv.Market.HandleInput(input)
+		if m.Market != nil {
+			return m.Market.HandleInput(input)
 		}
 	case ViewTypeBattle:
-		if mv.Battle != nil {
-			return mv.Battle.HandleInput(input)
+		if m.Battle != nil {
+			return m.Battle.HandleInput(input)
 		}
 	case ViewTypeTerritory:
-		if mv.Territory != nil {
-			return mv.Territory.HandleInput(input)
+		if m.Territory != nil {
+			return m.Territory.HandleInput(input)
 		}
 	}
 	return nil
 }
 
 // Draw 描画処理
-func (mv *MainView) Draw(screen *ebiten.Image) {
+func (m *MainView) Draw(screen *ebiten.Image) {
 	// 現在のViewを描画
-	switch mv.CurrentView {
+	switch m.CurrentView {
 	case ViewTypeMapGrid:
-		if mv.MapGrid != nil {
-			mv.MapGrid.Draw(screen)
+		if m.MapGrid != nil {
+			m.MapGrid.Draw(screen)
 		}
 	case ViewTypeMarket:
-		if mv.Market != nil {
-			mv.Market.Draw(screen)
+		if m.Market != nil {
+			m.Market.Draw(screen)
 		}
 	case ViewTypeBattle:
-		if mv.Battle != nil {
-			mv.Battle.Draw(screen)
+		if m.Battle != nil {
+			m.Battle.Draw(screen)
 		}
 	case ViewTypeTerritory:
-		if mv.Territory != nil {
-			mv.Territory.Draw(screen)
+		if m.Territory != nil {
+			m.Territory.Draw(screen)
 		}
 	}
 }
 
 // GetCurrentView 現在表示中のViewタイプを取得
-func (mv *MainView) GetCurrentView() ViewType {
-	return mv.CurrentView
+func (m *MainView) GetCurrentView() ViewType {
+	return m.CurrentView
 }
 
 // SetSelectedNation MarketViewで表示する国家を設定
-func (mv *MainView) SetSelectedNation(nation interface{}) {
-	if mv.Market != nil {
-		mv.Market.SetNation(nation)
+func (m *MainView) SetSelectedNation(nation interface{}) {
+	if m.Market != nil {
+		m.Market.SetNation(nation)
 	}
 }
 
 // SetSelectedPoint BattleViewやTerritoryViewで表示するPointを設定
-func (mv *MainView) SetSelectedPoint(point core.Point) {
+func (m *MainView) SetSelectedPoint(point core.Point) {
 	switch p := point.(type) {
 	case *core.WildernessPoint:
 		if p.Controlled {
-			if mv.Territory != nil {
-				mv.Territory.SetTerritory(p.Territory)
+			if m.Territory != nil {
+				m.Territory.SetTerritory(p.Territory)
 			}
 		} else {
-			if mv.Battle != nil {
-				mv.Battle.SetEnemy(p.Enemy)
+			if m.Battle != nil {
+				m.Battle.SetEnemy(p.Enemy)
 			}
 		}
 	case *core.BossPoint:
-		if mv.Battle != nil {
-			mv.Battle.SetEnemy(p.Boss)
+		if m.Battle != nil {
+			m.Battle.SetEnemy(p.Boss)
 		}
 	}
 }

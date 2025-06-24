@@ -43,47 +43,47 @@ func NewMapGridView(gameState *core.GameState, onPointClicked func(point core.Po
 }
 
 // HandleInput 入力処理
-func (mgv *MapGridView) HandleInput(input *Input) error {
+func (m *MapGridView) HandleInput(input *Input) error {
 	justReleased := input.Mouse.IsJustReleased(ebiten.MouseButtonLeft)
 	if !justReleased {
 		return nil
 	}
 
 	cursorX, cursorY := input.Mouse.CursorPosition()
-	relativeX := float64(cursorX) - mgv.TopLeft.X
-	relativeY := float64(cursorY) - mgv.TopLeft.Y
+	relativeX := float64(cursorX) - m.TopLeft.X
+	relativeY := float64(cursorY) - m.TopLeft.Y
 
-	viewWidth := mgv.CellSize.X * 5
-	viewHeight := mgv.CellSize.Y * 5
+	viewWidth := m.CellSize.X * 5
+	viewHeight := m.CellSize.Y * 5
 
 	if relativeX < 0 || relativeX >= viewWidth || relativeY < 0 || relativeY >= viewHeight {
 		return nil
 	}
 
-	drawGridX := int(relativeX / mgv.CellSize.X)
-	drawGridY := int(relativeY / mgv.CellSize.Y)
+	drawGridX := int(relativeX / m.CellSize.X)
+	drawGridY := int(relativeY / m.CellSize.Y)
 
 	// (0,0)が左下なのでY座標を反転
 	gridY := 4 - drawGridY
 
-	point := mgv.GameState.MapGrid.GetPoint(drawGridX, gridY)
+	point := m.GameState.MapGrid.GetPoint(drawGridX, gridY)
 	if point == nil {
 		return nil
 	}
 
-	if mgv.OnPointClicked != nil {
-		mgv.OnPointClicked(point)
+	if m.OnPointClicked != nil {
+		m.OnPointClicked(point)
 	}
 	return nil
 }
 
 // Draw 描画処理
-func (mgv *MapGridView) Draw(screen *ebiten.Image) {
-	if mgv.GameState == nil || mgv.GameState.MapGrid == nil {
+func (m *MapGridView) Draw(screen *ebiten.Image) {
+	if m.GameState == nil || m.GameState.MapGrid == nil {
 		return
 	}
 
-	mapGrid := mgv.GameState.MapGrid
+	mapGrid := m.GameState.MapGrid
 
 	for y := 0; y < 5; y++ {
 		for x := 0; x < 5; x++ {
@@ -93,36 +93,36 @@ func (mgv *MapGridView) Draw(screen *ebiten.Image) {
 			}
 
 			// セルの左上座標を取得
-			cellTopLeft := mgv.CellLocations[y*5+x]
-			screenX := cellTopLeft.X + mgv.TopLeft.X
-			screenY := cellTopLeft.Y + mgv.TopLeft.Y
+			cellTopLeft := m.CellLocations[y*5+x]
+			screenX := cellTopLeft.X + m.TopLeft.X
+			screenY := cellTopLeft.Y + m.TopLeft.Y
 
 			// Point画像を描画（24x24、セル中央）
-			imageX := screenX + (mgv.CellSize.X-24)/2
-			imageY := screenY + (mgv.CellSize.Y-24)/2 - 10 // 文字のスペースを考慮
-			mgv.drawPointImage(screen, imageX, imageY, point)
+			imageX := screenX + (m.CellSize.X-24)/2
+			imageY := screenY + (m.CellSize.Y-24)/2 - 10 // 文字のスペースを考慮
+			m.drawPointImage(screen, imageX, imageY, point)
 
 			// Point名を描画（Point画像の下）
-			textX := screenX + mgv.CellSize.X/2 - 20 // 中央寄せ（概算）
+			textX := screenX + m.CellSize.X/2 - 20 // 中央寄せ（概算）
 			textY := imageY + 24 + 5
-			pointName := mgv.getPointName(x, y, point)
+			pointName := m.getPointName(x, y, point)
 
 			opt := &ebiten.DrawImageOptions{}
 			opt.GeoM.Translate(textX, textY)
 			drawing.DrawText(screen, pointName, 12, opt)
 
 			// 到達可能性の線を描画
-			if mgv.GameState.CanInteract(x, y) {
-				cellCenterX := screenX + mgv.CellSize.X/2
-				cellCenterY := screenY + mgv.CellSize.Y/2
-				mgv.drawConnectionLines(screen, x, y, cellCenterX, cellCenterY)
+			if m.GameState.CanInteract(x, y) {
+				cellCenterX := screenX + m.CellSize.X/2
+				cellCenterY := screenY + m.CellSize.Y/2
+				m.drawConnectionLines(screen, x, y, cellCenterX, cellCenterY)
 			}
 		}
 	}
 }
 
 // drawPointImage Pointの画像を描画
-func (mgv *MapGridView) drawPointImage(screen *ebiten.Image, x, y float64, point core.Point) {
+func (m *MapGridView) drawPointImage(screen *ebiten.Image, x, y float64, point core.Point) {
 	// 24x24の矩形を描画（後でイラストに差し替え）
 	var color [4]float32
 
@@ -154,7 +154,7 @@ func (mgv *MapGridView) drawPointImage(screen *ebiten.Image, x, y float64, point
 }
 
 // getPointName Point名を取得
-func (mgv *MapGridView) getPointName(x, y int, point core.Point) string {
+func (m *MapGridView) getPointName(x, y int, point core.Point) string {
 	switch p := point.(type) {
 	case *core.MyNationPoint:
 		return "My Nation"
@@ -174,7 +174,7 @@ func (mgv *MapGridView) getPointName(x, y int, point core.Point) string {
 }
 
 // drawConnectionLines 到達可能なPointへの線を描画
-func (mgv *MapGridView) drawConnectionLines(screen *ebiten.Image, x, y int, centerX, centerY float64) {
+func (m *MapGridView) drawConnectionLines(screen *ebiten.Image, x, y int, centerX, centerY float64) {
 	// 隣接する4方向をチェック
 	directions := [][2]int{{0, 1}, {1, 0}, {0, -1}, {-1, 0}}
 
@@ -187,21 +187,21 @@ func (mgv *MapGridView) drawConnectionLines(screen *ebiten.Image, x, y int, cent
 		}
 
 		// 隣接Pointが到達可能かチェック
-		if mgv.GameState.CanInteract(nextX, nextY) {
+		if m.GameState.CanInteract(nextX, nextY) {
 			// 線を描画
-			nextCellTopLeft := mgv.CellLocations[nextY*5+nextX]
-			nextScreenX := nextCellTopLeft.X + mgv.TopLeft.X
-			nextScreenY := nextCellTopLeft.Y + mgv.TopLeft.Y
-			nextCenterX := nextScreenX + mgv.CellSize.X/2
-			nextCenterY := nextScreenY + mgv.CellSize.Y/2
+			nextCellTopLeft := m.CellLocations[nextY*5+nextX]
+			nextScreenX := nextCellTopLeft.X + m.TopLeft.X
+			nextScreenY := nextCellTopLeft.Y + m.TopLeft.Y
+			nextCenterX := nextScreenX + m.CellSize.X/2
+			nextCenterY := nextScreenY + m.CellSize.Y/2
 
-			mgv.drawLine(screen, centerX, centerY, nextCenterX, nextCenterY)
+			m.drawLine(screen, centerX, centerY, nextCenterX, nextCenterY)
 		}
 	}
 }
 
 // drawLine 2点間に線を描画
-func (mgv *MapGridView) drawLine(screen *ebiten.Image, x1, y1, x2, y2 float64) {
+func (m *MapGridView) drawLine(screen *ebiten.Image, x1, y1, x2, y2 float64) {
 	// 簡単な線描画（太さ2ピクセル）
 	vertices := []ebiten.Vertex{
 		{DstX: float32(x1), DstY: float32(y1), SrcX: 0, SrcY: 0, ColorR: 1, ColorG: 1, ColorB: 1, ColorA: 0.8},
