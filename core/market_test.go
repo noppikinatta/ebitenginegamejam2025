@@ -198,20 +198,20 @@ func TestMarket_VisibleCardPacks(t *testing.T) {
 				Items: items,
 			}
 
-			result := market.VisibleCardPacks()
+			result := market.VisibleMarketItems()
 			if len(result) != tt.expectedCount {
-				t.Errorf("VisibleCardPacks() returned %d packs, want %d", len(result), tt.expectedCount)
+				t.Errorf("VisibleMarketItems() returned %d packs, want %d", len(result), tt.expectedCount)
 				return
 			}
 
 			// 期待されるCardPackIDが含まれているかチェック
-			for i, pack := range result {
+			for i, item := range result {
 				if i >= len(tt.expectedPacks) {
-					t.Errorf("Unexpected pack at index %d: %v", i, pack.CardPackID)
+					t.Errorf("Unexpected pack at index %d: %v", i, item.CardPack.CardPackID)
 					continue
 				}
-				if string(pack.CardPackID) != tt.expectedPacks[i] {
-					t.Errorf("VisibleCardPacks()[%d] = %v, want %v", i, pack.CardPackID, tt.expectedPacks[i])
+				if string(item.CardPack.CardPackID) != tt.expectedPacks[i] {
+					t.Errorf("VisibleCardPacks()[%d] = %v, want %v", i, item.CardPack.CardPackID, tt.expectedPacks[i])
 				}
 			}
 		})

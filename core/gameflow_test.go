@@ -44,7 +44,7 @@ func TestGameState_AddYield(t *testing.T) {
 
 	// テスト用のMyNation
 	myNation := &core.MyNation{
-		Nation: core.Nation{
+		BaseNation: core.BaseNation{
 			NationID: "player",
 			Market:   &core.Market{Level: 1.0, Items: []*core.MarketItem{}},
 		},
@@ -94,7 +94,7 @@ func TestGameState_AddYield(t *testing.T) {
 
 func TestGameState_NextTurn(t *testing.T) {
 	myNation := &core.MyNation{
-		Nation: core.Nation{
+		BaseNation: core.BaseNation{
 			NationID: "player",
 			Market:   &core.Market{Level: 1.0, Items: []*core.MarketItem{}},
 		},
@@ -163,7 +163,7 @@ func TestGameState_IsVictory(t *testing.T) {
 			}
 
 			myNation := &core.MyNation{
-				Nation: core.Nation{
+				BaseNation: core.BaseNation{
 					NationID: "player",
 					Market:   &core.Market{Level: 1.0, Items: []*core.MarketItem{}},
 				},
@@ -193,7 +193,7 @@ func TestGameState_IsVictory(t *testing.T) {
 
 func TestGameState_CanInteract(t *testing.T) {
 	myNation := &core.MyNation{
-		Nation: core.Nation{
+		BaseNation: core.BaseNation{
 			NationID: "player",
 			Market:   &core.Market{Level: 1.0, Items: []*core.MarketItem{}},
 		},
@@ -278,7 +278,7 @@ func TestGameState_CanInteract(t *testing.T) {
 
 func TestGameState_GetPoint(t *testing.T) {
 	myNation := &core.MyNation{
-		Nation: core.Nation{
+		BaseNation: core.BaseNation{
 			NationID: "player",
 			Market:   &core.Market{Level: 1.0, Items: []*core.MarketItem{}},
 		},

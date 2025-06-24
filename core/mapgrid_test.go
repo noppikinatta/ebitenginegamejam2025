@@ -9,7 +9,7 @@ import (
 func TestMapGrid_CanInteract(t *testing.T) {
 	// テスト用のMyNation
 	myNation := &core.MyNation{
-		Nation: core.Nation{
+		BaseNation: core.BaseNation{
 			NationID: "player",
 			Market:   &core.Market{Level: 1.0, Items: []*core.MarketItem{}},
 		},
@@ -18,7 +18,7 @@ func TestMapGrid_CanInteract(t *testing.T) {
 
 	// テスト用のOtherNation
 	otherNation := &core.OtherNation{
-		Nation: core.Nation{
+		BaseNation: core.BaseNation{
 			NationID: "ally",
 			Market:   &core.Market{Level: 1.0, Items: []*core.MarketItem{}},
 		},
@@ -184,7 +184,7 @@ func TestMapGrid_CanInteract(t *testing.T) {
 
 func TestMyNationPoint_Location(t *testing.T) {
 	myNation := &core.MyNation{
-		Nation: core.Nation{
+		BaseNation: core.BaseNation{
 			NationID: "player",
 			Market:   &core.Market{Level: 1.0, Items: []*core.MarketItem{}},
 		},
@@ -201,7 +201,7 @@ func TestMyNationPoint_Location(t *testing.T) {
 
 func TestOtherNationPoint_Location(t *testing.T) {
 	otherNation := &core.OtherNation{
-		Nation: core.Nation{
+		BaseNation: core.BaseNation{
 			NationID: "ally",
 			Market:   &core.Market{Level: 1.0, Items: []*core.MarketItem{}},
 		},
@@ -285,7 +285,7 @@ func TestBossPoint_Basic(t *testing.T) {
 func TestMapGrid_GetPoint(t *testing.T) {
 	// テスト用のポイント
 	myNation := &core.MyNation{
-		Nation: core.Nation{
+		BaseNation: core.BaseNation{
 			NationID: "player",
 			Market:   &core.Market{Level: 1.0, Items: []*core.MarketItem{}},
 		},

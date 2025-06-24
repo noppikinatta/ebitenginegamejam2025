@@ -125,7 +125,7 @@ func (m *MainView) GetCurrentView() ViewType {
 }
 
 // SetSelectedNation MarketViewで表示する国家を設定
-func (m *MainView) SetSelectedNation(nation interface{}) {
+func (m *MainView) SetSelectedNation(nation core.Nation) {
 	if m.Market != nil {
 		m.Market.SetNation(nation)
 	}

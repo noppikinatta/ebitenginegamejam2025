@@ -9,17 +9,17 @@ type Market struct {
 	Items []*MarketItem // カードパックの一覧。
 }
 
-// VisibleCardPacks カードパックの一覧を返す。
-func (m *Market) VisibleCardPacks() []*CardPack {
-	var visiblePacks []*CardPack
+// VisibleMarketItems Marketで可視化されているMarketItemの一覧を返す。
+func (m *Market) VisibleMarketItems() []*MarketItem {
+	var visibleItems []*MarketItem
 
 	for _, item := range m.Items {
 		if m.Level >= item.RequiredLevel {
-			visiblePacks = append(visiblePacks, item.CardPack)
+			visibleItems = append(visibleItems, item)
 		}
 	}
 
-	return visiblePacks
+	return visibleItems
 }
 
 // CanPurchase 引数indexのカードパックを購入できるかどうかを返す。
