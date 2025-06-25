@@ -116,7 +116,8 @@ func (m *MapGridView) Draw(screen *ebiten.Image) {
 			// Point画像を描画（24x24、セル中央）
 			imageX := screenX + (m.CellSize.X-24)/2
 			imageY := screenY + (m.CellSize.Y-24)/2 - 10 // 文字のスペースを考慮
-			m.drawPointImage(screen, imageX, imageY, point)
+			interactive := m.GameState.CanInteract(x, y)
+			m.drawPointImage(screen, imageX, imageY, point, interactive)
 
 			// Point名を描画（Point画像の下）
 			textX := screenX + m.CellSize.X/2 - 20 // 中央寄せ（概算）
@@ -138,7 +139,7 @@ func (m *MapGridView) Draw(screen *ebiten.Image) {
 }
 
 // drawPointImage Pointの画像を描画
-func (m *MapGridView) drawPointImage(screen *ebiten.Image, x, y float64, point core.Point) {
+func (m *MapGridView) drawPointImage(screen *ebiten.Image, x, y float64, point core.Point, interactive bool) {
 	// 24x24の矩形を描画（後でイラストに差し替え）
 	var color [4]float32
 
@@ -157,6 +158,13 @@ func (m *MapGridView) drawPointImage(screen *ebiten.Image, x, y float64, point c
 		color = [4]float32{0.8, 0.2, 0.8, 1} // 紫
 	default:
 		color = [4]float32{0.5, 0.5, 0.5, 1} // 灰
+	}
+
+	if !interactive {
+		// 明るさを半分にする
+		color[0] *= 0.5
+		color[1] *= 0.5
+		color[2] *= 0.5
 	}
 
 	vertices := []ebiten.Vertex{
