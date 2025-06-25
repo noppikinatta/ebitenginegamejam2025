@@ -11,7 +11,7 @@ import (
 // MarketView Market表示Widget
 // 位置: MainView内で描画
 type MarketView struct {
-	Nation    interface{}     // MyNationまたはOtherNation
+	Nation    core.Nation     // MyNationまたはOtherNation
 	Treasury  *core.Treasury  // 購入可能性判定用
 	GameState *core.GameState // ゲーム状態
 
@@ -28,7 +28,7 @@ func NewMarketView(onBackClicked func()) *MarketView {
 }
 
 // SetNation 表示する国家を設定
-func (mv *MarketView) SetNation(nation interface{}) {
+func (mv *MarketView) SetNation(nation core.Nation) {
 	mv.Nation = nation
 }
 
@@ -73,21 +73,12 @@ func (mv *MarketView) Draw(screen *ebiten.Image) {
 	mv.drawBackButton(screen)
 
 	// CardPack一覧描画
-	mv.drawCardPacks(screen)
+	mv.drawMarketItems(screen)
 }
 
 // drawHeader Nation名ヘッダを描画
 func (mv *MarketView) drawHeader(screen *ebiten.Image) {
-	var nationName string
-
-	switch n := mv.Nation.(type) {
-	case *core.MyNation:
-		nationName = "My Nation"
-	case *core.OtherNation:
-		nationName = fmt.Sprintf("Nation %s", n.NationID)
-	default:
-		nationName = "Unknown Nation"
-	}
+	nationName := mv.Nation.Name()
 
 	// ヘッダ背景
 	vertices := []ebiten.Vertex{
@@ -110,9 +101,9 @@ func (mv *MarketView) drawBackButton(screen *ebiten.Image) {
 	DrawButton(screen, 480, 20, 40, 40, "X")
 }
 
-// drawCardPacks CardPack一覧を描画
-func (mv *MarketView) drawCardPacks(screen *ebiten.Image) {
-	cardPacks := mv.getVisibleCardPacks()
+// drawMarketItems MarketItem一覧を描画
+func (mv *MarketView) drawMarketItems(screen *ebiten.Image) {
+	marketItems := mv.getVisibleMarketItems()
 
 	// CardPack表示領域: 260x80 × 6個
 	// 配置: (0,60,260,80), (260,60,260,80), (0,140,260,80), (260,140,260,80), (0,220,260,80), (260,220,260,80)
@@ -125,18 +116,18 @@ func (mv *MarketView) drawCardPacks(screen *ebiten.Image) {
 		{260, 220, 260, 80}, // 右下
 	}
 
-	for i, cardPack := range cardPacks {
+	for i, item := range marketItems {
 		if i >= 6 { // 最大6つまで表示
 			break
 		}
 
 		pos := positions[i]
-		mv.drawCardPack(screen, cardPack, i, pos[0], pos[1], pos[2], pos[3])
+		mv.drawMarketItem(screen, item, i, pos[0], pos[1], pos[2], pos[3])
 	}
 }
 
-// drawCardPack 個別のCardPackを描画
-func (mv *MarketView) drawCardPack(screen *ebiten.Image, cardPack *core.CardPack, index int, x, y, width, height float64) {
+// drawMarketItem 個別のMarketItemを描画
+func (mv *MarketView) drawMarketItem(screen *ebiten.Image, item *core.MarketItem, index int, x, y, width, height float64) {
 	// CardPack枠を描画
 	vertices := []ebiten.Vertex{
 		{DstX: float32(x), DstY: float32(y), SrcX: 0, SrcY: 0, ColorR: 0.9, ColorG: 0.9, ColorB: 0.9, ColorA: 1},
@@ -153,7 +144,7 @@ func (mv *MarketView) drawCardPack(screen *ebiten.Image, cardPack *core.CardPack
 	// CardPack名 (40,60,220,20) -> 相対位置(40,0,220,20)
 	opt := &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(x+40, y)
-	cardPackName := fmt.Sprintf("Pack %s", cardPack.CardPackID)
+	cardPackName := fmt.Sprintf("Pack %s", item.CardPack.CardPackID)
 	drawing.DrawText(screen, cardPackName, 14, opt)
 
 	// CardPack説明 (40,80,220,40) -> 相対位置(40,20,220,40)
@@ -163,7 +154,7 @@ func (mv *MarketView) drawCardPack(screen *ebiten.Image, cardPack *core.CardPack
 	drawing.DrawText(screen, description, 10, opt)
 
 	// CardPackの値段 (0,120,260,20) -> 相対位置(0,60,260,20)
-	mv.drawCardPackPrice(screen, index, x, y+60, 260, 20)
+	mv.drawCardPackPrice(screen, item, index, x, y+60, 260, 20)
 }
 
 // drawCardPackImage CardPack画像を描画
@@ -183,12 +174,10 @@ func (mv *MarketView) drawCardPackImage(screen *ebiten.Image, x, y, width, heigh
 }
 
 // drawCardPackPrice CardPackの値段を描画
-func (mv *MarketView) drawCardPackPrice(screen *ebiten.Image, index int, x, y, width, height float64) {
+func (mv *MarketView) drawCardPackPrice(screen *ebiten.Image, item *core.MarketItem, index int, x, y, width, height float64) {
 	// 値段情報を取得
-	price, canPurchase := mv.getCardPackPrice(index)
-	if price == nil {
-		return
-	}
+	_, canPurchase := mv.getCardPackPrice(index)
+	price := item.Price
 
 	// Resource1種類につき60x20で表示
 	resourceTypes := []struct {
@@ -227,37 +216,25 @@ func (mv *MarketView) drawCardPackPrice(screen *ebiten.Image, index int, x, y, w
 	}
 }
 
-// getVisibleCardPacks 表示可能なCardPack一覧を取得
-func (mv *MarketView) getVisibleCardPacks() []*core.CardPack {
-	switch n := mv.Nation.(type) {
-	case *core.MyNation:
-		return n.VisibleCardPacks()
-	case *core.OtherNation:
-		return n.VisibleCardPacks()
-	default:
-		return []*core.CardPack{}
+// getVisibleMarketItems 表示可能なMarketItem一覧を取得
+func (mv *MarketView) getVisibleMarketItems() []*core.MarketItem {
+	if mv.Nation == nil {
+		return []*core.MarketItem{}
 	}
+	return mv.Nation.VisibleMarketItems()
 }
 
 // getCardPackPrice CardPackの価格と購入可能性を取得
 func (mv *MarketView) getCardPackPrice(index int) (*core.ResourceQuantity, bool) {
-	if mv.Treasury == nil {
+	if mv.Treasury == nil || mv.Nation == nil {
 		return nil, false
 	}
 
-	switch n := mv.Nation.(type) {
-	case *core.MyNation:
-		if n.Market != nil && index < len(n.Market.Items) {
-			item := n.Market.Items[index]
-			canPurchase := n.CanPurchase(index, mv.Treasury)
-			return &item.Price, canPurchase
-		}
-	case *core.OtherNation:
-		if n.Market != nil && index < len(n.Market.Items) {
-			item := n.Market.Items[index]
-			canPurchase := n.CanPurchase(index, mv.Treasury)
-			return &item.Price, canPurchase
-		}
+	market := mv.Nation.GetMarket()
+	if market != nil && index < len(market.Items) {
+		item := market.Items[index]
+		canPurchase := mv.Nation.CanPurchase(index, mv.Treasury)
+		return &item.Price, canPurchase
 	}
 
 	return nil, false

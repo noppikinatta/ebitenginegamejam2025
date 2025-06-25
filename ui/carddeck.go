@@ -29,45 +29,45 @@ func NewCardDeckView(cardDeck *core.CardDeck) *CardDeckView {
 }
 
 // SetCardDeck カードデッキを設定
-func (cdv *CardDeckView) SetCardDeck(cardDeck *core.CardDeck) {
-	cdv.CardDeck = cardDeck
-	cdv.SelectedIndex = -1 // デッキが変わったら選択も解除
+func (c *CardDeckView) SetCardDeck(cardDeck *core.CardDeck) {
+	c.CardDeck = cardDeck
+	c.SelectedIndex = -1 // デッキが変わったら選択も解除
 }
 
 // GetSelectedCard 選択中のカードを取得
-func (cdv *CardDeckView) GetSelectedCard() interface{} {
-	if cdv.CardDeck == nil || cdv.SelectedIndex < 0 {
+func (c *CardDeckView) GetSelectedCard() interface{} {
+	if c.CardDeck == nil || c.SelectedIndex < 0 {
 		return nil
 	}
 
-	allCards := cdv.getAllCards()
-	if cdv.SelectedIndex >= len(allCards) {
+	allCards := c.getAllCards()
+	if c.SelectedIndex >= len(allCards) {
 		return nil
 	}
 
-	return allCards[cdv.SelectedIndex]
+	return allCards[c.SelectedIndex]
 }
 
 // getAllCards 全てのカードを1つのスライスで取得
-func (cdv *CardDeckView) getAllCards() []interface{} {
-	if cdv.CardDeck == nil {
+func (c *CardDeckView) getAllCards() []interface{} {
+	if c.CardDeck == nil {
 		return []interface{}{}
 	}
 
 	allCards := make([]interface{}, 0)
 
 	// BattleCardsを追加
-	for _, card := range cdv.CardDeck.BattleCards {
+	for _, card := range c.CardDeck.BattleCards {
 		allCards = append(allCards, card)
 	}
 
 	// StructureCardsを追加
-	for _, card := range cdv.CardDeck.StructureCards {
+	for _, card := range c.CardDeck.StructureCards {
 		allCards = append(allCards, card)
 	}
 
 	// ResourceCardsを追加
-	for _, card := range cdv.CardDeck.ResourceCards {
+	for _, card := range c.CardDeck.ResourceCards {
 		allCards = append(allCards, card)
 	}
 
@@ -75,128 +75,128 @@ func (cdv *CardDeckView) getAllCards() []interface{} {
 }
 
 // SelectCard カードを選択
-func (cdv *CardDeckView) SelectCard(index int) {
-	if cdv.CardDeck == nil {
+func (c *CardDeckView) SelectCard(index int) {
+	if c.CardDeck == nil {
 		return
 	}
 
-	allCards := cdv.getAllCards()
+	allCards := c.getAllCards()
 	if index < 0 || index >= len(allCards) {
-		cdv.SelectedIndex = -1
-		if cdv.OnCardSelected != nil {
-			cdv.OnCardSelected(nil)
+		c.SelectedIndex = -1
+		if c.OnCardSelected != nil {
+			c.OnCardSelected(nil)
 		}
 		return
 	}
 
-	cdv.SelectedIndex = index
-	if cdv.OnCardSelected != nil {
-		cdv.OnCardSelected(allCards[index])
+	c.SelectedIndex = index
+	if c.OnCardSelected != nil {
+		c.OnCardSelected(allCards[index])
 	}
 }
 
 // ClearSelection 選択をクリア
-func (cdv *CardDeckView) ClearSelection() {
-	cdv.SelectedIndex = -1
-	if cdv.OnCardSelected != nil {
-		cdv.OnCardSelected(nil)
+func (c *CardDeckView) ClearSelection() {
+	c.SelectedIndex = -1
+	if c.OnCardSelected != nil {
+		c.OnCardSelected(nil)
 	}
 }
 
 // RemoveSelectedCard 選択中のカードをデッキから除去
-func (cdv *CardDeckView) RemoveSelectedCard() interface{} {
-	if cdv.CardDeck == nil || cdv.SelectedIndex < 0 {
+func (c *CardDeckView) RemoveSelectedCard() interface{} {
+	if c.CardDeck == nil || c.SelectedIndex < 0 {
 		return nil
 	}
 
-	allCards := cdv.getAllCards()
-	if cdv.SelectedIndex >= len(allCards) {
+	allCards := c.getAllCards()
+	if c.SelectedIndex >= len(allCards) {
 		return nil
 	}
 
 	// 選択中のカードを取得
-	selectedCard := allCards[cdv.SelectedIndex]
+	selectedCard := allCards[c.SelectedIndex]
 
 	// カードをデッキから除去
 	switch card := selectedCard.(type) {
 	case *core.BattleCard:
-		cdv.removeBattleCard(card)
+		c.removeBattleCard(card)
 	case *core.StructureCard:
-		cdv.removeStructureCard(card)
+		c.removeStructureCard(card)
 	case *core.ResourceCard:
-		cdv.removeResourceCard(card)
+		c.removeResourceCard(card)
 	}
 
 	// 選択をクリア
-	cdv.ClearSelection()
+	c.ClearSelection()
 
 	return selectedCard
 }
 
 // removeBattleCard BattleCardをデッキから削除
-func (cdv *CardDeckView) removeBattleCard(card *core.BattleCard) {
-	for i, c := range cdv.CardDeck.BattleCards {
-		if c == card {
-			cdv.CardDeck.BattleCards = append(cdv.CardDeck.BattleCards[:i], cdv.CardDeck.BattleCards[i+1:]...)
+func (c *CardDeckView) removeBattleCard(card *core.BattleCard) {
+	for i, cardToRemove := range c.CardDeck.BattleCards {
+		if cardToRemove == card {
+			c.CardDeck.BattleCards = append(c.CardDeck.BattleCards[:i], c.CardDeck.BattleCards[i+1:]...)
 			break
 		}
 	}
 }
 
 // removeStructureCard StructureCardをデッキから削除
-func (cdv *CardDeckView) removeStructureCard(card *core.StructureCard) {
-	for i, c := range cdv.CardDeck.StructureCards {
-		if c == card {
-			cdv.CardDeck.StructureCards = append(cdv.CardDeck.StructureCards[:i], cdv.CardDeck.StructureCards[i+1:]...)
+func (c *CardDeckView) removeStructureCard(card *core.StructureCard) {
+	for i, cardToRemove := range c.CardDeck.StructureCards {
+		if cardToRemove == card {
+			c.CardDeck.StructureCards = append(c.CardDeck.StructureCards[:i], c.CardDeck.StructureCards[i+1:]...)
 			break
 		}
 	}
 }
 
 // removeResourceCard ResourceCardをデッキから削除
-func (cdv *CardDeckView) removeResourceCard(card *core.ResourceCard) {
-	for i, c := range cdv.CardDeck.ResourceCards {
-		if c == card {
-			cdv.CardDeck.ResourceCards = append(cdv.CardDeck.ResourceCards[:i], cdv.CardDeck.ResourceCards[i+1:]...)
+func (c *CardDeckView) removeResourceCard(card *core.ResourceCard) {
+	for i, cardToRemove := range c.CardDeck.ResourceCards {
+		if cardToRemove == card {
+			c.CardDeck.ResourceCards = append(c.CardDeck.ResourceCards[:i], c.CardDeck.ResourceCards[i+1:]...)
 			break
 		}
 	}
 }
 
 // AddCard カードをデッキに追加
-func (cdv *CardDeckView) AddCard(card interface{}) {
-	if cdv.CardDeck == nil {
+func (c *CardDeckView) AddCard(card interface{}) {
+	if c.CardDeck == nil {
 		return
 	}
 
-	switch c := card.(type) {
+	switch newCard := card.(type) {
 	case *core.BattleCard:
-		cdv.CardDeck.BattleCards = append(cdv.CardDeck.BattleCards, c)
+		c.CardDeck.BattleCards = append(c.CardDeck.BattleCards, newCard)
 	case *core.StructureCard:
-		cdv.CardDeck.StructureCards = append(cdv.CardDeck.StructureCards, c)
+		c.CardDeck.StructureCards = append(c.CardDeck.StructureCards, newCard)
 	case *core.ResourceCard:
-		cdv.CardDeck.ResourceCards = append(cdv.CardDeck.ResourceCards, c)
+		c.CardDeck.ResourceCards = append(c.CardDeck.ResourceCards, newCard)
 	}
 }
 
 // HandleInput 入力処理
-func (cdv *CardDeckView) HandleInput(input *Input) error {
+func (c *CardDeckView) HandleInput(input *Input) error {
 	// TODO: マウスクリックでカード選択
 	// 現在はマウス操作が困難なため、後回し
 	return nil
 }
 
 // Draw 描画処理
-func (cdv *CardDeckView) Draw(screen *ebiten.Image) {
+func (c *CardDeckView) Draw(screen *ebiten.Image) {
 	// 背景描画
-	cdv.drawBackground(screen)
+	c.drawBackground(screen)
 
 	// カード描画
-	cdv.drawCards(screen)
+	c.drawCards(screen)
 }
 
 // drawBackground 背景を描画
-func (cdv *CardDeckView) drawBackground(screen *ebiten.Image) {
+func (c *CardDeckView) drawBackground(screen *ebiten.Image) {
 	// CardDeckView背景 (0,300,640,60)
 	vertices := []ebiten.Vertex{
 		{DstX: 0, DstY: 300, SrcX: 0, SrcY: 0, ColorR: 0.1, ColorG: 0.1, ColorB: 0.15, ColorA: 1},
@@ -209,8 +209,8 @@ func (cdv *CardDeckView) drawBackground(screen *ebiten.Image) {
 }
 
 // drawCards カードを描画
-func (cdv *CardDeckView) drawCards(screen *ebiten.Image) {
-	if cdv.CardDeck == nil {
+func (c *CardDeckView) drawCards(screen *ebiten.Image) {
+	if c.CardDeck == nil {
 		// カードデッキがない場合のメッセージ
 		opt := &ebiten.DrawImageOptions{}
 		opt.GeoM.Translate(320, 320)
@@ -218,7 +218,7 @@ func (cdv *CardDeckView) drawCards(screen *ebiten.Image) {
 		return
 	}
 
-	allCards := cdv.getAllCards()
+	allCards := c.getAllCards()
 
 	if len(allCards) == 0 {
 		// カードがない場合のメッセージ
@@ -237,7 +237,7 @@ func (cdv *CardDeckView) drawCards(screen *ebiten.Image) {
 		x := float32(i * 40)
 		y := float32(300)
 
-		cdv.drawCard(screen, card, x, y, i == cdv.SelectedIndex)
+		c.drawCard(screen, card, x, y, i == c.SelectedIndex)
 	}
 
 	// 16枚を超える場合は省略表示
@@ -249,7 +249,7 @@ func (cdv *CardDeckView) drawCards(screen *ebiten.Image) {
 }
 
 // drawCard 個別のカードを描画
-func (cdv *CardDeckView) drawCard(screen *ebiten.Image, card interface{}, x, y float32, selected bool) {
+func (c *CardDeckView) drawCard(screen *ebiten.Image, card interface{}, x, y float32, selected bool) {
 	// カード背景色を決定
 	var colorR, colorG, colorB float32
 	switch card.(type) {
@@ -280,20 +280,20 @@ func (cdv *CardDeckView) drawCard(screen *ebiten.Image, card interface{}, x, y f
 
 	// 選択中の場合は枠を描画
 	if selected {
-		cdv.drawCardBorder(screen, x, y)
+		c.drawCardBorder(screen, x, y)
 	}
 
 	// カード情報描画
-	switch c := card.(type) {
+	switch cardData := card.(type) {
 	case *core.BattleCard:
-		cdv.drawBattleCardInfo(screen, c, x, y)
+		c.drawBattleCardInfo(screen, cardData, x, y)
 	case *core.StructureCard:
-		cdv.drawStructureCardInfo(screen, c, x, y)
+		c.drawStructureCardInfo(screen, cardData, x, y)
 	}
 }
 
 // drawCardBorder カード枠を描画
-func (cdv *CardDeckView) drawCardBorder(screen *ebiten.Image, x, y float32) {
+func (c *CardDeckView) drawCardBorder(screen *ebiten.Image, x, y float32) {
 	// 上枠
 	vertices := []ebiten.Vertex{
 		{DstX: x, DstY: y, SrcX: 0, SrcY: 0, ColorR: 1, ColorG: 1, ColorB: 0, ColorA: 1},
@@ -333,7 +333,7 @@ func (cdv *CardDeckView) drawCardBorder(screen *ebiten.Image, x, y float32) {
 }
 
 // drawBattleCardInfo BattleCardの詳細を描画
-func (cdv *CardDeckView) drawBattleCardInfo(screen *ebiten.Image, card *core.BattleCard, x, y float32) {
+func (c *CardDeckView) drawBattleCardInfo(screen *ebiten.Image, card *core.BattleCard, x, y float32) {
 	// カードID (上部、8pt)
 	opt := &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(float64(x+2), float64(y+8))
@@ -359,7 +359,7 @@ func (cdv *CardDeckView) drawBattleCardInfo(screen *ebiten.Image, card *core.Bat
 }
 
 // drawStructureCardInfo StructureCardの詳細を描画
-func (cdv *CardDeckView) drawStructureCardInfo(screen *ebiten.Image, card *core.StructureCard, x, y float32) {
+func (c *CardDeckView) drawStructureCardInfo(screen *ebiten.Image, card *core.StructureCard, x, y float32) {
 	// カードID (上部、8pt)
 	opt := &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(float64(x+2), float64(y+8))

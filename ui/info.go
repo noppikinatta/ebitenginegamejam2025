@@ -313,15 +313,15 @@ func (iv *InfoView) drawNationPointView(screen *ebiten.Image) {
 		y += 20
 
 		// CardPack一覧 (20×12)
-		cardPacks := point.MyNation.VisibleCardPacks()
-		for i, pack := range cardPacks {
+		marketItems := point.MyNation.VisibleMarketItems()
+		for i, item := range marketItems {
 			if i >= 12 {
 				break
 			}
 
 			opt = &ebiten.DrawImageOptions{}
 			opt.GeoM.Translate(525, y)
-			packName := string(pack.CardPackID)
+			packName := string(item.CardPack.CardPackID)
 			if len(packName) > 12 {
 				packName = packName[:9] + "..."
 			}
@@ -340,15 +340,15 @@ func (iv *InfoView) drawNationPointView(screen *ebiten.Image) {
 		y += 20
 
 		// CardPack一覧 (20×12)
-		cardPacks := point.OtherNation.VisibleCardPacks()
-		for i, pack := range cardPacks {
+		marketItems := point.OtherNation.VisibleMarketItems()
+		for i, item := range marketItems {
 			if i >= 12 {
 				break
 			}
 
 			opt = &ebiten.DrawImageOptions{}
 			opt.GeoM.Translate(525, y)
-			packName := string(pack.CardPackID)
+			packName := string(item.CardPack.CardPackID)
 			if len(packName) > 12 {
 				packName = packName[:9] + "..."
 			}

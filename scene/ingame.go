@@ -83,7 +83,7 @@ func (g *InGame) Layout(outsideWidth, outsideHeight int) (int, int) {
 func createDummyGameState() *core.GameState {
 	// ダミーのMyNation作成
 	myNation := &core.MyNation{
-		Nation: core.Nation{
+		BaseNation: core.BaseNation{
 			NationID: "player_nation",
 			Market: &core.Market{
 				Level: 1.0,
@@ -127,7 +127,7 @@ func createDummyGameState() *core.GameState {
 		} else if i%3 == 0 && i != 24 {
 			// インデックスが3の倍数かつ24でない場合 = OtherNationPoint
 			otherNation := &core.OtherNation{
-				Nation: core.Nation{
+				BaseNation: core.BaseNation{
 					NationID: core.NationID("ally_nation" + strconv.Itoa(i)),
 					Market: &core.Market{
 						Level: 0.8,

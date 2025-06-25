@@ -15,15 +15,15 @@ type Battlefield struct {
 }
 
 // CanBeat 戦闘を勝利できるかどうかを返す。
-func (bf *Battlefield) CanBeat() bool {
-	totalPower := bf.SupportPower
+func (b *Battlefield) CanBeat() bool {
+	totalPower := b.SupportPower
 
 	// 各BattleCardのパワーを計算（敵スキルの影響を考慮）
-	for _, card := range bf.BattleCards {
+	for _, card := range b.BattleCards {
 		cardPower := float64(card.Power)
 
 		// 敵のスキルの影響を適用
-		for _, skill := range bf.Enemy.Skills {
+		for _, skill := range b.Enemy.Skills {
 			if skill.CanAffect(card) {
 				cardPower = skill.Modify(card)
 			}
@@ -32,11 +32,11 @@ func (bf *Battlefield) CanBeat() bool {
 		totalPower += cardPower
 	}
 
-	return totalPower >= bf.Enemy.Power
+	return totalPower >= b.Enemy.Power
 }
 
 // Beat 戦闘を勝利する。
-func (bf *Battlefield) Beat() {
+func (b *Battlefield) Beat() {
 	// 現在は勝利処理のみ実装
 	// 将来的に戦闘結果の処理、報酬の付与等を追加するかもしれない
 }
@@ -53,21 +53,21 @@ func NewBattlefield(enemy *Enemy, supportPower float64) *Battlefield {
 }
 
 // AddBattleCard 戦場にBattleCardを追加する。
-func (bf *Battlefield) AddBattleCard(card *BattleCard) bool {
-	if len(bf.BattleCards) >= bf.CardSlot {
+func (b *Battlefield) AddBattleCard(card *BattleCard) bool {
+	if len(b.BattleCards) >= b.CardSlot {
 		return false // スロット上限に達している
 	}
-	bf.BattleCards = append(bf.BattleCards, card)
+	b.BattleCards = append(b.BattleCards, card)
 	return true
 }
 
 // RemoveBattleCard 戦場からBattleCardを除去する。
-func (bf *Battlefield) RemoveBattleCard(index int) (*BattleCard, bool) {
-	if index < 0 || index >= len(bf.BattleCards) {
+func (b *Battlefield) RemoveBattleCard(index int) (*BattleCard, bool) {
+	if index < 0 || index >= len(b.BattleCards) {
 		return nil, false
 	}
 
-	card := bf.BattleCards[index]
-	bf.BattleCards = append(bf.BattleCards[:index], bf.BattleCards[index+1:]...)
+	card := b.BattleCards[index]
+	b.BattleCards = append(b.BattleCards[:index], b.BattleCards[index+1:]...)
 	return card, true
 }

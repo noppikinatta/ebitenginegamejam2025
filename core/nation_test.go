@@ -143,21 +143,21 @@ func TestNation_VisibleCardPacks(t *testing.T) {
 		Items: items,
 	}
 
-	nation := &core.Nation{
+	nation := &core.BaseNation{
 		NationID: "test_nation",
 		Market:   market,
 	}
 
-	visiblePacks := nation.VisibleCardPacks()
+	visibleMarketItems := nation.VisibleMarketItems()
 
 	// レベル1.5なので、RequiredLevel 1.0の基本パックのみ見える
-	if len(visiblePacks) != 1 {
-		t.Errorf("VisibleCardPacks() returned %d packs, want 1", len(visiblePacks))
+	if len(visibleMarketItems) != 1 {
+		t.Errorf("VisibleMarketItems() returned %d packs, want 1", len(visibleMarketItems))
 		return
 	}
 
-	if visiblePacks[0].CardPackID != "basic_pack" {
-		t.Errorf("VisibleCardPacks()[0] = %v, want basic_pack", visiblePacks[0].CardPackID)
+	if visibleMarketItems[0].CardPack.CardPackID != "basic_pack" {
+		t.Errorf("VisibleMarketItems()[0] = %v, want basic_pack", visibleMarketItems[0].CardPack.CardPackID)
 	}
 }
 
@@ -185,7 +185,7 @@ func TestNation_CanPurchase(t *testing.T) {
 		Items: items,
 	}
 
-	nation := &core.Nation{
+	nation := &core.BaseNation{
 		NationID: "test_nation",
 		Market:   market,
 	}
@@ -256,7 +256,7 @@ func TestNation_Purchase(t *testing.T) {
 		Items: items,
 	}
 
-	nation := &core.Nation{
+	nation := &core.BaseNation{
 		NationID: "test_nation",
 		Market:   market,
 	}
@@ -341,7 +341,7 @@ func TestMyNation_AppendMarketItem(t *testing.T) {
 	}
 
 	myNation := &core.MyNation{
-		Nation: core.Nation{
+		BaseNation: core.BaseNation{
 			NationID: "my_nation",
 			Market:   market,
 		},
@@ -374,7 +374,7 @@ func TestMyNation_AppendLevel(t *testing.T) {
 	}
 
 	myNation := &core.MyNation{
-		Nation: core.Nation{
+		BaseNation: core.BaseNation{
 			NationID: "my_nation",
 			Market:   market,
 		},
@@ -427,7 +427,7 @@ func TestOtherNation_Purchase(t *testing.T) {
 	}
 
 	otherNation := &core.OtherNation{
-		Nation: core.Nation{
+		BaseNation: core.BaseNation{
 			NationID: "other_nation",
 			Market:   market,
 		},

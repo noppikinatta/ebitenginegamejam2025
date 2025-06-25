@@ -23,16 +23,16 @@ type CardPack struct {
 }
 
 // Open カードパックを開きます。Ratiosの値を足してIntnでそれ未満の乱数を取得し、割合に応じたカードを得る抽選を行います。抽選はNumPerOpen回行います。
-func (cp *CardPack) Open(intner Intner) []CardID {
-	if len(cp.Ratios) == 0 {
+func (c *CardPack) Open(intner Intner) []CardID {
+	if len(c.Ratios) == 0 {
 		return []CardID{}
 	}
 
-	result := make([]CardID, 0, cp.NumPerOpen)
-	for i := 0; i < cp.NumPerOpen; i++ {
+	result := make([]CardID, 0, c.NumPerOpen)
+	for i := 0; i < c.NumPerOpen; i++ {
 		// 合計重みを計算
 		totalWeight := 0
-		for _, weight := range cp.Ratios {
+		for _, weight := range c.Ratios {
 			totalWeight += weight
 		}
 
@@ -41,7 +41,7 @@ func (cp *CardPack) Open(intner Intner) []CardID {
 
 		// 累積確率からカードを選択
 		current := 0
-		for cardID, weight := range cp.Ratios {
+		for cardID, weight := range c.Ratios {
 			current += weight
 			if rand < current {
 				result = append(result, cardID)
@@ -96,7 +96,7 @@ type CardDatabase struct {
 
 // GetCards 引数cardIDsに対応するカードを返す。1枚でも対応するカードがなければfalseを返す。
 // 正しくデータを作っていれば、GetCardsは常にtrueを返す。
-func (db *CardDatabase) GetCards(cardIDs []CardID) (*Cards, bool) {
+func (d *CardDatabase) GetCards(cardIDs []CardID) (*Cards, bool) {
 	cards := &Cards{
 		BattleCards:    make([]*BattleCard, 0),
 		StructureCards: make([]*StructureCard, 0),
@@ -105,19 +105,19 @@ func (db *CardDatabase) GetCards(cardIDs []CardID) (*Cards, bool) {
 
 	for _, cardID := range cardIDs {
 		// BattleCardとして存在するかチェック
-		if battleCard, exists := db.BattleCards[cardID]; exists {
+		if battleCard, exists := d.BattleCards[cardID]; exists {
 			cards.BattleCards = append(cards.BattleCards, battleCard)
 			continue
 		}
 
 		// StructureCardとして存在するかチェック
-		if structureCard, exists := db.StructureCards[cardID]; exists {
+		if structureCard, exists := d.StructureCards[cardID]; exists {
 			cards.StructureCards = append(cards.StructureCards, structureCard)
 			continue
 		}
 
 		// ResourceCardとして存在するかチェック
-		if resourceCard, exists := db.ResourceCards[cardID]; exists {
+		if resourceCard, exists := d.ResourceCards[cardID]; exists {
 			cards.ResourceCards = append(cards.ResourceCards, resourceCard)
 			continue
 		}

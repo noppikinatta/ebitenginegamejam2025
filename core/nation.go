@@ -1,35 +1,68 @@
 package core
 
+import "fmt"
+
+// Nation は国家を表すインターフェース。
+// MarketViewで表示するために必要なメソッドを持つ。
+type Nation interface {
+	Name() string
+	ID() NationID
+	GetMarket() *Market
+	VisibleMarketItems() []*MarketItem
+	CanPurchase(index int, treasury *Treasury) bool
+	Purchase(index int, treasury *Treasury) (*CardPack, bool)
+}
+
 // 旧仕様コメントを削除し、実装に置き換え済み
 
 // NationID は国家の一意識別子
 type NationID string
 
-// Nation 国家を表す。
-type Nation struct {
+// BaseNation 国家を表す。
+type BaseNation struct {
 	NationID NationID
 	Market   *Market // カードパックを購入するためのMarket。
 }
 
-// VisibleCardPacks Marketで可視化されているカードパックの一覧を返す。
-func (n *Nation) VisibleCardPacks() []*CardPack {
-	return n.Market.VisibleCardPacks()
+// ID は NationID を返す。
+func (n *BaseNation) ID() NationID {
+	return n.NationID
+}
+
+// Name は国家名を返す。
+func (n *BaseNation) Name() string {
+	return fmt.Sprintf("Nation %s", n.NationID)
+}
+
+// GetMarket は Market を返す。
+func (n *BaseNation) GetMarket() *Market {
+	return n.Market
+}
+
+// VisibleMarketItems Marketで可視化されているカードパックの一覧を返す。
+func (n *BaseNation) VisibleMarketItems() []*MarketItem {
+	return n.Market.VisibleMarketItems()
 }
 
 // CanPurchase 引数indexのカードパックを購入できるかどうかを返す。
-func (n *Nation) CanPurchase(index int, treasury *Treasury) bool {
+func (n *BaseNation) CanPurchase(index int, treasury *Treasury) bool {
 	return n.Market.CanPurchase(index, treasury)
 }
 
 // Purchase 引数indexのカードパックを購入する。国庫が不足していればfalseを返す。
-func (n *Nation) Purchase(index int, treasury *Treasury) (*CardPack, bool) {
+func (n *BaseNation) Purchase(index int, treasury *Treasury) (*CardPack, bool) {
 	return n.Market.Purchase(index, treasury)
 }
 
 // MyNation プレイヤー国家を表す。
 type MyNation struct {
-	Nation                      // 埋め込み構造体
+	BaseNation                  // 埋め込み構造体
 	BasicYield ResourceQuantity // 基本Yield。
+}
+
+// Name はプレイヤー国家の名前を返す。
+func (mn *MyNation) Name() string {
+	return "My Nation"
 }
 
 // AppendMarketItem 引数itemをMarket.Itemsに追加する。これは、Enemy撃破時の報酬として自国で買えるカードパックを増やす機能。
@@ -44,12 +77,12 @@ func (mn *MyNation) AppendLevel(marketLevel MarketLevel) {
 
 // OtherNation NPC(カードの取引相手)の国家を表す。
 type OtherNation struct {
-	Nation // 埋め込み構造体
+	BaseNation // 埋め込み構造体
 }
 
 // Purchase Nation.Purchaseを呼び出し、Market.Levelに0.2を加算する。
 func (on *OtherNation) Purchase(index int, treasury *Treasury) (*CardPack, bool) {
-	cardPack, ok := on.Nation.Purchase(index, treasury)
+	cardPack, ok := on.BaseNation.Purchase(index, treasury)
 	if ok {
 		on.Market.Level += 0.2
 	}
