@@ -13,6 +13,7 @@ type InGame struct {
 	gameState  *core.GameState
 	gameUI     *ui.GameUI
 	input      *ui.Input
+	canInput   bool
 	nextScene  ebiten.Game
 	sequence   *bamenn.Sequence
 	transition bamenn.Transition
@@ -38,7 +39,15 @@ func (g *InGame) Init(nextScene ebiten.Game, sequence *bamenn.Sequence, transiti
 	g.transition = transition
 }
 
+func (g *InGame) OnArrival() {
+	g.canInput = true
+}
+
 func (g *InGame) Update() error {
+	if !g.canInput {
+		return nil
+	}
+
 	// マウス位置をGameUIに設定
 	mouseX, mouseY := ebiten.CursorPosition()
 	g.gameUI.SetMousePosition(mouseX, mouseY)
