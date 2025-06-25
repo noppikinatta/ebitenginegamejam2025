@@ -5,6 +5,7 @@ package core
 // Point は、MapGrid上のPointを表すインターフェース
 type Point interface {
 	Passable() bool
+	IsMyNation() bool
 }
 
 // MyNationPoint プレイヤー国家のPoint
@@ -16,6 +17,10 @@ func (p *MyNationPoint) Passable() bool {
 	return true
 }
 
+func (p *MyNationPoint) IsMyNation() bool {
+	return true
+}
+
 // OtherNationPoint NPC国家のPoint
 type OtherNationPoint struct {
 	OtherNation *OtherNation
@@ -23,6 +28,10 @@ type OtherNationPoint struct {
 
 func (p *OtherNationPoint) Passable() bool {
 	return true
+}
+
+func (p *OtherNationPoint) IsMyNation() bool {
+	return false
 }
 
 // WildernessPoint 制圧可能な野生のPoint
@@ -36,6 +45,10 @@ func (p *WildernessPoint) Passable() bool {
 	return p.Controlled
 }
 
+func (p *WildernessPoint) IsMyNation() bool {
+	return false
+}
+
 // BossPoint ボスのPoint
 type BossPoint struct {
 	Boss     *Enemy
@@ -43,6 +56,10 @@ type BossPoint struct {
 }
 
 func (p *BossPoint) Passable() bool {
+	return false
+}
+
+func (p *BossPoint) IsMyNation() bool {
 	return false
 }
 
@@ -78,6 +95,7 @@ func (m *MapGrid) PointFromIndex(index int) (int, int, bool) {
 }
 
 func (m *MapGrid) UpdateAccesibles() {
+	alreadySet := make(map[int]struct{})
 	remainingIdxs := make([]int, 0, len(m.Points))
 	var ri int
 
@@ -85,14 +103,16 @@ func (m *MapGrid) UpdateAccesibles() {
 		m.accesibles = make([]bool, len(m.Points))
 	}
 
-	for i := range len(m.Points) {
-		m.accesibles[i] = false
+	for i, p := range m.Points {
+		m.accesibles[i] = p.IsMyNation()
+		if p.IsMyNation() {
+			remainingIdxs = append(remainingIdxs, i)
+		}
 	}
-	m.accesibles[0] = true
-	remainingIdxs = append(remainingIdxs, 0)
 
 	for ri < len(remainingIdxs) {
 		idx := remainingIdxs[ri]
+		alreadySet[idx] = struct{}{}
 		ri++
 
 		x, y, ok := m.PointFromIndex(idx)
@@ -100,23 +120,25 @@ func (m *MapGrid) UpdateAccesibles() {
 			continue
 		}
 
-		rightIdx, ok := m.IndexFromPoint(x+1, y)
-		if ok && !m.accesibles[rightIdx] {
-			p := m.Points[rightIdx]
-			m.accesibles[rightIdx] = true
-			if p.Passable() {
-				remainingIdxs = append(remainingIdxs, rightIdx)
+		set := func(x, y int) {
+			idx, ok := m.IndexFromPoint(x, y)
+			if !ok {
+				return
+			}
+			if _, ok := alreadySet[idx]; ok {
+				return
+			}
+			p := m.Points[idx]
+			m.accesibles[idx] = true
+			if p != nil && p.Passable() {
+				remainingIdxs = append(remainingIdxs, idx)
 			}
 		}
 
-		upIdx, ok := m.IndexFromPoint(x, y+1)
-		if ok && !m.accesibles[upIdx] {
-			p := m.Points[upIdx]
-			m.accesibles[upIdx] = true
-			if p.Passable() {
-				remainingIdxs = append(remainingIdxs, upIdx)
-			}
-		}
+		set(x+1, y)
+		set(x-1, y)
+		set(x, y+1)
+		set(x, y-1)
 	}
 }
 

@@ -218,8 +218,8 @@ func TestGameState_CanInteract(t *testing.T) {
 	points := []core.Point{
 		&core.MyNationPoint{MyNation: myNation},
 		controlledWilderness,
-		nil,
-		nil,
+		&core.OtherNationPoint{OtherNation: &core.OtherNation{}},
+		&core.BossPoint{Boss: &core.Enemy{}},
 	}
 
 	mapGrid := &core.MapGrid{
