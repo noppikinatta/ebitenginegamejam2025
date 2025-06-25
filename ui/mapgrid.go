@@ -34,10 +34,10 @@ func NewMapGridView(gameState *core.GameState, onPointClicked func(point core.Po
 		}
 	}
 	return &MapGridView{
-		GameState:     gameState,
-		TopLeft:       geom.PointF{X: 0, Y: 20},
-		CellSize:      cellSize,
-		CellLocations: cellLocations,
+		GameState:      gameState,
+		TopLeft:        geom.PointF{X: 0, Y: 20},
+		CellSize:       cellSize,
+		CellLocations:  cellLocations,
 		OnPointClicked: onPointClicked,
 	}
 }
@@ -71,9 +71,25 @@ func (m *MapGridView) HandleInput(input *Input) error {
 		return nil
 	}
 
-	if m.OnPointClicked != nil {
-		m.OnPointClicked(point)
+	// Point画像の描画領域を計算
+	cellTopLeft := m.CellLocations[gridY*5+drawGridX]
+	imageX := cellTopLeft.X + (m.CellSize.X-24)/2
+	imageY := cellTopLeft.Y + (m.CellSize.Y-24)/2 - 10 // Drawメソッドでのオフセットを考慮
+	imageWidth := 24.0
+	imageHeight := 24.0
+
+	// クリック位置がPoint画像の範囲内かチェック
+	if relativeX >= imageX && relativeX < imageX+imageWidth &&
+		relativeY >= imageY && relativeY < imageY+imageHeight {
+
+		// 到達可能なPointかチェック
+		if m.GameState.MapGrid.CanInteract(drawGridX, gridY) {
+			if m.OnPointClicked != nil {
+				m.OnPointClicked(point)
+			}
+		}
 	}
+
 	return nil
 }
 
