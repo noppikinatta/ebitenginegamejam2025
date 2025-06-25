@@ -66,31 +66,42 @@ func TestMapGrid_CanInteract(t *testing.T) {
 		},
 	}
 
-	// 3x3のマップグリッドを作成
-	/*
-		配置:
-		(0,0) MyNation    (1,0) Controlled  (2,0) Uncontrolled
-		(0,1) OtherNation (1,1) Controlled  (2,1) Boss
-		(0,2) Uncontrolled(1,2) Controlled  (2,2) Uncontrolled
-	*/
 	points := []core.Point{
 		// Row 0
 		&core.MyNationPoint{MyNation: myNation},
 		controlledWilderness,
-		uncontrolledWilderness,
-		// Row 1
 		&core.OtherNationPoint{OtherNation: otherNation},
 		controlledWilderness,
-		&core.BossPoint{Boss: boss},
-		// Row 2
+		&core.OtherNationPoint{OtherNation: otherNation},
+		// Row 1
+		uncontrolledWilderness,
+		uncontrolledWilderness,
+		uncontrolledWilderness,
 		uncontrolledWilderness,
 		controlledWilderness,
+		// Row 2
+		&core.OtherNationPoint{OtherNation: otherNation},
 		uncontrolledWilderness,
+		&core.OtherNationPoint{OtherNation: otherNation},
+		controlledWilderness,
+		&core.OtherNationPoint{OtherNation: otherNation},
+		// Row 3
+		uncontrolledWilderness,
+		uncontrolledWilderness,
+		uncontrolledWilderness,
+		uncontrolledWilderness,
+		uncontrolledWilderness,
+		// Row 4
+		&core.OtherNationPoint{OtherNation: otherNation},
+		uncontrolledWilderness,
+		&core.OtherNationPoint{OtherNation: otherNation},
+		uncontrolledWilderness,
+		&core.BossPoint{Boss: boss},
 	}
 
 	mapGrid := &core.MapGrid{
-		SizeX:  3,
-		SizeY:  3,
+		SizeX:  5,
+		SizeY:  5,
 		Points: points,
 	}
 
@@ -115,46 +126,39 @@ func TestMapGrid_CanInteract(t *testing.T) {
 			reason:   "MyNationPointに隣接し、制圧済み",
 		},
 		{
-			name:     "MyNationPointに隣接するOtherNation(0,1)は操作可能",
+			name:     "MyNationPointに隣接する未制圧Wilderness(0,1)は操作可能",
 			x:        0,
 			y:        1,
 			expected: true,
-			reason:   "MyNationPointに隣接",
+			reason:   "MyNationPointに隣接し、未制圧",
 		},
 		{
-			name:     "MyNationPointに隣接する未制圧Wilderness(2,0)は操作不可",
-			x:        2,
-			y:        0,
-			expected: false,
-			reason:   "未制圧のWildernessを通る必要がある",
-		},
-		{
-			name:     "制圧済みWilderness(1,0)に隣接する制圧済みWilderness(1,1)は操作可能",
-			x:        1,
-			y:        1,
-			expected: true,
-			reason:   "制圧済みのルートでアクセス可能",
-		},
-		{
-			name:     "制圧済みWilderness(1,1)に隣接するBoss(2,1)は操作可能",
-			x:        2,
-			y:        1,
-			expected: true,
-			reason:   "制圧済みのルートでアクセス可能",
-		},
-		{
-			name:     "遠く離れた未制圧Wilderness(2,2)は操作不可",
-			x:        2,
+			name:     "MyNationPointから到達できないOtherNation(0,2)は操作不可",
+			x:        0,
 			y:        2,
+			expected: false,
+			reason:   "MyNationPointから到達できない",
+		},
+		{
+			name:     "到達できるOtherNation(2,2)に隣接する未制圧Wilderness(1,2)は操作可能",
+			x:        1,
+			y:        2,
+			expected: true,
+			reason:   "制圧済みのルートでアクセス可能",
+		},
+		{
+			name:     "到達できる制圧済みWilderness(3,2)に隣接する未制圧Wilderness(3,3)は操作可能",
+			x:        3,
+			y:        3,
+			expected: true,
+			reason:   "制圧済みのルートでアクセス可能",
+		},
+		{
+			name:     "遠く離れた未制圧Wilderness(3,4)は操作不可",
+			x:        3,
+			y:        4,
 			expected: false,
 			reason:   "制圧済みのルートでアクセス不可",
-		},
-		{
-			name:     "制圧済みWilderness(1,2)は操作可能",
-			x:        1,
-			y:        2,
-			expected: true,
-			reason:   "制圧済みのルートでアクセス可能",
 		},
 		{
 			name:     "範囲外の座標(-1,0)は操作不可",
@@ -164,8 +168,8 @@ func TestMapGrid_CanInteract(t *testing.T) {
 			reason:   "マップ範囲外",
 		},
 		{
-			name:     "範囲外の座標(3,0)は操作不可",
-			x:        3,
+			name:     "範囲外の座標(5,0)は操作不可",
+			x:        5,
 			y:        0,
 			expected: false,
 			reason:   "マップ範囲外",

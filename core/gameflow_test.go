@@ -200,31 +200,51 @@ func TestGameState_CanInteract(t *testing.T) {
 		BasicYield: core.ResourceQuantity{Money: 5},
 	}
 
-	// 制圧済みWilderness
-	controlledWilderness := &core.WildernessPoint{
-		Controlled: true,
-		Territory: &core.Territory{
-			TerritoryID: "controlled",
-			BaseYield:   core.ResourceQuantity{Money: 5},
-		},
-	}
-
-	// 2x2のマップグリッド
-	/*
-		配置:
-		(0,0) MyNation          (1,0) ControlledWilderness
-		(0,1) nil               (1,1) nil
-	*/
 	points := []core.Point{
 		&core.MyNationPoint{MyNation: myNation},
-		controlledWilderness,
+		&core.WildernessPoint{
+			Controlled: true,
+			Territory: &core.Territory{
+				TerritoryID: "controlled",
+				BaseYield:   core.ResourceQuantity{Money: 5},
+			},
+		},
 		&core.OtherNationPoint{OtherNation: &core.OtherNation{}},
+		&core.WildernessPoint{
+			Controlled: false,
+			Territory: &core.Territory{
+				TerritoryID: "uncontrolled",
+				BaseYield:   core.ResourceQuantity{Money: 5},
+			},
+		},
+		&core.WildernessPoint{
+			Controlled: false,
+			Territory: &core.Territory{
+				TerritoryID: "uncontrolled",
+				BaseYield:   core.ResourceQuantity{Money: 5},
+			},
+		},
+		&core.WildernessPoint{
+			Controlled: true,
+			Territory: &core.Territory{
+				TerritoryID: "controlled",
+				BaseYield:   core.ResourceQuantity{Money: 5},
+			},
+		},
 		&core.BossPoint{Boss: &core.Enemy{}},
+		&core.WildernessPoint{
+			Controlled: true,
+			Territory: &core.Territory{
+				TerritoryID: "controlled",
+				BaseYield:   core.ResourceQuantity{Money: 5},
+			},
+		},
+		&core.OtherNationPoint{OtherNation: &core.OtherNation{}},
 	}
 
 	mapGrid := &core.MapGrid{
-		SizeX:  2,
-		SizeY:  2,
+		SizeX:  3,
+		SizeY:  3,
 		Points: points,
 	}
 
@@ -253,10 +273,10 @@ func TestGameState_CanInteract(t *testing.T) {
 			expected: true,
 		},
 		{
-			name:     "何もないポイント(0,1)は操作不可",
+			name:     "ボスポイントは操作可能",
 			x:        0,
-			y:        1,
-			expected: false,
+			y:        2,
+			expected: true,
 		},
 		{
 			name:     "範囲外の座標は操作不可",
