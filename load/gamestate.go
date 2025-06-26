@@ -78,3 +78,20 @@ func LoadGameState() *core.GameState {
 
 	return gs
 }
+
+func createBattleCards() map[core.CardID]*core.BattleCard {
+	cards := []*core.BattleCard{
+		{
+			CardID: "battle_card_1",
+			Power:  3,
+			Skill:  nil,
+			Type:   "warrior",
+		},
+	}
+
+	cardMap := make(map[core.CardID]*core.BattleCard)
+	for _, card := range cards {
+		cardMap[card.CardID] = card
+	}
+	return cardMap
+}
