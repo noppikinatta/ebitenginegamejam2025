@@ -87,16 +87,17 @@ type ResourceCard struct {
 	ResourceQuantity ResourceQuantity // は獲得するResourceの量です。
 }
 
-// CardDatabase はカードの検索データベース
-type CardDatabase struct {
+// CardGenerator はカードを生成するための構造体です。
+type CardGenerator struct {
 	BattleCards    map[CardID]*BattleCard
 	StructureCards map[CardID]*StructureCard
 	ResourceCards  map[CardID]*ResourceCard
 }
 
-// GetCards 引数cardIDsに対応するカードを返す。1枚でも対応するカードがなければfalseを返す。
-// 正しくデータを作っていれば、GetCardsは常にtrueを返す。
-func (d *CardDatabase) GetCards(cardIDs []CardID) (*Cards, bool) {
+// Generate は引数のCardIDの配列に対応するカードを生成します。
+// 1枚でも対応するカードがなければfalseを返します。
+// 正しくデータを作っていれば、Generateは常にtrueを返します。
+func (g *CardGenerator) Generate(cardIDs []CardID) (*Cards, bool) {
 	cards := &Cards{
 		BattleCards:    make([]*BattleCard, 0),
 		StructureCards: make([]*StructureCard, 0),
@@ -105,20 +106,23 @@ func (d *CardDatabase) GetCards(cardIDs []CardID) (*Cards, bool) {
 
 	for _, cardID := range cardIDs {
 		// BattleCardとして存在するかチェック
-		if battleCard, exists := d.BattleCards[cardID]; exists {
-			cards.BattleCards = append(cards.BattleCards, battleCard)
+		if battleCard, exists := g.BattleCards[cardID]; exists {
+			newBattleCard := *battleCard
+			cards.BattleCards = append(cards.BattleCards, &newBattleCard)
 			continue
 		}
 
 		// StructureCardとして存在するかチェック
-		if structureCard, exists := d.StructureCards[cardID]; exists {
-			cards.StructureCards = append(cards.StructureCards, structureCard)
+		if structureCard, exists := g.StructureCards[cardID]; exists {
+			newStructureCard := *structureCard
+			cards.StructureCards = append(cards.StructureCards, &newStructureCard)
 			continue
 		}
 
 		// ResourceCardとして存在するかチェック
-		if resourceCard, exists := d.ResourceCards[cardID]; exists {
-			cards.ResourceCards = append(cards.ResourceCards, resourceCard)
+		if resourceCard, exists := g.ResourceCards[cardID]; exists {
+			newResourceCard := *resourceCard
+			cards.ResourceCards = append(cards.ResourceCards, &newResourceCard)
 			continue
 		}
 
@@ -132,7 +136,6 @@ func (d *CardDatabase) GetCards(cardIDs []CardID) (*Cards, bool) {
 // CardDeck はプレイヤーが持つカードデッキ
 type CardDeck struct {
 	Cards // 埋め込み構造体
-	// ここにドメインの機能を追加するかもしれない。
 }
 
 // Add は引数のCardsをCardDeckに追加します
@@ -179,7 +182,39 @@ type YieldModifier interface {
 	Modify(quantity ResourceQuantity) ResourceQuantity // 引数quantityを変更する。
 }
 
+type MultiplyYieldModifier struct {
+	Multiply float64
+}
+
+func (m *MultiplyYieldModifier) Modify(quantity ResourceQuantity) ResourceQuantity {
+	return ResourceQuantity{
+		Food:  int(float64(quantity.Food) * m.Multiply),
+		Money: int(float64(quantity.Money) * m.Multiply),
+		Wood:  int(float64(quantity.Wood) * m.Multiply),
+		Iron:  int(float64(quantity.Iron) * m.Multiply),
+		Mana:  int(float64(quantity.Mana) * m.Multiply),
+	}
+}
+
 // BattlefieldModifier はBattlefieldの状態を変更するスキル
 type BattlefieldModifier interface {
 	Modify(battlefield *Battlefield) *Battlefield // 引数battlefieldを変更する。
+}
+
+type CardSlotBattlefieldModifier struct {
+	Value int
+}
+
+func (m *CardSlotBattlefieldModifier) Modify(battlefield *Battlefield) *Battlefield {
+	battlefield.CardSlot += m.Value
+	return battlefield
+}
+
+type SupportPowerBattlefieldModifier struct {
+	Value float64
+}
+
+func (m *SupportPowerBattlefieldModifier) Modify(battlefield *Battlefield) *Battlefield {
+	battlefield.SupportPower += m.Value
+	return battlefield
 }

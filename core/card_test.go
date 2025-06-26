@@ -108,7 +108,7 @@ func TestCardPack_Open(t *testing.T) {
 
 func TestCardDatabase_GetCards(t *testing.T) {
 	// テスト用のカードデータベース
-	db := core.CardDatabase{
+	gen := core.CardGenerator{
 		BattleCards: map[core.CardID]*core.BattleCard{
 			"battle_1": {
 				CardID: "battle_1",
@@ -185,7 +185,7 @@ func TestCardDatabase_GetCards(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cards, ok := db.GetCards(tt.cardIDs)
+			cards, ok := gen.Generate(tt.cardIDs)
 			if ok != tt.expectOk {
 				t.Errorf("GetCards() ok = %v, want %v", ok, tt.expectOk)
 				return

@@ -2,11 +2,12 @@ package core
 
 // GameState ゲームの全体状態を管理する
 type GameState struct {
-	MyNation    *MyNation // プレイヤー国家
-	CardDeck    *CardDeck // プレイヤーの所持カード
-	MapGrid     *MapGrid  // マップグリッド
-	Treasury    *Treasury // プレイヤーの国庫
-	CurrentTurn int       // 現在のターン数
+	MyNation      *MyNation      // プレイヤー国家
+	CardDeck      *CardDeck      // プレイヤーの所持カード
+	MapGrid       *MapGrid       // マップグリッド
+	Treasury      *Treasury      // プレイヤーの国庫
+	CurrentTurn   int            // 現在のターン数
+	CardGenerator *CardGenerator // カード生成器
 }
 
 // AddYield 制圧済みのTerritoryとMyNationのBasicYieldをTreasuryに加算する

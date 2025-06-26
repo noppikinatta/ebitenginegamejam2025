@@ -60,8 +60,7 @@ func TestGameState_AddYield(t *testing.T) {
 	}
 
 	mapGrid := &core.MapGrid{
-		SizeX:  2,
-		SizeY:  2,
+		Size:   core.MapGridSize{X: 2, Y: 2},
 		Points: points,
 	}
 
@@ -103,7 +102,7 @@ func TestGameState_NextTurn(t *testing.T) {
 
 	gameState := &core.GameState{
 		MyNation: myNation,
-		MapGrid:  &core.MapGrid{SizeX: 1, SizeY: 1, Points: []core.Point{&core.MyNationPoint{MyNation: myNation}}},
+		MapGrid:  &core.MapGrid{Size: core.MapGridSize{X: 1, Y: 1}, Points: []core.Point{&core.MyNationPoint{MyNation: myNation}}},
 		Treasury: &core.Treasury{
 			Resources: core.ResourceQuantity{Money: 100},
 		},
@@ -171,8 +170,7 @@ func TestGameState_IsVictory(t *testing.T) {
 			}
 
 			mapGrid := &core.MapGrid{
-				SizeX:  1,
-				SizeY:  1,
+				Size:   core.MapGridSize{X: 1, Y: 1},
 				Points: []core.Point{bossPoint},
 			}
 
@@ -243,8 +241,7 @@ func TestGameState_CanInteract(t *testing.T) {
 	}
 
 	mapGrid := &core.MapGrid{
-		SizeX:  3,
-		SizeY:  3,
+		Size:   core.MapGridSize{X: 3, Y: 3},
 		Points: points,
 	}
 
@@ -311,8 +308,7 @@ func TestGameState_GetPoint(t *testing.T) {
 	points := []core.Point{myNationPoint}
 
 	mapGrid := &core.MapGrid{
-		SizeX:  1,
-		SizeY:  1,
+		Size:   core.MapGridSize{X: 1, Y: 1},
 		Points: points,
 	}
 

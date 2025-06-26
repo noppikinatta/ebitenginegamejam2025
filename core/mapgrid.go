@@ -65,8 +65,7 @@ func (p *BossPoint) IsMyNation() bool {
 
 // MapGrid ゲームのマップグリッド
 type MapGrid struct {
-	SizeX      int     // X方向のサイズ
-	SizeY      int     // Y方向のサイズ
+	Size       MapGridSize
 	Points     []Point // Pointの一覧。インデックスは y*SizeX + x で計算
 	accesibles []bool
 }
@@ -81,17 +80,18 @@ func (m *MapGrid) GetPoint(x, y int) Point {
 }
 
 func (m *MapGrid) IndexFromPoint(x, y int) (int, bool) {
-	if x < 0 || x >= m.SizeX || y < 0 || y >= m.SizeY {
+	if x < 0 || x >= m.Size.X || y < 0 || y >= m.Size.Y {
 		return 0, false
 	}
-	return y*m.SizeX + x, true
+	return m.Size.Index(x, y), true
 }
 
 func (m *MapGrid) PointFromIndex(index int) (int, int, bool) {
-	if index < 0 || index >= len(m.Points) {
+	x, y := m.Size.XY(index)
+	if x < 0 || x >= m.Size.X || y < 0 || y >= m.Size.Y {
 		return 0, 0, false
 	}
-	return index % m.SizeX, index / m.SizeX, true
+	return x, y, true
 }
 
 func (m *MapGrid) UpdateAccesibles() {
@@ -156,4 +156,21 @@ func (m *MapGrid) CanInteract(x, y int) bool {
 	}
 
 	return m.accesibles[idx]
+}
+
+type MapGridSize struct {
+	X int
+	Y int
+}
+
+func (s MapGridSize) Index(x, y int) int {
+	return y*s.X + x
+}
+
+func (s MapGridSize) XY(index int) (int, int) {
+	return index % s.X, index / s.X
+}
+
+func (s MapGridSize) Length() int {
+	return s.X * s.Y
 }

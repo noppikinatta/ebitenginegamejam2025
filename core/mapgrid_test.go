@@ -100,8 +100,7 @@ func TestMapGrid_CanInteract(t *testing.T) {
 	}
 
 	mapGrid := &core.MapGrid{
-		SizeX:  5,
-		SizeY:  5,
+		Size:   core.MapGridSize{X: 5, Y: 5},
 		Points: points,
 	}
 
@@ -305,8 +304,7 @@ func TestMapGrid_GetPoint(t *testing.T) {
 	}
 
 	mapGrid := &core.MapGrid{
-		SizeX:  2,
-		SizeY:  2,
+		Size:   core.MapGridSize{X: 2, Y: 2},
 		Points: points,
 	}
 
