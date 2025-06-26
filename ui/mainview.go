@@ -24,6 +24,7 @@ type MainView struct {
 	Market      *MarketView
 	Battle      *BattleView
 	Territory   *TerritoryView
+	CardDeck    *CardDeckView
 
 	// ゲーム状態
 	GameState *core.GameState
@@ -43,6 +44,16 @@ func NewMainView(gameState *core.GameState) *MainView {
 	m.Market = NewMarketView(onBack)
 	m.Battle = NewBattleView(onBack)
 	m.Territory = NewTerritoryView(onBack)
+
+	// CardDeckViewを作成し、コールバックを設定
+	m.CardDeck = NewCardDeckView(gameState.CardDeck)
+	m.CardDeck.OnBattleCardClicked = m.onBattleCardClicked
+	m.CardDeck.OnStructureCardClicked = m.onStructureCardClicked
+
+	// 各ViewにGameStateを設定
+	m.Market.SetGameState(gameState)
+	m.Battle.SetGameState(gameState)
+	m.Territory.SetGameState(gameState)
 
 	m.MapGrid = NewMapGridView(gameState, func(point core.Point) {
 		m.SetSelectedPoint(point)
@@ -67,6 +78,32 @@ func NewMainView(gameState *core.GameState) *MainView {
 	return m
 }
 
+// onBattleCardClicked BattleCardクリック時の処理
+func (m *MainView) onBattleCardClicked(card *core.BattleCard) bool {
+	if m.CurrentView != ViewTypeBattle {
+		return false
+	}
+
+	if m.Battle.CanPlaceCard() {
+		return m.Battle.PlaceCard(card)
+	}
+
+	return false
+}
+
+// onStructureCardClicked StructureCardクリック時の処理
+func (m *MainView) onStructureCardClicked(card *core.StructureCard) bool {
+	if m.CurrentView != ViewTypeTerritory {
+		return false
+	}
+
+	if m.Territory.CanPlaceCard() {
+		return m.Territory.PlaceCard(card)
+	}
+
+	return false
+}
+
 // SwitchView 表示するViewを切り替える
 func (m *MainView) SwitchView(viewType ViewType) {
 	m.CurrentView = viewType
@@ -74,6 +111,13 @@ func (m *MainView) SwitchView(viewType ViewType) {
 
 // HandleInput 入力処理
 func (m *MainView) HandleInput(input *Input) error {
+	// CardDeckViewの入力処理（常に有効）
+	if m.CardDeck != nil {
+		if err := m.CardDeck.HandleInput(input); err != nil {
+			return err
+		}
+	}
+
 	// 現在のViewに入力を転送
 	switch m.CurrentView {
 	case ViewTypeMapGrid:
@@ -117,6 +161,11 @@ func (m *MainView) Draw(screen *ebiten.Image) {
 			m.Territory.Draw(screen)
 		}
 	}
+
+	// CardDeckViewを常に描画
+	if m.CardDeck != nil {
+		m.CardDeck.Draw(screen)
+	}
 }
 
 // GetCurrentView 現在表示中のViewタイプを取得
@@ -141,12 +190,14 @@ func (m *MainView) SetSelectedPoint(point core.Point) {
 			}
 		} else {
 			if m.Battle != nil {
-				m.Battle.SetEnemy(p.Enemy)
+				// TODO: 実際の座標を渡すようにMapGridViewを改修する必要がある
+				m.Battle.SetEnemy(p.Enemy, 0, 0) // 暫定的に0,0を設定
 			}
 		}
 	case *core.BossPoint:
 		if m.Battle != nil {
-			m.Battle.SetEnemy(p.Boss)
+			// TODO: 実際の座標を渡すようにMapGridViewを改修する必要がある
+			m.Battle.SetEnemy(p.Boss, 0, 0) // 暫定的に0,0を設定
 		}
 	}
 }

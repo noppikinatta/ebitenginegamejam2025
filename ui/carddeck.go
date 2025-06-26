@@ -16,6 +16,10 @@ type CardDeckView struct {
 	SelectedIndex  int               // 選択中のカードインデックス (-1は未選択)
 	OnCardSelected func(interface{}) // カード選択時のコールバック
 
+	// 新しいコールバック
+	OnBattleCardClicked    func(*core.BattleCard) bool    // BattleCardクリック時のコールバック
+	OnStructureCardClicked func(*core.StructureCard) bool // StructureCardクリック時のコールバック
+
 	// マウスカーソル位置（外部から設定）
 	MouseX, MouseY int
 }
@@ -181,9 +185,51 @@ func (c *CardDeckView) AddCard(card interface{}) {
 
 // HandleInput 入力処理
 func (c *CardDeckView) HandleInput(input *Input) error {
-	// TODO: マウスクリックでカード選択
-	// 現在はマウス操作が困難なため、後回し
+	if input.Mouse.IsJustReleased(ebiten.MouseButtonLeft) {
+		cursorX, cursorY := input.Mouse.CursorPosition()
+
+		// CardDeckView領域内かチェック (0,300,640,60)
+		if cursorY >= 300 && cursorY < 360 && cursorX >= 0 && cursorX < 640 {
+			c.handleCardClick(cursorX, cursorY)
+		}
+	}
 	return nil
+}
+
+// handleCardClick カードクリック処理
+func (c *CardDeckView) handleCardClick(cursorX, cursorY int) {
+	if c.CardDeck == nil {
+		return
+	}
+
+	allCards := c.getAllCards()
+
+	// カードインデックスを計算 (40x60サイズ)
+	cardIndex := cursorX / 40
+
+	if cardIndex < 0 || cardIndex >= len(allCards) || cardIndex >= 16 {
+		return // 範囲外
+	}
+
+	card := allCards[cardIndex]
+
+	// カードタイプに応じてコールバックを呼び出し
+	switch cardData := card.(type) {
+	case *core.BattleCard:
+		if c.OnBattleCardClicked != nil {
+			if c.OnBattleCardClicked(cardData) {
+				// trueが返された場合、カードをデッキから削除
+				c.removeBattleCard(cardData)
+			}
+		}
+	case *core.StructureCard:
+		if c.OnStructureCardClicked != nil {
+			if c.OnStructureCardClicked(cardData) {
+				// trueが返された場合、カードをデッキから削除
+				c.removeStructureCard(cardData)
+			}
+		}
+	}
 }
 
 // Draw 描画処理

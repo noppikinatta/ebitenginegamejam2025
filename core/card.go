@@ -135,6 +135,17 @@ type CardDeck struct {
 	// ここにドメインの機能を追加するかもしれない。
 }
 
+// Add は引数のCardsをCardDeckに追加します
+func (cd *CardDeck) Add(cards *Cards) {
+	if cards == nil {
+		return
+	}
+
+	cd.BattleCards = append(cd.BattleCards, cards.BattleCards...)
+	cd.StructureCards = append(cd.StructureCards, cards.StructureCards...)
+	cd.ResourceCards = append(cd.ResourceCards, cards.ResourceCards...)
+}
+
 // BattleCardSkillID はバトルカードスキルの識別子
 type BattleCardSkillID string
 

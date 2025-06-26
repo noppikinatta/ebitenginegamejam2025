@@ -70,3 +70,31 @@ TerritoryViewには、core.Terriroryとは別に、一時的なカード置き�
 
 CardDeckViewから、BattleViewとTerritoryViewにカードを置く必要がある。
 
+CardDeckViewは、`OnBattleCardClicked func(battleCard) bool` と `OnStructureCardClicked func(structureCard) bool` フィールドを持つべきである。これらは、CardDeckView上でBattleCardやStructureCardがクリックされたときに呼ばれる。このフィールドに登録された関数が `true` を返すとき、そのカードはCardDeckから取り除く。
+
+`OnBattleCardClicked`や`OnStructureCardClicked`に登録する関数は、MainViewで定義する。
+
+### OnBattleCardClicked
+
+次の処理の関数をMainViewに定義し、CardDeckViewに渡す。
+
+1. CurrentViewがViewTypeBattleでなければfalseを返す。
+2. BattleViewが持つBattlefieldで、まだカードが置けるならbattleCardを置き、trueを返す。
+3. 置けないならfalseを返す。
+
+### OnStructureCardClicked
+
+次の処理の関数をMainViewに定義し、CardDeckViewに渡す。
+
+1. CurrentViewがViewTypeTerritoryでなければfalseを返す。
+2. TerritoryViewが持つTerritoryで、まだカードが置けるならstructureCardをおき、trueを返す。
+3. 置けないならfalseを返す。
+
+### CardDeckViewの既存の実装
+
+既存の実装のうちいくつかは不要になるかもしれない。
+
+## カードをBattleViewやTerritoryViewからCardDeckに戻す処理
+
+BattleViewやTerritoryViewでカードがクリックされたとき、そのカードを持っているGameState.CardDeckに追加する。
+CardDeckViewはCardDeckの同じインスタンスを参照しているので、CardDeckへの変更が即時反映されるはずである。

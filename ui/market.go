@@ -2,6 +2,8 @@ package ui
 
 import (
 	"fmt"
+	"math/rand"
+	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/noppikinatta/ebitenginegamejam2025/core"
@@ -55,7 +57,8 @@ func (mv *MarketView) HandleInput(input *Input) error {
 			}
 		}
 
-		// TODO: CardPackのクリック判定と購入処理
+		// CardPackのクリック判定と購入処理
+		mv.handleMarketItemClick(cursorX, cursorY)
 	}
 	return nil
 }
@@ -103,7 +106,7 @@ func (mv *MarketView) drawBackButton(screen *ebiten.Image) {
 
 // drawMarketItems MarketItem一覧を描画
 func (mv *MarketView) drawMarketItems(screen *ebiten.Image) {
-	marketItems := mv.getVisibleMarketItems()
+	marketItems := mv.getAllMarketItems()
 
 	// CardPack表示領域: 260x80 × 6個
 	// 配置: (0,60,260,80), (260,60,260,80), (0,140,260,80), (260,140,260,80), (0,220,260,80), (260,220,260,80)
@@ -128,12 +131,19 @@ func (mv *MarketView) drawMarketItems(screen *ebiten.Image) {
 
 // drawMarketItem 個別のMarketItemを描画
 func (mv *MarketView) drawMarketItem(screen *ebiten.Image, item *core.MarketItem, index int, x, y, width, height float64) {
-	// CardPack枠を描画
+	isAvailable := mv.isMarketItemAvailable(item)
+
+	// CardPack枠を描画（レベル不足の場合は暗くする）
+	var colorR, colorG, colorB float32 = 0.9, 0.9, 0.9
+	if !isAvailable {
+		colorR, colorG, colorB = 0.5, 0.5, 0.5 // 暗くする
+	}
+
 	vertices := []ebiten.Vertex{
-		{DstX: float32(x), DstY: float32(y), SrcX: 0, SrcY: 0, ColorR: 0.9, ColorG: 0.9, ColorB: 0.9, ColorA: 1},
-		{DstX: float32(x + width), DstY: float32(y), SrcX: 0, SrcY: 0, ColorR: 0.9, ColorG: 0.9, ColorB: 0.9, ColorA: 1},
-		{DstX: float32(x + width), DstY: float32(y + height), SrcX: 0, SrcY: 0, ColorR: 0.9, ColorG: 0.9, ColorB: 0.9, ColorA: 1},
-		{DstX: float32(x), DstY: float32(y + height), SrcX: 0, SrcY: 0, ColorR: 0.9, ColorG: 0.9, ColorB: 0.9, ColorA: 1},
+		{DstX: float32(x), DstY: float32(y), SrcX: 0, SrcY: 0, ColorR: colorR, ColorG: colorG, ColorB: colorB, ColorA: 1},
+		{DstX: float32(x + width), DstY: float32(y), SrcX: 0, SrcY: 0, ColorR: colorR, ColorG: colorG, ColorB: colorB, ColorA: 1},
+		{DstX: float32(x + width), DstY: float32(y + height), SrcX: 0, SrcY: 0, ColorR: colorR, ColorG: colorG, ColorB: colorB, ColorA: 1},
+		{DstX: float32(x), DstY: float32(y + height), SrcX: 0, SrcY: 0, ColorR: colorR, ColorG: colorG, ColorB: colorB, ColorA: 1},
 	}
 	indices := []uint16{0, 1, 2, 0, 2, 3}
 	screen.DrawTriangles(vertices, indices, drawing.WhitePixel, &ebiten.DrawTrianglesOptions{})
@@ -150,7 +160,12 @@ func (mv *MarketView) drawMarketItem(screen *ebiten.Image, item *core.MarketItem
 	// CardPack説明 (40,80,220,40) -> 相対位置(40,20,220,40)
 	opt = &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(x+40, y+20)
-	description := "Card pack with various cards" // ダミーテキスト
+	var description string
+	if !isAvailable {
+		description = fmt.Sprintf("Required Level: %.1f", item.RequiredLevel)
+	} else {
+		description = "Card pack with various cards" // ダミーテキスト
+	}
 	drawing.DrawText(screen, description, 10, opt)
 
 	// CardPackの値段 (0,120,260,20) -> 相対位置(0,60,260,20)
@@ -216,12 +231,16 @@ func (mv *MarketView) drawCardPackPrice(screen *ebiten.Image, item *core.MarketI
 	}
 }
 
-// getVisibleMarketItems 表示可能なMarketItem一覧を取得
-func (mv *MarketView) getVisibleMarketItems() []*core.MarketItem {
+// getAllMarketItems 全てのMarketItem一覧を取得（レベル不足含む）
+func (mv *MarketView) getAllMarketItems() []*core.MarketItem {
 	if mv.Nation == nil {
 		return []*core.MarketItem{}
 	}
-	return mv.Nation.VisibleMarketItems()
+	market := mv.Nation.GetMarket()
+	if market == nil {
+		return []*core.MarketItem{}
+	}
+	return market.Items
 }
 
 // getCardPackPrice CardPackの価格と購入可能性を取得
@@ -238,4 +257,125 @@ func (mv *MarketView) getCardPackPrice(index int) (*core.ResourceQuantity, bool)
 	}
 
 	return nil, false
+}
+
+// handleMarketItemClick MarketItemのクリック処理
+func (mv *MarketView) handleMarketItemClick(cursorX, cursorY int) {
+	positions := [][4]int{
+		{0, 60, 260, 80},    // 左上
+		{260, 60, 260, 80},  // 右上
+		{0, 140, 260, 80},   // 左中
+		{260, 140, 260, 80}, // 右中
+		{0, 220, 260, 80},   // 左下
+		{260, 220, 260, 80}, // 右下
+	}
+
+	marketItems := mv.getAllMarketItems()
+
+	for i, pos := range positions {
+		if i >= len(marketItems) {
+			break
+		}
+
+		if cursorX >= pos[0] && cursorX < pos[0]+pos[2] &&
+			cursorY >= pos[1] && cursorY < pos[1]+pos[3] {
+			// MarketItemがクリックされた
+			item := marketItems[i]
+
+			// レベル不足の場合は購入できない
+			if !mv.isMarketItemAvailable(item) {
+				return // 何もしない
+			}
+
+			if err := mv.PurchaseCardPack(item); err == nil {
+				// 購入成功時、MapGridViewに戻る
+				if mv.OnBackClicked != nil {
+					mv.OnBackClicked()
+				}
+			}
+			break
+		}
+	}
+}
+
+// simpleRand は Intner インターフェースを実装する簡単な乱数生成器
+type simpleRand struct {
+	*rand.Rand
+}
+
+func newSimpleRand() *simpleRand {
+	return &simpleRand{rand.New(rand.NewSource(time.Now().UnixNano()))}
+}
+
+func (sr *simpleRand) Intn(n int) int {
+	return sr.Rand.Intn(n)
+}
+
+// PurchaseCardPack カードパック購入処理
+func (mv *MarketView) PurchaseCardPack(item *core.MarketItem) error {
+	if mv.GameState == nil || mv.Nation == nil {
+		return fmt.Errorf("GameState or Nation is nil")
+	}
+
+	market := mv.Nation.GetMarket()
+	if market == nil {
+		return fmt.Errorf("Market is nil")
+	}
+
+	// アイテムのインデックスを見つける
+	itemIndex := -1
+	for i, marketItem := range market.Items {
+		if marketItem == item {
+			itemIndex = i
+			break
+		}
+	}
+
+	if itemIndex == -1 {
+		return fmt.Errorf("Item not found in market")
+	}
+
+	// 購入処理
+	cardPack, ok := mv.Nation.Purchase(itemIndex, mv.GameState.Treasury)
+	if !ok {
+		return fmt.Errorf("Purchase failed")
+	}
+
+	// CardPackを開いてCardsを取得
+	rng := newSimpleRand()
+	cardIDs := cardPack.Open(rng)
+
+	// CardDatabaseから実際のCardsを取得する必要があるが、
+	// 今回はダミー実装として、cardIDsの数だけダミーカードを作成
+	cards := &core.Cards{
+		BattleCards:    make([]*core.BattleCard, len(cardIDs)),
+		StructureCards: make([]*core.StructureCard, 0),
+		ResourceCards:  make([]*core.ResourceCard, 0),
+	}
+
+	// ダミーカードを作成（実際の実装ではCardDatabaseから取得）
+	for i, cardID := range cardIDs {
+		cards.BattleCards[i] = &core.BattleCard{
+			CardID: cardID,
+			Power:  10.0,      // ダミー値
+			Type:   "Warrior", // ダミー値
+		}
+	}
+
+	// GameState.CardDeckに追加
+	mv.GameState.CardDeck.Add(cards)
+
+	return nil
+}
+
+// isMarketItemAvailable MarketItemが利用可能かどうかを判定
+func (mv *MarketView) isMarketItemAvailable(item *core.MarketItem) bool {
+	if mv.Nation == nil {
+		return false
+	}
+	market := mv.Nation.GetMarket()
+	if market == nil {
+		return false
+	}
+	return market.Level >= item.RequiredLevel
 }

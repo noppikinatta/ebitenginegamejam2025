@@ -13,6 +13,9 @@ import (
 type BattleView struct {
 	Enemy       *core.Enemy        // 戦闘対象の敵
 	PointName   string             // 戦闘地点名
+	Battlefield *core.Battlefield  // 戦場情報
+	TargetX     int                // 制圧対象の座標X
+	TargetY     int                // 制圧対象の座標Y
 	BattleCards []*core.BattleCard // 配置されたBattleCard（最大12枚）
 	GameState   *core.GameState    // ゲーム状態
 
@@ -30,9 +33,12 @@ func NewBattleView(onBackClicked func()) *BattleView {
 	}
 }
 
-// SetEnemy 表示する敵を設定
-func (bv *BattleView) SetEnemy(enemy *core.Enemy) {
+// SetEnemy 表示する敵を設定（新バージョン：座標付き）
+func (bv *BattleView) SetEnemy(enemy *core.Enemy, x, y int) {
 	bv.Enemy = enemy
+	bv.TargetX = x
+	bv.TargetY = y
+	bv.Battlefield = bv.createBattlefield(enemy, x, y)
 }
 
 // SetPointName 戦闘地点名を設定
@@ -82,6 +88,10 @@ func (bv *BattleView) GetTotalPower() float64 {
 
 // CanDefeatEnemy 敵を倒せるかどうかを判定
 func (bv *BattleView) CanDefeatEnemy() bool {
+	if bv.Battlefield != nil {
+		return bv.Battlefield.CanBeat()
+	}
+	// 後方互換性のため既存ロジックも残す
 	if bv.Enemy == nil {
 		return false
 	}
@@ -101,10 +111,52 @@ func (bv *BattleView) HandleInput(input *Input) error {
 			}
 		}
 
-		// TODO: 敵画像のクリック判定（勝利処理）
-		// TODO: BattleCardのクリック判定（CardDeckに戻す）
+		// 制圧ボタンのクリック判定 (200,280,120,40)
+		if bv.CanDefeatEnemy() && cursorX >= 200 && cursorX < 320 && cursorY >= 280 && cursorY < 320 {
+			if bv.Conquer() {
+				// 制圧成功時、MapGridViewに戻る
+				if bv.OnBackClicked != nil {
+					bv.OnBackClicked()
+				}
+			}
+			return nil
+		}
+
+		// 敵画像のクリック判定（勝利処理）
+		if bv.CanDefeatEnemy() && cursorX >= 180 && cursorX < 340 && cursorY >= 60 && cursorY < 220 {
+			if bv.OnEnemyClicked != nil {
+				bv.OnEnemyClicked(bv.Enemy)
+			}
+			return nil
+		}
+
+		// BattleCardのクリック判定（CardDeckに戻す）
+		bv.handleBattleCardClick(cursorX, cursorY)
 	}
 	return nil
+}
+
+// handleBattleCardClick BattleCardのクリック処理
+func (bv *BattleView) handleBattleCardClick(cursorX, cursorY int) {
+	// BattleCard置き場 (0,220,480,60) 内の各カード (40x60)
+	if cursorY >= 220 && cursorY < 280 {
+		cardIndex := cursorX / 40
+
+		var targetCard *core.BattleCard
+		if bv.Battlefield != nil && cardIndex >= 0 && cardIndex < len(bv.Battlefield.BattleCards) {
+			targetCard = bv.Battlefield.BattleCards[cardIndex]
+		} else if cardIndex >= 0 && cardIndex < len(bv.BattleCards) {
+			targetCard = bv.BattleCards[cardIndex]
+		}
+
+		if targetCard != nil {
+			// カードをCardDeckに戻す
+			bv.RemoveCard(targetCard)
+			if bv.OnCardClicked != nil {
+				bv.OnCardClicked(targetCard)
+			}
+		}
+	}
 }
 
 // Draw 描画処理
@@ -123,6 +175,9 @@ func (bv *BattleView) Draw(screen *ebiten.Image) {
 
 	// Power表示 (480,220,40,60)
 	bv.drawPowerDisplay(screen)
+
+	// 制圧ボタン描画 (200,280,120,40)
+	bv.drawConquerButton(screen)
 }
 
 // drawHeader ヘッダを描画
@@ -284,4 +339,166 @@ func (bv *BattleView) drawPowerDisplay(screen *ebiten.Image) {
 		requiredText := fmt.Sprintf("/%.1f", bv.Enemy.Power)
 		drawing.DrawText(screen, requiredText, 10, opt)
 	}
+}
+
+// drawConquerButton 制圧ボタンを描画
+func (bv *BattleView) drawConquerButton(screen *ebiten.Image) {
+	canConquer := bv.CanDefeatEnemy()
+
+	// ボタンの色を決定
+	var colorR, colorG, colorB float32 = 0.5, 0.5, 0.5 // 無効時は灰色
+	if canConquer {
+		colorR, colorG, colorB = 0.2, 0.8, 0.2 // 有効時は緑
+	}
+
+	// ボタン背景
+	vertices := []ebiten.Vertex{
+		{DstX: 200, DstY: 280, SrcX: 0, SrcY: 0, ColorR: colorR, ColorG: colorG, ColorB: colorB, ColorA: 1},
+		{DstX: 320, DstY: 280, SrcX: 0, SrcY: 0, ColorR: colorR, ColorG: colorG, ColorB: colorB, ColorA: 1},
+		{DstX: 320, DstY: 320, SrcX: 0, SrcY: 0, ColorR: colorR, ColorG: colorG, ColorB: colorB, ColorA: 1},
+		{DstX: 200, DstY: 320, SrcX: 0, SrcY: 0, ColorR: colorR, ColorG: colorG, ColorB: colorB, ColorA: 1},
+	}
+	indices := []uint16{0, 1, 2, 0, 2, 3}
+	screen.DrawTriangles(vertices, indices, drawing.WhitePixel, &ebiten.DrawTrianglesOptions{})
+
+	// ボタンテキスト
+	opt := &ebiten.DrawImageOptions{}
+	opt.GeoM.Translate(215, 295)
+	if canConquer {
+		drawing.DrawText(screen, "CONQUER", 14, opt)
+	} else {
+		drawing.DrawText(screen, "Need Power", 12, opt)
+	}
+}
+
+// createBattlefield 戦場を作成する
+func (bv *BattleView) createBattlefield(enemy *core.Enemy, x, y int) *core.Battlefield {
+	if bv.GameState == nil {
+		return core.NewBattlefield(enemy, 0.0)
+	}
+
+	supportPower := 0.0
+
+	// x,yをもとに上下左右のPointを調査
+	mapGrid := bv.GameState.MapGrid
+	directions := [][2]int{{0, 1}, {0, -1}, {1, 0}, {-1, 0}} // 上下左右
+
+	for _, dir := range directions {
+		checkX := x + dir[0]
+		checkY := y + dir[1]
+
+		// マップ範囲内かチェック
+		if checkX >= 0 && checkX < mapGrid.SizeX && checkY >= 0 && checkY < mapGrid.SizeY {
+			point := mapGrid.GetPoint(checkX, checkY)
+
+			// ControlledなWildernessPointからTerritoryを取得
+			if wildernessPoint, ok := point.(*core.WildernessPoint); ok {
+				if wildernessPoint.Controlled && wildernessPoint.Territory != nil {
+					territory := wildernessPoint.Territory
+
+					// Territory.CardsのStructureCard.BattlefieldModifierを適用
+					for _, card := range territory.Cards {
+						if card.BattlefieldModifier != nil {
+							// BattlefieldModifierを適用（現在は簡単な実装）
+							// TODO: 実際のModifierの適用ロジック
+						}
+					}
+
+					// 簡単な支援力計算（隣接する制圧済み領土ごとに+1）
+					supportPower += 1.0
+				}
+			}
+		}
+	}
+
+	return core.NewBattlefield(enemy, supportPower)
+}
+
+// CanPlaceCard カードを配置できるかどうかを判定
+func (bv *BattleView) CanPlaceCard() bool {
+	if bv.Battlefield == nil {
+		return false
+	}
+	return len(bv.Battlefield.BattleCards) < bv.Battlefield.CardSlot
+}
+
+// PlaceCard カードを配置する
+func (bv *BattleView) PlaceCard(card *core.BattleCard) bool {
+	if bv.Battlefield == nil {
+		return false
+	}
+
+	success := bv.Battlefield.AddBattleCard(card)
+	if success {
+		// 後方互換性のためBattleCardsも更新
+		bv.BattleCards = append(bv.BattleCards, card)
+	}
+	return success
+}
+
+// RemoveCard カードを除去する
+func (bv *BattleView) RemoveCard(card *core.BattleCard) bool {
+	if bv.Battlefield == nil {
+		return false
+	}
+
+	// カードのインデックスを見つける
+	cardIndex := -1
+	for i, battleCard := range bv.Battlefield.BattleCards {
+		if battleCard == card {
+			cardIndex = i
+			break
+		}
+	}
+
+	if cardIndex == -1 {
+		return false
+	}
+
+	// Battlefieldから除去
+	removedCard, success := bv.Battlefield.RemoveBattleCard(cardIndex)
+	if success && removedCard != nil {
+		// GameState.CardDeckに追加
+		if bv.GameState != nil {
+			cards := &core.Cards{BattleCards: []*core.BattleCard{removedCard}}
+			bv.GameState.CardDeck.Add(cards)
+		}
+
+		// 後方互換性のためBattleCardsも更新
+		for i, battleCard := range bv.BattleCards {
+			if battleCard == card {
+				bv.BattleCards = append(bv.BattleCards[:i], bv.BattleCards[i+1:]...)
+				break
+			}
+		}
+	}
+
+	return success
+}
+
+// Conquer 制圧処理を実行する
+func (bv *BattleView) Conquer() bool {
+	if bv.Battlefield == nil || bv.GameState == nil {
+		return false
+	}
+
+	// 勝利可能かチェック
+	if !bv.Battlefield.CanBeat() {
+		return false
+	}
+
+	// 戦闘勝利処理
+	bv.Battlefield.Beat()
+
+	// 対象WildernessPointのControlledをtrueに変更
+	mapGrid := bv.GameState.MapGrid
+	point := mapGrid.GetPoint(bv.TargetX, bv.TargetY)
+
+	if wildernessPoint, ok := point.(*core.WildernessPoint); ok {
+		wildernessPoint.Controlled = true
+		// Enemyをnilにする（制圧済みなので）
+		wildernessPoint.Enemy = nil
+	}
+
+	return true
 }
