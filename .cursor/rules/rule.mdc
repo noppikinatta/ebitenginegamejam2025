@@ -24,3 +24,7 @@ For example, test codes for core/battle.go must be in core/battle_test.go
 Package name for test codes must have traling `_test`, for example, test code files for `core` package starts with `package core_test`
 
 Directory for test data also must be in same package, core/testdata/ stores test data for `core` package
+
+## DO NOT commit
+
+Staging and commit are done by human
