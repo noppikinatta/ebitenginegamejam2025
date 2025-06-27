@@ -73,6 +73,9 @@ func (bv *BattleView) HandleInput(input *Input) error {
 
 		// 戻るボタンのクリック判定 (480,20,40,40)
 		if cursorX >= 480 && cursorX < 520 && cursorY >= 20 && cursorY < 60 {
+			// 置いたBattleCardをすべてCardDeckに戻す
+			bv.GameState.CardDeck.Add(&core.Cards{BattleCards: bv.Battlefield.BattleCards})
+			bv.Battlefield.BattleCards = make([]*core.BattleCard, 0)
 			if bv.OnBackClicked != nil {
 				bv.OnBackClicked()
 				return nil
