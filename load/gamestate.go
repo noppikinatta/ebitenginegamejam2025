@@ -44,7 +44,7 @@ func createMyNation() *core.MyNation {
 		BasicYield: core.ResourceQuantity{
 			Food:  1,
 			Wood:  1,
-			Money: 1,
+			Money: 3,
 			Iron:  0,
 			Mana:  0,
 		},
@@ -95,7 +95,7 @@ func createMapGrid(myNation *core.MyNation) *core.MapGrid {
 										},
 										NumPerOpen: 2,
 									},
-									Price: core.ResourceQuantity{Money: 5},
+									Price: core.ResourceQuantity{Money: 3},
 								},
 							},
 						},
@@ -108,7 +108,7 @@ func createMapGrid(myNation *core.MyNation) *core.MapGrid {
 		points[i] = &core.WildernessPoint{
 			Controlled: false,
 			Enemy:      &core.Enemy{Power: 10, BattleCardSlot: 5},
-			Territory:  &core.Territory{BaseYield: core.ResourceQuantity{Food: 5}},
+			Territory:  &core.Territory{BaseYield: core.ResourceQuantity{Food: 5}, CardSlot: 3},
 		}
 	}
 

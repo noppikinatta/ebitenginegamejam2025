@@ -10,9 +10,7 @@ type GameState struct {
 	CardGenerator *CardGenerator // カード生成器
 }
 
-// AddYield 制圧済みのTerritoryとMyNationのBasicYieldをTreasuryに加算する
-func (g *GameState) AddYield() {
-	// MyNationのBasicYieldを加算
+func (g *GameState) GetYield() ResourceQuantity {
 	totalYield := g.MyNation.BasicYield
 
 	// 制圧済みWildernessPointのTerritoryのYieldを加算
@@ -22,8 +20,12 @@ func (g *GameState) AddYield() {
 		}
 	}
 
-	// Treasuryに加算
-	g.Treasury.Add(totalYield)
+	return totalYield
+}
+
+// AddYield 制圧済みのTerritoryとMyNationのBasicYieldをTreasuryに加算する
+func (g *GameState) AddYield() {
+	g.Treasury.Add(g.GetYield())
 }
 
 // NextTurn ターンを進行し、Yieldを加算する

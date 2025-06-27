@@ -25,14 +25,7 @@ type GameUI struct {
 // NewGameUI GameUIを作成する
 func NewGameUI(gameState *core.GameState) *GameUI {
 	// 各Widgetを初期化
-	var resourceView *ResourceView
-	if gameState != nil && gameState.Treasury != nil {
-		resourceView = NewResourceView(gameState.Treasury)
-	} else {
-		// デフォルトのTreasuryで初期化
-		resourceView = NewResourceView(&core.Treasury{})
-	}
-
+	resourceView := NewResourceView(gameState)
 	calendarView := NewCalendarView(gameState)
 	mainView := NewMainView(gameState)
 	infoView := NewInfoView()
@@ -92,38 +85,6 @@ func (gui *GameUI) setupWidgetConnections() {
 	// MainViewからInfoViewへの連携は、Update()で動的に処理
 }
 
-// SetGameState GameStateを設定
-func (gui *GameUI) SetGameState(gameState *core.GameState) {
-	gui.GameState = gameState
-	gui.InfoView.SetGameState(gameState)
-
-	// ResourceViewの更新
-	if gameState != nil && gameState.Treasury != nil {
-		gui.ResourceView.Treasury = gameState.Treasury
-
-		// 次ターンの収入予測を設定
-		increment := gui.calculateYieldIncrement()
-		gui.ResourceView.SetIncrement(increment)
-	}
-}
-
-// calculateYieldIncrement 次ターンの収入予測を計算
-func (gui *GameUI) calculateYieldIncrement() core.ResourceQuantity {
-	if gui.GameState == nil {
-		return core.ResourceQuantity{}
-	}
-
-	// TODO: ここでGameState.CalculateYield()を呼び出す
-	// 現在はダミー実装
-	return core.ResourceQuantity{
-		Money: 5,
-		Food:  3,
-		Wood:  2,
-		Iron:  1,
-		Mana:  1,
-	}
-}
-
 // AddHistoryEvent 履歴イベントを追加
 func (gui *GameUI) AddHistoryEvent(event string) {
 	gui.InfoView.AddHistoryEvent(event)
@@ -158,26 +119,8 @@ func (gui *GameUI) HandleInput(input *Input) error {
 
 // Update フレーム更新処理
 func (gui *GameUI) Update() error {
-	// Widget間の動的連携処理
-	gui.updateWidgetConnections()
-
-	// 必要に応じてGameStateから最新データを反映
-	if gui.GameState != nil {
-		// ResourceViewの増分更新
-		increment := gui.calculateYieldIncrement()
-		gui.ResourceView.SetIncrement(increment)
-	}
 
 	return nil
-}
-
-// updateWidgetConnections Widget間の動的連携を更新
-func (gui *GameUI) updateWidgetConnections() {
-	// MainViewの現在選択状態に応じてInfoViewを更新
-	// これは将来的にマウス位置や選択状態から判定する
-
-	// TODO: マウス位置判定によるInfoView表示切り替え
-	// 例：マウスがMapGrid上のPointにあるときはそのPointの情報を表示
 }
 
 // Draw 全Widget描画
