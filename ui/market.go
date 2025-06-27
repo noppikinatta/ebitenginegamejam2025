@@ -345,25 +345,15 @@ func (mv *MarketView) PurchaseCardPack(item *core.MarketItem) error {
 	rng := newSimpleRand()
 	cardIDs := cardPack.Open(rng)
 
-	// CardDatabaseから実際のCardsを取得する必要があるが、
-	// 今回はダミー実装として、cardIDsの数だけダミーカードを作成
-	cards := &core.Cards{
-		BattleCards:    make([]*core.BattleCard, len(cardIDs)),
-		StructureCards: make([]*core.StructureCard, 0),
-		ResourceCards:  make([]*core.ResourceCard, 0),
-	}
-
-	// ダミーカードを作成（実際の実装ではCardDatabaseから取得）
-	for i, cardID := range cardIDs {
-		cards.BattleCards[i] = &core.BattleCard{
-			CardID: cardID,
-			Power:  10.0,      // ダミー値
-			Type:   "Warrior", // ダミー値
-		}
+	cards, ok := mv.GameState.CardGenerator.Generate(cardIDs)
+	if !ok {
+		return fmt.Errorf("Card generation failed")
 	}
 
 	// GameState.CardDeckに追加
 	mv.GameState.CardDeck.Add(cards)
+
+	mv.GameState.NextTurn()
 
 	return nil
 }

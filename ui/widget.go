@@ -78,15 +78,15 @@ func DrawButton(screen *ebiten.Image, x, y, width, height float64, text string) 
 func GetResourceIcon(resourceType string) string {
 	switch resourceType {
 	case "Money":
-		return "¥"
+		return "Mo"
 	case "Food":
-		return "🍞"
+		return "Fo"
 	case "Wood":
-		return "🌲"
+		return "Wo"
 	case "Iron":
-		return "⚒"
+		return "In"
 	case "Mana":
-		return "✨"
+		return "Ma"
 	default:
 		return "?"
 	}

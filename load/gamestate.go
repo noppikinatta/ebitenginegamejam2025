@@ -26,7 +26,20 @@ func createMyNation() *core.MyNation {
 	return &core.MyNation{
 		BaseNation: core.BaseNation{
 			NationID: "player",
-			Market:   &core.Market{},
+			Market: &core.Market{
+				Level: 1.0,
+				Items: []*core.MarketItem{
+					{
+						CardPack: &core.CardPack{
+							Ratios: map[core.CardID]int{
+								"battle_card_1": 1,
+							},
+							NumPerOpen: 2,
+						},
+						Price: core.ResourceQuantity{Money: 0},
+					},
+				},
+			},
 		},
 		BasicYield: core.ResourceQuantity{
 			Food:  1,
@@ -60,7 +73,7 @@ func createMapGrid(myNation *core.MyNation) *core.MapGrid {
 
 		if x == 4 && y == 4 {
 			points[i] = &core.BossPoint{
-				Boss:     &core.Enemy{Power: 100},
+				Boss:     &core.Enemy{Power: 100, BattleCardSlot: 10},
 				Defeated: false,
 			}
 			continue
@@ -68,14 +81,33 @@ func createMapGrid(myNation *core.MyNation) *core.MapGrid {
 
 		if x%2 == 0 && y%2 == 0 {
 			points[i] = &core.OtherNationPoint{
-				OtherNation: &core.OtherNation{BaseNation: core.BaseNation{NationID: "other"}},
+				OtherNation: &core.OtherNation{
+					BaseNation: core.BaseNation{
+						NationID: "other",
+						Market: &core.Market{
+							Level: 1.0,
+							Items: []*core.MarketItem{
+								{
+									CardPack: &core.CardPack{
+										Ratios: map[core.CardID]int{
+											"battle_card_1":    1,
+											"structure_card_1": 1,
+										},
+										NumPerOpen: 2,
+									},
+									Price: core.ResourceQuantity{Money: 5},
+								},
+							},
+						},
+					},
+				},
 			}
 			continue
 		}
 
 		points[i] = &core.WildernessPoint{
 			Controlled: false,
-			Enemy:      &core.Enemy{Power: 10},
+			Enemy:      &core.Enemy{Power: 10, BattleCardSlot: 5},
 			Territory:  &core.Territory{BaseYield: core.ResourceQuantity{Food: 5}},
 		}
 	}

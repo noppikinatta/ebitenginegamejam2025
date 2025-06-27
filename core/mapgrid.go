@@ -8,6 +8,12 @@ type Point interface {
 	IsMyNation() bool
 }
 
+type BattlePoint interface {
+	Point
+	GetEnemy() *Enemy
+	SetControlled(bool)
+}
+
 // MyNationPoint プレイヤー国家のPoint
 type MyNationPoint struct {
 	MyNation *MyNation
@@ -49,6 +55,14 @@ func (p *WildernessPoint) IsMyNation() bool {
 	return false
 }
 
+func (p *WildernessPoint) GetEnemy() *Enemy {
+	return p.Enemy
+}
+
+func (p *WildernessPoint) SetControlled(controlled bool) {
+	p.Controlled = controlled
+}
+
 // BossPoint ボスのPoint
 type BossPoint struct {
 	Boss     *Enemy
@@ -63,6 +77,14 @@ func (p *BossPoint) IsMyNation() bool {
 	return false
 }
 
+func (p *BossPoint) GetEnemy() *Enemy {
+	return p.Boss
+}
+
+func (p *BossPoint) SetControlled(controlled bool) {
+	p.Defeated = controlled
+}
+
 // MapGrid ゲームのマップグリッド
 type MapGrid struct {
 	Size       MapGridSize
@@ -72,21 +94,30 @@ type MapGrid struct {
 
 // GetPoint 指定座標のPointを取得する
 func (m *MapGrid) GetPoint(x, y int) Point {
-	index, ok := m.IndexFromPoint(x, y)
+	index, ok := m.IndexFromXY(x, y)
 	if !ok {
 		return nil
 	}
 	return m.Points[index]
 }
 
-func (m *MapGrid) IndexFromPoint(x, y int) (int, bool) {
+func (m *MapGrid) XYOfPoint(p Point) (int, int, bool) {
+	for i, pp := range m.Points {
+		if pp == p {
+			return m.XYFromIndex(i)
+		}
+	}
+	return 0, 0, false
+}
+
+func (m *MapGrid) IndexFromXY(x, y int) (int, bool) {
 	if x < 0 || x >= m.Size.X || y < 0 || y >= m.Size.Y {
 		return 0, false
 	}
 	return m.Size.Index(x, y), true
 }
 
-func (m *MapGrid) PointFromIndex(index int) (int, int, bool) {
+func (m *MapGrid) XYFromIndex(index int) (int, int, bool) {
 	x, y := m.Size.XY(index)
 	if x < 0 || x >= m.Size.X || y < 0 || y >= m.Size.Y {
 		return 0, 0, false
@@ -115,13 +146,13 @@ func (m *MapGrid) UpdateAccesibles() {
 		alreadySet[idx] = struct{}{}
 		ri++
 
-		x, y, ok := m.PointFromIndex(idx)
+		x, y, ok := m.XYFromIndex(idx)
 		if !ok {
 			continue
 		}
 
 		set := func(x, y int) {
-			idx, ok := m.IndexFromPoint(x, y)
+			idx, ok := m.IndexFromXY(x, y)
 			if !ok {
 				return
 			}
@@ -150,7 +181,7 @@ func (m *MapGrid) CanInteract(x, y int) bool {
 		m.UpdateAccesibles()
 	}
 
-	idx, ok := m.IndexFromPoint(x, y)
+	idx, ok := m.IndexFromXY(x, y)
 	if !ok {
 		return false
 	}

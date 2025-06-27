@@ -12,19 +12,14 @@ import (
 // 位置: (520,0,120,20)
 // 現在のTurnを年月表示する
 type CalendarView struct {
-	CurrentTurn int // 現在のターン
+	GameState *core.GameState
 }
 
 // NewCalendarView CalendarViewを作成する
-func NewCalendarView() *CalendarView {
+func NewCalendarView(gameState *core.GameState) *CalendarView {
 	return &CalendarView{
-		CurrentTurn: 0, // デフォルトは1年1月
+		GameState: gameState,
 	}
-}
-
-// SetCurrentTurn 現在のターンを設定する
-func (cv *CalendarView) SetCurrentTurn(turn int) {
-	cv.CurrentTurn = turn
 }
 
 // HandleInput 入力処理（CalendarViewは入力を受け付けない）
@@ -35,7 +30,7 @@ func (cv *CalendarView) HandleInput(input *Input) error {
 // Draw 描画処理
 func (cv *CalendarView) Draw(screen *ebiten.Image) {
 	// Turnから年月を取得
-	turn := core.Turn(cv.CurrentTurn)
+	turn := core.Turn(cv.GameState.CurrentTurn)
 	year, month := turn.YearMonth()
 
 	// YYYY/MM形式で表示

@@ -33,12 +33,11 @@ func NewGameUI(gameState *core.GameState) *GameUI {
 		resourceView = NewResourceView(&core.Treasury{})
 	}
 
-	calendarView := NewCalendarView()
+	calendarView := NewCalendarView(gameState)
 	mainView := NewMainView(gameState)
 	infoView := NewInfoView()
 
-	// CardDeckViewは最初はnilでも可（後でSetCardDeckで設定）
-	cardDeckView := NewCardDeckView(nil)
+	cardDeckView := NewCardDeckView(gameState.CardDeck)
 
 	ui := &GameUI{
 		ResourceView: resourceView,
@@ -51,8 +50,36 @@ func NewGameUI(gameState *core.GameState) *GameUI {
 
 	// Widget間の連携を設定
 	ui.setupWidgetConnections()
+	ui.CardDeckView.OnBattleCardClicked = ui.onBattleCardClicked
+	ui.CardDeckView.OnStructureCardClicked = ui.onStructureCardClicked
 
 	return ui
+}
+
+// onBattleCardClicked BattleCardクリック時の処理
+func (gui *GameUI) onBattleCardClicked(card *core.BattleCard) bool {
+	if gui.MainView.CurrentView != ViewTypeBattle {
+		return false
+	}
+
+	if gui.MainView.Battle.CanPlaceCard() {
+		return gui.MainView.Battle.PlaceCard(card)
+	}
+
+	return false
+}
+
+// onStructureCardClicked StructureCardクリック時の処理
+func (gui *GameUI) onStructureCardClicked(card *core.StructureCard) bool {
+	if gui.MainView.CurrentView != ViewTypeTerritory {
+		return false
+	}
+
+	if gui.MainView.Territory.CanPlaceCard() {
+		return gui.MainView.Territory.PlaceCard(card)
+	}
+
+	return false
 }
 
 // setupWidgetConnections Widget間の連携を設定
@@ -78,14 +105,6 @@ func (gui *GameUI) SetGameState(gameState *core.GameState) {
 		increment := gui.calculateYieldIncrement()
 		gui.ResourceView.SetIncrement(increment)
 	}
-
-	// CalendarViewの更新
-	if gameState != nil {
-		gui.CalendarView.SetCurrentTurn(gameState.CurrentTurn)
-	}
-
-	// CardDeckViewの更新は将来的に実装
-	// 現在はMyNationにCardDeckフィールドが存在しないため省略
 }
 
 // calculateYieldIncrement 次ターンの収入予測を計算
@@ -216,28 +235,6 @@ func (gui *GameUI) SelectCard(card interface{}) {
 // SelectCardFromDeck CardDeckから特定のカードを選択
 func (gui *GameUI) SelectCardFromDeck(index int) {
 	gui.CardDeckView.SelectCard(index)
-}
-
-// MoveCardToBattle 選択中のカードをBattleViewに移動
-func (gui *GameUI) MoveCardToBattle() bool {
-	selectedCard := gui.CardDeckView.GetSelectedCard()
-	if selectedCard == nil {
-		return false
-	}
-
-	// BattleCardのみ移動可能
-	if battleCard, ok := selectedCard.(*core.BattleCard); ok {
-		// CardDeckから除去
-		gui.CardDeckView.RemoveSelectedCard()
-
-		// BattleViewに追加
-		gui.MainView.Battle.AddBattleCard(battleCard)
-
-		gui.AddHistoryEvent("Card moved to battle")
-		return true
-	}
-
-	return false
 }
 
 // MoveCardToTerritory 選択中のカードをTerritoryViewに移動

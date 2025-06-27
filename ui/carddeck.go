@@ -32,12 +32,6 @@ func NewCardDeckView(cardDeck *core.CardDeck) *CardDeckView {
 	}
 }
 
-// SetCardDeck カードデッキを設定
-func (c *CardDeckView) SetCardDeck(cardDeck *core.CardDeck) {
-	c.CardDeck = cardDeck
-	c.SelectedIndex = -1 // デッキが変わったら選択も解除
-}
-
 // GetSelectedCard 選択中のカードを取得
 func (c *CardDeckView) GetSelectedCard() interface{} {
 	if c.CardDeck == nil || c.SelectedIndex < 0 {
