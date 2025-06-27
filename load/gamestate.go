@@ -73,7 +73,7 @@ func createMapGrid(myNation *core.MyNation) *core.MapGrid {
 
 		if x == 4 && y == 4 {
 			points[i] = &core.BossPoint{
-				Boss:     &core.Enemy{Power: 100, BattleCardSlot: 10},
+				Boss:     &core.Enemy{Power: 30, BattleCardSlot: 10},
 				Defeated: false,
 			}
 			continue
