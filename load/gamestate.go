@@ -93,18 +93,18 @@ func createMapGrid(myNation *core.MyNation) *core.MapGrid {
 		"cardpack-magic": {
 			NumPerOpen: 3,
 			Ratios: map[core.CardID]int{
-				"battlecard-wizard":       5,
-				"structurecard-mana-node": 5,
-				"battlecard-mage":         1,
+				"battlecard-wizard":    5,
+				"structurecard-shrine": 5,
+				"battlecard-mage":      1,
 			},
 		},
 		"cardpack-mystic": {
 			NumPerOpen: 3,
 			Ratios: map[core.CardID]int{
-				"battlecard-fortune":      2,
-				"structurecard-mana-node": 2,
-				"structurecard-temple":    2,
-				"battlecard-mage":         1,
+				"battlecard-fortune":   2,
+				"structurecard-shrine": 2,
+				"structurecard-temple": 2,
+				"battlecard-mage":      1,
 			},
 		},
 		"cardpack-mineral": {
@@ -176,16 +176,16 @@ func createMapGrid(myNation *core.MyNation) *core.MapGrid {
 				"battlecard-archer":        2,
 				"structurecard-farm":       1,
 				"structurecard-woodcutter": 2,
-				"structurecard-mana-node":  1,
+				"structurecard-shrine":     1,
 			},
 		},
 		"cardpack-desert": {
 			NumPerOpen: 3,
 			Ratios: map[core.CardID]int{
-				"battlecard-fortune":      2,
-				"battlecard-bard":         1,
-				"structurecard-market":    2,
-				"structurecard-mana-node": 1,
+				"battlecard-fortune":   2,
+				"battlecard-bard":      1,
+				"structurecard-market": 2,
+				"structurecard-shrine": 1,
 			},
 		},
 		"cardpack-mountain": {
@@ -720,13 +720,13 @@ func createStructureCards() map[core.CardID]*core.StructureCard {
 			DescriptionKey: "structurecard-market-desc",
 			YieldModifier: &core.AddYieldModifier{
 				ResourceQuantity: core.ResourceQuantity{
-					Money: 2,
+					Money: 5,
 				},
 			},
 		},
 		{
-			CardID:         "structurecard-mana-node",
-			DescriptionKey: "structurecard-mana-node-desc",
+			CardID:         "structurecard-shrine",
+			DescriptionKey: "structurecard-shrine-desc",
 			YieldModifier: &core.AddYieldModifier{
 				ResourceQuantity: core.ResourceQuantity{
 					Mana: 2,

@@ -42,9 +42,10 @@ func (p *OtherNationPoint) IsMyNation() bool {
 
 // WildernessPoint 制圧可能な野生のPoint
 type WildernessPoint struct {
-	Controlled bool       // 制圧済みかどうか
-	Enemy      *Enemy     // 守っているEnemy
-	Territory  *Territory // 制圧後のTerritory
+	TerrainType string
+	Controlled  bool       // 制圧済みかどうか
+	Enemy       *Enemy     // 守っているEnemy
+	Territory   *Territory // 制圧後のTerritory
 }
 
 func (p *WildernessPoint) Passable() bool {

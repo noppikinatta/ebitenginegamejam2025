@@ -1,308 +1,225 @@
-# MapGrid計画
+# MapGrid計画 - 敵
 
-## 国
+## 地形
+
+WildernessPoint.TerrainTypeに設定するIDと、Territoryに設定する基本的な地形算出。
+
+- terrain-plain, "平原" : Food +2
+- terrain-forest, "森" : Wood +2
+- terrain-mountain, "山" : Iron +2
+- terrain-desert, "砂漠" : None
+- terrain-mana-node, "マナノード" : Mana +3
 
 配置
-- 0,0: 王国(MyNation)
-- 0,2: 森の国
-- 2,0: 山の国
-- 2,2: 砂漠の国
-- 0,4: 侍の国
-- 4,0: 魔法の国
-- 2,4: 機械の国
-- 4,2: お祭りの国
+- (1,0): forest
+- (0,1): mountain
+- (1,1): plain
+- (2,1): desert
+- (1,2): desert
+- (0,3): mountain
+- (3,0): forest
+- (1,3): mana-node
+- (3,1): mountain
+- (1,4): plain
+- (4,1): plain
+- (2,3): forest
+- (3,2): mana-node
+- (3,4): forest
+- (4,3): mountain
+- (3,3): mana-node
+- (4,4): boss pointなので産出なし
 
-Marketレベルごとのカードパックを示す。
+> TerritoryのCardSlotは全て3にする。
 
-### 王国
-- 1: cardpack-free
-- 1: cardpack-soldiers
-- 2: cardpack-politics
-- 3: cardpack-knights
-- 5: cardpack-war
+## 敵
 
-### 森の国
-- 1: cardpack-forest
-- 2: cardpack-politics
-- 4: cardpack-magic
+(4,4)にはBossPointを配置し、そのほかにはWildernessPointを配置する。
 
-### 山の国
-- 1: cardpack-mountain
-- 2: cardpack-mineral
-- 4: cardpack-siege
+配置
+- (1,0): enemy-goblin,"ゴブリン"
+- (0,1): enemy-sabrelouse,"サーベルねずみ"
+- (1,1): enemy-rattlesnake,"ガラガラヘビ"
+- (2,1): enemy-condor,"コンドル"
+- (1,2): enemy-slime,"スライム"
+- (0,3): enemy-crocodile,"クロコダイル"
+- (3,0): enemy-grizzly,"ハイイログマ"
+- (1,3): enemy-skeleton,"スケルトン"
+- (3,1): enemy-elemental,"エレメンタル"
+- (1,4): enemy-dragon,"ドラゴン"
+- (4,1): enemy-griffin,"グリフォン"
+- (2,3): enemy-vampire,"ヴァンパイア"
+- (3,2): enemy-living-armor,"リビングアーマー"
+- (3,4): enemy-arc-demon,"アークデーモン"
+- (4,3): enemy-durendal,"デュラハン"
+- (3,3): enemy-obelisk,"オベリスク"
+- (4,4): enemy-final-boss,"魔王"
 
-### 砂漠の国
-- 1: cardpack-desert
-- 1: cardpack-politics
-- 3: cardpack-finance
-- 5: cardpack-building
+以下は敵のデータ
 
-### 侍の国
-- 1: cardpack-samurai
-- 3: cardpack-mineral
-- 4: cardpack-war
+### enemy-goblin,"ゴブリン"
 
-### 魔法の国
-- 1: cardpack-magic
-- 3: cardpack-mystic
+Power 3
+EnemyType demonic
+CardSlot 3
 
-### 機械の国
-- 1: cardpack-mechanical
-- 3: cardpack-siege
-- 4: cardpack-building
+Skill なし
 
-### お祭りの国
-- 1: cardpack-fancy
-- 2: cardpack-finance
+### enemy-sabrelouse,"サーベルねずみ"
 
-## カードパック
+Power 4
+EnemyType animal
+CardSlot 3
 
-開封時のカード枚数と価格を記載する。
+Skill なし
 
-ratio:card でカード構成と出現率を示す。
+### enemy-rattlesnake,"ガラガラヘビ"
 
-### cardpack-free, "無料カードパック"
+Power 6
+EnemyType dragon
+CardSlot 3
 
-1 card
+Skill なし
 
-no price
+### enemy-condor,"コンドル"
 
-10:battlecard-soldier,"兵士"
-1:battlecard-knight,"騎士"
+Power 6
+EnemyType flying
+CardSlot 3
 
-### cardpack-soldiers, "兵団カードパック"
+Skill evasion
 
-3 cards
+### enemy-slime,"スライム"
 
-price
-- 2 food
-- 2 money
+Power 6
+EnemyType unknown
+CardSlot 3
 
-5:battlecard-soldier,"兵士"
-5:battlecard-archer,"弓使い"
-1:battlecard-knight,"騎士"
+Skill soft
 
-### cardpack-knights, "騎士団カードパック"
+### enemy-crocodile,"クロコダイル"
 
-3 cards
+Power 10
+EnemyType dragon
+CardSlot 4
 
-price
-- 5 food
-- 5 iron
-- 10 money
+Skill なし
 
-3:battlecard-knight,"騎士"
-1:battlecard-general,"将軍"
-2:structurecard-catapult,"カタパルト"
+### enemy-grizzly,"ハイイログマ"
 
-### cardpack-politics, "内政カードパック"
+Power 12
+EnemyType animal
+CardSlot 4
 
-2 cards
+Skill なし
 
-price
-- 5 wood
+### enemy-skeleton,"スケルトン"
 
-1:structurecard-farm,"農場"
-1:structurecard-woodcutter,"木こり小屋"
-1:structurecard-tunnel,"坑道"
-1:structurecard-market,"市場"
+Power 12
+EnemyType undead
+CardSlot 4
 
-### cardpack-war, "戦時体制カードパック"
+Skill longbow
 
-5 cards
+### enemy-elemental,"エレメンタル"
 
-price
-- 20 iron
-- 20 wood
-- 20 money
+Power 20
+EnemyType unknown
+CardSlot 5
 
-2:structurecard-catapult,"カタパルト"
-1:structurecard-ballista,"バリスタ"
-1:structurecard-camp,"野営地"
+Skill incorporeality
 
-### cardpack-magic, "魔法カードパック"
+### enemy-dragon,"ドラゴン"
 
-3 cards
+Power 30
+EnemyType dragon
+CardSlot 6
 
-price
-- 5 mana
-- 5 food
+Skill pressure
 
-5:battlecard-wizard,"魔法使い"
-5:structurecard-mana-node,"マナ・ノード"
-1:battlecard-mage,"賢者"
+### enemy-griffin,"グリフォン"
 
-### cardpack-mystic, "神秘のカードパック"
+Power 25
+EnemyType flying
+CardSlot 4
 
-3 cards
+Skill evasion
 
-price
-- 20 mana
+### enemy-vampire,"ヴァンパイア"
 
-2:battlecard-fortune,"占い師"
-2:structurecard-mana-node,"マナ・ノード"
-2:structurecard-temple,"祖廟"
-1:battlecard-mage,"賢者"
+Power 30
+EnemyType undead
+CardSlot 6
 
-### cardpack-mineral, "鉱石カードパック"
+Skill charm
 
-2 cards
+### enemy-living-armor,"リビングアーマー"
 
-price
-- 10 wood
+Power 50
+EnemyType unknown
+CardSlot 7
 
-4:structurecard-tunnel,"坑道"
-1:structurecard-smelter,"溶鉱炉"
-4:battlecard-blacksmith,"鍛冶屋"
+Skill なし
 
+### enemy-arc-demon,"アークデーモン"
 
-### cardpack-mechanical, "機械カードパック"
+Power 45
+EnemyType demonic
+CardSlot 7
 
-2 cards
+Skill magic-barrier
 
-price
-- 30 iron
+### enemy-durendal,"デュラハン"
 
-1:battlecard-golem,"ゴーレム"
-2:structurecard-smelter,"溶鉱炉"
-2:battlecard-artillery,"砲兵"
-1:structurecard-ballista,"バリスタ"
+Power 45
+EnemyType undead
+CardSlot 7
 
-### cardpack-fancy, "派手なカードパック"
+Skill side-attack
 
-3 cards
+### enemy-obelisk,"オベリスク"
 
-price
-- 50 money
-- 10 food
+Power 40
+EnemyType unknown
+CardSlot 8
 
-5:battlecard-clown,"道化師"
-2:battlecard-wrestler,"レスラー"
-5:battlecard-bard,"吟遊詩人"
-1:battlecard-fortune,"占い師"
+Skill laser
 
-### cardpack-samurai, "侍カードパック"
+### enemy-final-boss,"魔王"
 
-2 cards
+Power 60
+EnemyType demonic
+CardSlot 8
 
-price
-- 50 iron
-- 10 food
+Skill wave
 
-4:battlecard-samurai,"侍"
-2:battlecard-ninja,"忍者"
-3:battlecard-monk,"武僧"
-1:structurecard-camp,"野営地"
+## Appendix: Enemy Types
 
-### cardpack-siege, "攻城兵器カードパック"
+enemy-type-animal, "動物"
+enemy-type-flying, "飛行"
+enemy-type-undead, "アンデッド"
+enemy-type-dragon, "ドラゴン"
+enemy-type-demonic, "悪魔"
+enemy-type-unknown, "不明"
 
-2 cards
+## Appendix: Enemy Skills
 
-price
-- 50 iron
-- 50 wood
-
-2:structurecard-catapult,"カタパルト"
-2:structurecard-ballista,"バリスタ"
-1:structurecard-orban-cannon,"ウルバン砲"
-2:battlecard-artillery,"砲兵"
-
-### cardpack-finance, "金融カードパック"
-
-2 cards
-
-price
-- 30 money
-- 10 wood
-
-2:battlecard-blacksmith,"鍛冶屋"
-2:structurecard-market,"市場"
-1:structurecard-mint,"造幣局"
-
-### cardpack-building, "建物カードパック"
-
-2 cards
-
-price
-- 30 money
-- 30 wood
-
-1:structurecard-granary,"穀倉"
-1:structurecard-sawmill,"製材所"
-1:structurecard-smelter,"溶鉱炉"
-1:structurecard-mint,"造幣局"
-1:structurecard-temple,"祖廟"
-1:structurecard-camp,"野営地"
-
-### cardpack-forest, "森のカードパック"
-
-3 cards
-
-price
-- 5 food
-- 5 wood
-
-2:battlecard-archer,"弓使い"
-1:structurecard-farm,"農場"
-2:structurecard-woodcutter,"木こり小屋"
-1:structurecard-mana-node,"マナ・ノード"
-
-### cardpack-desert, "砂漠のカードパック"
-
-3 cards
-
-price
-- 10 money
-- 10 food
-
-2:battlecard-fortune,"占い師"
-1:battlecard-bard,"吟遊詩人"
-2:structurecard-market,"市場"
-1:structurecard-mana-node,"マナ・ノード"
-
-### cardpack-mountain, "山のカードパック"
-
-3 cards
-
-price
-- 5 food
-- 5 wood
-
-2:battlecard-blacksmith,"鍛冶屋"
-1:structurecard-tunnel,"坑道"
-2:structurecard-woodcutter,"木こり小屋"
-1:battlecard-soldier,"兵士"
-
-### Appendix:全カードリスト
-
-battlecard-soldier,"兵士"
-battlecard-knight,"騎士"
-battlecard-general,"将軍"
-battlecard-archer,"弓使い"
-battlecard-fortune,"占い師"
-battlecard-wizard,"魔法使い"
-battlecard-mage,"賢者"
-battlecard-blacksmith,"鍛冶屋"
-battlecard-golem,"ゴーレム"
-battlecard-samurai,"侍"
-battlecard-ninja,"忍者"
-battlecard-monk,"武僧"
-battlecard-bard,"吟遊詩人"
-battlecard-artillery,"砲兵"
-battlecard-clown,"道化師"
-battlecard-wrestler,"レスラー"
-structurecard-farm,"農場"
-structurecard-woodcutter,"木こり小屋"
-structurecard-tunnel,"坑道"
-structurecard-market,"市場"
-structurecard-mana-node,"マナ・ノード"
-structurecard-granary,"穀倉"
-structurecard-sawmill,"製材所"
-structurecard-smelter,"溶鉱炉"
-structurecard-mint,"造幣局"
-structurecard-temple,"祖廟"
-structurecard-camp,"野営地"
-structurecard-catapult,"カタパルト"
-structurecard-ballista,"バリスタ"
-structurecard-orban-cannon,"ウルバン砲"
-
+enemy-skill-evasion, "回避"
+enemy-skill-evasion-desc, "力タイプのカードパワー2"
+enemy-skill-soft,"軟体"
+enemy-skill-soft-desc, "魔タイプ以外のカードパワー-50%"
+enemy-skill-longbow,"ロングボウ"
+enemy-skill-longbow-desc, "最も後ろのカードパワー-100%"
+enemy-skill-incorporeality,"霊体"
+enemy-skill-incorporeality-desc, "魔タイプ以外のカードパワー-100%"
+enemy-skill-pressure,"威圧"
+enemy-skill-pressure-desc, "全てのカードパワー-1"
+enemy-skill-charm,"魅了"
+enemy-skill-charm-desc, "先頭から3枚のカードパワー-100%"
+enemy-skill-magic-barrier,"魔法障壁"
+enemy-skill-magic-barrier-desc, "魔法タイプのカードパワー-100%"
+enemy-skill-laser,"レーザー"
+enemy-skill-laser-desc, "後方から3枚のカードパワー-100%"
+enemy-skill-side-attack,"側面攻撃"
+enemy-skill-side-attack-desc, "先頭から5枚のカードパワー-50%"
+enemy-skill-wave,"波動"
+enemy-skill-wave-desc, "全てのカードパワー-2"
