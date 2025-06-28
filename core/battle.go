@@ -59,6 +59,10 @@ func (b *Battlefield) RemoveBattleCard(index int) (*BattleCard, bool) {
 
 func (b *Battlefield) CalculateTotalPower() float64 {
 	modifiers := make([]*BattleCardPowerModifier, len(b.BattleCards))
+	for i := range modifiers {
+		modifiers[i] = &BattleCardPowerModifier{}
+	}
+	
 	cardCalcOptions := &BattleCardSkillCalculationOptions{
 		BattleCards:              b.BattleCards,
 		BattleCardPowerModifiers: modifiers,
@@ -67,7 +71,9 @@ func (b *Battlefield) CalculateTotalPower() float64 {
 
 	for i, card := range b.BattleCards {
 		cardCalcOptions.BattleCardIndex = i
-		card.Skill.Calculate(cardCalcOptions)
+		if card.Skill != nil {
+			card.Skill.Calculate(cardCalcOptions)
+		}
 	}
 
 	enemyCalcOptions := &EnemySkillCalculationOptions{
