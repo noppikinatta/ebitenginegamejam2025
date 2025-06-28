@@ -177,6 +177,26 @@ func (f BattleCardSkillCalculationFunc) Calculate(options *BattleCardSkillCalcul
 	f(options)
 }
 
+var NopBattleCardSkillCalculation = BattleCardSkillCalculationFunc(func(options *BattleCardSkillCalculationOptions) {})
+
+type BattleCardSkillCalculatorComposite struct {
+	Calculators []BattleCardSkillCalculator
+}
+
+func (c *BattleCardSkillCalculatorComposite) Calculate(options *BattleCardSkillCalculationOptions) {
+	for _, calculator := range c.Calculators {
+		calculator.Calculate(options)
+	}
+}
+
+type BattleCardSkillCalculatorSupportPowerMultiplier struct {
+	Multiplier float64
+}
+
+func (c *BattleCardSkillCalculatorSupportPowerMultiplier) Calculate(options *BattleCardSkillCalculationOptions) {
+	options.SupportPowerMultiplier += c.Multiplier
+}
+
 type BattleCardSkillCalculatorEnemyType struct {
 	EnemyType  EnemyType
 	Multiplier float64
@@ -185,6 +205,112 @@ type BattleCardSkillCalculatorEnemyType struct {
 func (c *BattleCardSkillCalculatorEnemyType) Calculate(options *BattleCardSkillCalculationOptions) {
 	if options.Enemy.EnemyType == c.EnemyType {
 		options.BattleCardPowerModifiers[options.BattleCardIndex].MultiplicativeBuff += c.Multiplier
+	}
+}
+
+type BattleCardSkillCalculatorBoostBuff struct {
+	BoostBuff float64
+}
+
+func (c *BattleCardSkillCalculatorBoostBuff) Calculate(options *BattleCardSkillCalculationOptions) {
+	modifier := options.BattleCardPowerModifiers[options.BattleCardIndex]
+	modifier.MultiplicativeBuff *= c.BoostBuff
+	modifier.AdditiveBuff *= c.BoostBuff
+}
+
+type BattleCardSkillCalculatorTrailings struct {
+	CardType   BattleCardType
+	Multiplier float64
+}
+
+func (c *BattleCardSkillCalculatorTrailings) Calculate(options *BattleCardSkillCalculationOptions) {
+	for i, card := range options.BattleCards {
+		if i <= options.BattleCardIndex {
+			continue
+		}
+		if card.Type == c.CardType {
+			options.BattleCardPowerModifiers[i].MultiplicativeBuff += c.Multiplier
+		}
+	}
+}
+
+type BattleCardSkillCalculatorAll struct {
+	modifierFunc func(modifier *BattleCardPowerModifier)
+}
+
+func (c *BattleCardSkillCalculatorAll) Calculate(options *BattleCardSkillCalculationOptions) {
+	for _, modifier := range options.BattleCardPowerModifiers {
+		c.modifierFunc(modifier)
+	}
+}
+
+var AddingByIndexBattleCardSkillCalculator = BattleCardSkillCalculationFunc(func(options *BattleCardSkillCalculationOptions) {
+	modifier := options.BattleCardPowerModifiers[options.BattleCardIndex]
+	modifier.AdditiveBuff += float64(options.BattleCardIndex)
+})
+
+type BattleCardSkillCalculatorAllByCardType struct {
+	CardType   BattleCardType
+	Multiplier float64
+}
+
+func (c *BattleCardSkillCalculatorAllByCardType) Calculate(options *BattleCardSkillCalculationOptions) {
+	for i, card := range options.BattleCards {
+		if card.Type == c.CardType {
+			options.BattleCardPowerModifiers[i].MultiplicativeBuff += c.Multiplier
+		}
+	}
+}
+
+type BattleCardSkillCalculatorByIdx struct {
+	Index      int
+	Multiplier float64
+}
+
+func (c *BattleCardSkillCalculatorByIdx) Calculate(options *BattleCardSkillCalculationOptions) {
+	if options.BattleCardIndex == c.Index {
+		options.BattleCardPowerModifiers[c.Index].MultiplicativeBuff += c.Multiplier
+	}
+}
+
+type BattleCardSkillCalculatorProofBuff struct {
+	Value float64
+}
+
+func (c *BattleCardSkillCalculatorProofBuff) Calculate(options *BattleCardSkillCalculationOptions) {
+	options.BattleCardPowerModifiers[options.BattleCardIndex].ProtectionFromDebuff += c.Value
+}
+
+type BattleCardSkillCalculatorProofDebufNeighboring struct {
+	Value float64
+}
+
+func (c *BattleCardSkillCalculatorProofDebufNeighboring) Calculate(options *BattleCardSkillCalculationOptions) {
+	leftIdx := options.BattleCardIndex - 1
+	rightIdx := options.BattleCardIndex + 1
+
+	if leftIdx >= 0 {
+		options.BattleCardPowerModifiers[leftIdx].ProtectionFromDebuff += c.Value
+	}
+	if rightIdx < len(options.BattleCards) {
+		options.BattleCardPowerModifiers[rightIdx].ProtectionFromDebuff += c.Value
+	}
+}
+
+type BattleCardSkillCalculatorTwoPlatoon struct {
+	Multiplier float64
+	CardType   BattleCardType
+}
+
+func (c *BattleCardSkillCalculatorTwoPlatoon) Calculate(options *BattleCardSkillCalculationOptions) {
+	rightIdx := options.BattleCardIndex + 1
+	if rightIdx >= len(options.BattleCards) {
+		return
+	}
+
+	if options.BattleCards[rightIdx].Type == c.CardType {
+		options.BattleCardPowerModifiers[options.BattleCardIndex].MultiplicativeBuff += c.Multiplier
+		options.BattleCardPowerModifiers[rightIdx].MultiplicativeBuff += c.Multiplier
 	}
 }
 
