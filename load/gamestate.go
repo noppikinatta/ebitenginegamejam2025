@@ -222,12 +222,29 @@ func createMapGrid(myNation *core.MyNation) *core.MapGrid {
 		Level: 1.0,
 		Items: []*core.MarketItem{
 			{
-				CardPack: cardPacks["cardpack-free"],
-				Price:    cardPackPrices["cardpack-free"],
+				CardPack:      cardPacks["cardpack-free"],
+				Price:         cardPackPrices["cardpack-free"],
+				RequiredLevel: 1,
 			},
 			{
-				CardPack: cardPacks["cardpack-soldiers"],
-				Price:    cardPackPrices["cardpack-soldiers"],
+				CardPack:      cardPacks["cardpack-soldiers"],
+				Price:         cardPackPrices["cardpack-soldiers"],
+				RequiredLevel: 1,
+			},
+			{
+				CardPack:      cardPacks["cardpack-politics"],
+				Price:         cardPackPrices["cardpack-politics"],
+				RequiredLevel: 2,
+			},
+			{
+				CardPack:      cardPacks["cardpack-knights"],
+				Price:         cardPackPrices["cardpack-knights"],
+				RequiredLevel: 3,
+			},
+			{
+				CardPack:      cardPacks["cardpack-war"],
+				Price:         cardPackPrices["cardpack-war"],
+				RequiredLevel: 5,
 			},
 		},
 	}
@@ -242,8 +259,19 @@ func createMapGrid(myNation *core.MyNation) *core.MapGrid {
 					Level: 1.0,
 					Items: []*core.MarketItem{
 						{
-							CardPack: cardPacks["cardpack-forest"],
-							Price:    cardPackPrices["cardpack-forest"],
+							CardPack:      cardPacks["cardpack-forest"],
+							Price:         cardPackPrices["cardpack-forest"],
+							RequiredLevel: 1,
+						},
+						{
+							CardPack:      cardPacks["cardpack-politics"],
+							Price:         cardPackPrices["cardpack-politics"],
+							RequiredLevel: 2,
+						},
+						{
+							CardPack:      cardPacks["cardpack-magic"],
+							Price:         cardPackPrices["cardpack-magic"],
+							RequiredLevel: 4,
 						},
 					},
 				},
@@ -258,8 +286,19 @@ func createMapGrid(myNation *core.MyNation) *core.MapGrid {
 					Level: 1.0,
 					Items: []*core.MarketItem{
 						{
-							CardPack: cardPacks["cardpack-mountain"],
-							Price:    cardPackPrices["cardpack-mountain"],
+							CardPack:      cardPacks["cardpack-mountain"],
+							Price:         cardPackPrices["cardpack-mountain"],
+							RequiredLevel: 1,
+						},
+						{
+							CardPack:      cardPacks["cardpack-mineral"],
+							Price:         cardPackPrices["cardpack-mineral"],
+							RequiredLevel: 2,
+						},
+						{
+							CardPack:      cardPacks["cardpack-siege"],
+							Price:         cardPackPrices["cardpack-siege"],
+							RequiredLevel: 4,
 						},
 					},
 				},
@@ -274,12 +313,24 @@ func createMapGrid(myNation *core.MyNation) *core.MapGrid {
 					Level: 1.0,
 					Items: []*core.MarketItem{
 						{
-							CardPack: cardPacks["cardpack-desert"],
-							Price:    cardPackPrices["cardpack-desert"],
+							CardPack:      cardPacks["cardpack-desert"],
+							Price:         cardPackPrices["cardpack-desert"],
+							RequiredLevel: 1,
 						},
 						{
-							CardPack: cardPacks["cardpack-politics"],
-							Price:    cardPackPrices["cardpack-politics"],
+							CardPack:      cardPacks["cardpack-politics"],
+							Price:         cardPackPrices["cardpack-politics"],
+							RequiredLevel: 1,
+						},
+						{
+							CardPack:      cardPacks["cardpack-finance"],
+							Price:         cardPackPrices["cardpack-finance"],
+							RequiredLevel: 3,
+						},
+						{
+							CardPack:      cardPacks["cardpack-building"],
+							Price:         cardPackPrices["cardpack-building"],
+							RequiredLevel: 5,
 						},
 					},
 				},
@@ -294,8 +345,19 @@ func createMapGrid(myNation *core.MyNation) *core.MapGrid {
 					Level: 1.0,
 					Items: []*core.MarketItem{
 						{
-							CardPack: cardPacks["cardpack-samurai"],
-							Price:    cardPackPrices["cardpack-samurai"],
+							CardPack:      cardPacks["cardpack-samurai"],
+							Price:         cardPackPrices["cardpack-samurai"],
+							RequiredLevel: 1,
+						},
+						{
+							CardPack:      cardPacks["cardpack-mineral"],
+							Price:         cardPackPrices["cardpack-mineral"],
+							RequiredLevel: 3,
+						},
+						{
+							CardPack:      cardPacks["cardpack-war"],
+							Price:         cardPackPrices["cardpack-war"],
+							RequiredLevel: 4,
 						},
 					},
 				},
@@ -310,8 +372,14 @@ func createMapGrid(myNation *core.MyNation) *core.MapGrid {
 					Level: 1.0,
 					Items: []*core.MarketItem{
 						{
-							CardPack: cardPacks["cardpack-magic"],
-							Price:    cardPackPrices["cardpack-magic"],
+							CardPack:      cardPacks["cardpack-magic"],
+							Price:         cardPackPrices["cardpack-magic"],
+							RequiredLevel: 1,
+						},
+						{
+							CardPack:      cardPacks["cardpack-mystic"],
+							Price:         cardPackPrices["cardpack-mystic"],
+							RequiredLevel: 3,
 						},
 					},
 				},
@@ -326,8 +394,19 @@ func createMapGrid(myNation *core.MyNation) *core.MapGrid {
 					Level: 1.0,
 					Items: []*core.MarketItem{
 						{
-							CardPack: cardPacks["cardpack-mechanical"],
-							Price:    cardPackPrices["cardpack-mechanical"],
+							CardPack:      cardPacks["cardpack-mechanical"],
+							Price:         cardPackPrices["cardpack-mechanical"],
+							RequiredLevel: 1,
+						},
+						{
+							CardPack:      cardPacks["cardpack-siege"],
+							Price:         cardPackPrices["cardpack-siege"],
+							RequiredLevel: 3,
+						},
+						{
+							CardPack:      cardPacks["cardpack-building"],
+							Price:         cardPackPrices["cardpack-building"],
+							RequiredLevel: 4,
 						},
 					},
 				},
@@ -342,8 +421,14 @@ func createMapGrid(myNation *core.MyNation) *core.MapGrid {
 					Level: 1.0,
 					Items: []*core.MarketItem{
 						{
-							CardPack: cardPacks["cardpack-fancy"],
-							Price:    cardPackPrices["cardpack-fancy"],
+							CardPack:      cardPacks["cardpack-fancy"],
+							Price:         cardPackPrices["cardpack-fancy"],
+							RequiredLevel: 1,
+						},
+						{
+							CardPack:      cardPacks["cardpack-finance"],
+							Price:         cardPackPrices["cardpack-finance"],
+							RequiredLevel: 2,
 						},
 					},
 				},
