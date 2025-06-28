@@ -232,19 +232,19 @@ func (c *BattleCardSkillCalculatorTrailings) Calculate(options *BattleCardSkillC
 		if i <= options.BattleCardIndex {
 			continue
 		}
-		if card.Type == c.CardType {
+		if c.CardType == "" || card.Type == c.CardType {
 			options.BattleCardPowerModifiers[i].MultiplicativeBuff += c.Multiplier
 		}
 	}
 }
 
 type BattleCardSkillCalculatorAll struct {
-	modifierFunc func(modifier *BattleCardPowerModifier)
+	ModifierFunc func(modifier *BattleCardPowerModifier)
 }
 
 func (c *BattleCardSkillCalculatorAll) Calculate(options *BattleCardSkillCalculationOptions) {
 	for _, modifier := range options.BattleCardPowerModifiers {
-		c.modifierFunc(modifier)
+		c.ModifierFunc(modifier)
 	}
 }
 

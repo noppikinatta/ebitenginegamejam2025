@@ -132,10 +132,205 @@ func createCardGenerator() *core.CardGenerator {
 func createBattleCards() map[core.CardID]*core.BattleCard {
 	cards := []*core.BattleCard{
 		{
-			CardID: "battle_card_1",
+			CardID: "battlecard-soldier",
 			Power:  3,
+			Skill: &core.BattleCardSkill{
+				BattleCardSkillID: "battlecardskill-cooperation",
+				DescriptionKey:    "battlecardskill-cooperation-desc",
+				Calculator: &core.BattleCardSkillCalculatorBoostBuff{
+					BoostBuff: 2.0,
+				},
+			},
+			Type: "cardtype-str",
+		},
+		{
+			CardID: "battlecard-knight",
+			Power:  3,
+			Skill: &core.BattleCardSkill{
+				BattleCardSkillID: "battlecardskill-dragon-killer",
+				DescriptionKey:    "battlecardskill-dragon-killer-desc",
+				Calculator: &core.BattleCardSkillCalculatorEnemyType{
+					EnemyType:  "enemy-type-dragon",
+					Multiplier: 2.0,
+				},
+			},
+			Type: "cardtype-str",
+		},
+		{
+			CardID: "battlecard-general",
+			Power:  3,
+			Skill: &core.BattleCardSkill{
+				BattleCardSkillID: "battlecardskill-command",
+				DescriptionKey:    "battlecardskill-command-desc",
+				Calculator: &core.BattleCardSkillCalculatorTrailings{
+					Multiplier: 0.2,
+				},
+			},
+			Type: "cardtype-str",
+		},
+		{
+			CardID: "battlecard-archer",
+			Power:  3,
+			Skill: &core.BattleCardSkill{
+				BattleCardSkillID: "battlecardskill-sniper",
+				DescriptionKey:    "battlecardskill-sniper-desc",
+				Calculator: &core.BattleCardSkillCalculatorComposite{
+					Calculators: []core.BattleCardSkillCalculator{
+						&core.BattleCardSkillCalculatorEnemyType{
+							EnemyType:  "enemy-type-animal",
+							Multiplier: 2.0,
+						},
+						&core.BattleCardSkillCalculatorEnemyType{
+							EnemyType:  "enemy-type-flying",
+							Multiplier: 2.0,
+						},
+					},
+				},
+			},
+			Type: "cardtype-agi",
+		},
+		{
+			CardID: "battlecard-fortune",
+			Power:  3,
+			Skill: &core.BattleCardSkill{
+				BattleCardSkillID: "battlecardskill-forecast",
+				DescriptionKey:    "battlecardskill-forecast-desc",
+				Calculator: &core.BattleCardSkillCalculatorProofBuff{
+					Value: 0.2,
+				},
+			},
+			Type: "cardtype-mag",
+		},
+		{
+			CardID: "battlecard-wizard",
+			Power:  3,
+			Skill: &core.BattleCardSkill{
+				BattleCardSkillID: "battlecardskill-long-spell",
+				DescriptionKey:    "battlecardskill-long-spell-desc",
+				Calculator:        core.AddingByIndexBattleCardSkillCalculator,
+			},
+			Type: "cardtype-mag",
+		},
+		{
+			CardID: "battlecard-mage",
+			Power:  3,
+			Skill: &core.BattleCardSkill{
+				BattleCardSkillID: "battlecardskill-magic-amplifier",
+				DescriptionKey:    "battlecardskill-magic-amplifier-desc",
+				Calculator: &core.BattleCardSkillCalculatorAllByCardType{
+					CardType:   "cardtype-mag",
+					Multiplier: 0.5,
+				},
+			},
+			Type: "cardtype-mag",
+		},
+		{
+			CardID: "battlecard-blacksmith",
+			Power:  3,
+			Skill: &core.BattleCardSkill{
+				BattleCardSkillID: "battlecardskill-weapon-enhancement",
+				DescriptionKey:    "battlecardskill-weapon-enhancement-desc",
+				Calculator: &core.BattleCardSkillCalculatorAllByCardType{
+					CardType:   "cardtype-str",
+					Multiplier: 0.5,
+				},
+			},
+			Type: "cardtype-str",
+		},
+		{
+			CardID: "battlecard-samurai",
+			Power:  3,
+			Skill: &core.BattleCardSkill{
+				BattleCardSkillID: "battlecardskill-bushido",
+				DescriptionKey:    "battlecardskill-bushido-desc",
+				Calculator: &core.BattleCardSkillCalculatorByIdx{
+					Index:      0,
+					Multiplier: 1.0,
+				},
+			},
+			Type: "cardtype-str",
+		},
+		{
+			CardID: "battlecard-ninja",
+			Power:  3,
+			Skill: &core.BattleCardSkill{
+				BattleCardSkillID: "battlecardskill-stealth",
+				DescriptionKey:    "battlecardskill-stealth-desc",
+				Calculator: &core.BattleCardSkillCalculatorProofBuff{
+					Value: 1.0,
+				},
+			},
+			Type: "cardtype-agi",
+		},
+		{
+			CardID: "battlecard-monk",
+			Power:  3,
+			Skill: &core.BattleCardSkill{
+				BattleCardSkillID: "battlecardskill-ki",
+				DescriptionKey:    "battlecardskill-ki-desc",
+				Calculator: &core.BattleCardSkillCalculatorEnemyType{
+					EnemyType:  "enemy-type-undead",
+					Multiplier: 2.0,
+				},
+			},
+			Type: "cardtype-str",
+		},
+		{
+			CardID: "battlecard-bard",
+			Power:  3,
+			Skill: &core.BattleCardSkill{
+				BattleCardSkillID: "battlecardskill-support",
+				DescriptionKey:    "battlecardskill-support-desc",
+				Calculator: &core.BattleCardSkillCalculatorAll{
+					ModifierFunc: func(modifier *core.BattleCardPowerModifier) {
+						modifier.AdditiveBuff += 1
+					},
+				},
+			},
+			Type: "cardtype-agi",
+		},
+		{
+			CardID: "battlecard-artillery",
+			Power:  3,
+			Skill: &core.BattleCardSkill{
+				BattleCardSkillID: "battlecardskill-shooting-observation",
+				DescriptionKey:    "battlecardskill-shooting-observation-desc",
+				Calculator: &core.BattleCardSkillCalculatorSupportPowerMultiplier{
+					Multiplier: 1.0,
+				},
+			},
+			Type: "cardtype-str",
+		},
+		{
+			CardID: "battlecard-clown",
+			Power:  3,
+			Skill: &core.BattleCardSkill{
+				BattleCardSkillID: "battlecardskill-viper-master",
+				DescriptionKey:    "battlecardskill-viper-master-desc",
+				Calculator: &core.BattleCardSkillCalculatorProofDebufNeighboring{
+					Value: 1.0,
+				},
+			},
+			Type: "cardtype-agi",
+		},
+		{
+			CardID: "battlecard-wrestler",
+			Power:  3,
+			Skill: &core.BattleCardSkill{
+				BattleCardSkillID: "battlecardskill-two-platoon",
+				DescriptionKey:    "battlecardskill-two-platoon-desc",
+				Calculator: &core.BattleCardSkillCalculatorTwoPlatoon{
+					Multiplier: 1.0,
+					CardType:   "cardtype-str",
+				},
+			},
+			Type: "cardtype-str",
+		},
+		{
+			CardID: "battlecard-golem",
+			Power:  5,
 			Skill:  nil,
-			Type:   "warrior",
+			Type:   "cardtype-str",
 		},
 	}
 
