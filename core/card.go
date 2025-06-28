@@ -155,6 +155,7 @@ type BattleCardSkillID string
 // BattleCardSkill はバトルカードのスキル
 type BattleCardSkill struct {
 	BattleCardSkillID BattleCardSkillID
+	DescriptionKey    string
 	Calculator        BattleCardSkillCalculator
 }
 

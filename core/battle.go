@@ -86,7 +86,7 @@ func (b *Battlefield) CalculateTotalPower() float64 {
 		power = modifiers[i].Calculate(power)
 		totalPower += power
 	}
-	return totalPower
+	return float64(int(totalPower))
 }
 
 type BattleCardPowerModifier struct {
@@ -103,6 +103,9 @@ func (m *BattleCardPowerModifier) Calculate(power float64) float64 {
 	power *= m.multiplicativeBuffValue()
 	power *= m.multiplicativeDebuffValue()
 	power += m.additiveDebuffValue()
+	if power < 0.0 {
+		return 0.0
+	}
 	return power
 }
 
