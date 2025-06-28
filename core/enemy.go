@@ -18,13 +18,86 @@ type Enemy struct {
 	BattleCardSlot int // このEnemyとの戦闘で、プレイヤーが出せるBattleCardの枚数。
 }
 
-// EnemySkill は敵のスキルを表すインターフェース
 type EnemySkill interface {
-	CanAffect(battleCard *BattleCard) bool // 引数battleCardの戦闘力を変更できるかどうかを返す。
-	Modify(battleCard *BattleCard) float64 // 引数battleCardの戦闘力を変更する。
+	Calculate(options *EnemySkillCalculationOptions)
 }
 
-// EnemySkillCondition は敵スキルの発動条件（将来的に使用予定）
-type EnemySkillCondition interface {
-	// 将来的にスキル発動条件のロジックを追加
+type EnemySkillCalculationOptions struct {
+	SupportPowerMultiplier   float64
+	BattleCards              []*BattleCard
+	BattleCardPowerModifiers []*BattleCardPowerModifier
+	Enemy                    *Enemy
+}
+
+type EnemySkillAdditiveDebuff float64
+
+func (s EnemySkillAdditiveDebuff) Calculate(options *EnemySkillCalculationOptions) {
+	for i := range options.BattleCards {
+		options.BattleCardPowerModifiers[i].AdditiveDebuff += float64(s)
+	}
+}
+
+type EnemySkillCardTypeAdditiveDebuff struct {
+	CardType BattleCardType
+	Value    float64
+}
+
+func (s *EnemySkillCardTypeAdditiveDebuff) Calculate(options *EnemySkillCalculationOptions) {
+	for i, card := range options.BattleCards {
+		if card.Type == s.CardType {
+			options.BattleCardPowerModifiers[i].AdditiveDebuff += s.Value
+		}
+	}
+}
+
+type EnemySkillCardTypeMultiplicativeDebuff struct {
+	CardType BattleCardType
+	Value    float64
+}
+
+func (s *EnemySkillCardTypeMultiplicativeDebuff) Calculate(options *EnemySkillCalculationOptions) {
+	for i, card := range options.BattleCards {
+		if card.Type == s.CardType {
+			options.BattleCardPowerModifiers[i].MultiplicativeDebuff += s.Value
+		}
+	}
+}
+
+type EnemySkillCardTypeExceptMultiplicativeDebuff struct {
+	CardType BattleCardType
+	Value    float64
+}
+
+func (s *EnemySkillCardTypeExceptMultiplicativeDebuff) Calculate(options *EnemySkillCalculationOptions) {
+	for i, card := range options.BattleCards {
+		if card.Type != s.CardType {
+			options.BattleCardPowerModifiers[i].MultiplicativeDebuff += s.Value
+		}
+	}
+}
+
+type EnemySkillIndexForwardMultiplicativeDebuff struct {
+	NumOfCards int
+	Value      float64
+}
+
+func (s *EnemySkillIndexForwardMultiplicativeDebuff) Calculate(options *EnemySkillCalculationOptions) {
+	for i := range options.BattleCards {
+		if i < s.NumOfCards {
+			options.BattleCardPowerModifiers[i].MultiplicativeDebuff += s.Value
+		}
+	}
+}
+
+type EnemySkillIndexBackwardMultiplicativeDebuff struct {
+	NumOfCards int
+	Value      float64
+}
+
+func (s *EnemySkillIndexBackwardMultiplicativeDebuff) Calculate(options *EnemySkillCalculationOptions) {
+	for i := range options.BattleCards {
+		if i >= len(options.BattleCards)-s.NumOfCards {
+			options.BattleCardPowerModifiers[i].MultiplicativeDebuff += s.Value
+		}
+	}
 }

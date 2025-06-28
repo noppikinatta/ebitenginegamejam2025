@@ -16,22 +16,7 @@ type Battlefield struct {
 
 // CanBeat 戦闘を勝利できるかどうかを返す。
 func (b *Battlefield) CanBeat() bool {
-	totalPower := b.BaseSupportPower
-
-	// 各BattleCardのパワーを計算（敵スキルの影響を考慮）
-	for _, card := range b.BattleCards {
-		cardPower := float64(card.Power)
-
-		// 敵のスキルの影響を適用
-		for _, skill := range b.Enemy.Skills {
-			if skill.CanAffect(card) {
-				cardPower = skill.Modify(card)
-			}
-		}
-
-		totalPower += cardPower
-	}
-
+	totalPower := b.CalculateTotalPower()
 	return totalPower >= b.Enemy.Power
 }
 
@@ -73,17 +58,82 @@ func (b *Battlefield) RemoveBattleCard(index int) (*BattleCard, bool) {
 }
 
 func (b *Battlefield) CalculateTotalPower() float64 {
-	totalPower := b.BaseSupportPower
-	for _, card := range b.BattleCards {
-		totalPower += float64(card.Power)
+	modifiers := make([]*BattleCardPowerModifier, len(b.BattleCards))
+	cardCalcOptions := &BattleCardSkillCalculationOptions{
+		BattleCards:              b.BattleCards,
+		BattleCardPowerModifiers: modifiers,
+		Enemy:                    b.Enemy,
+	}
+
+	for i, card := range b.BattleCards {
+		cardCalcOptions.BattleCardIndex = i
+		card.Skill.Calculate(cardCalcOptions)
+	}
+
+	enemyCalcOptions := &EnemySkillCalculationOptions{
+		BattleCards:              b.BattleCards,
+		BattleCardPowerModifiers: modifiers,
+		Enemy:                    b.Enemy,
+	}
+
+	for _, skill := range b.Enemy.Skills {
+		skill.Calculate(enemyCalcOptions)
+	}
+
+	totalPower := b.BaseSupportPower * (cardCalcOptions.SupportPowerMultiplier + 1.0)
+	for i, card := range b.BattleCards {
+		power := float64(card.Power)
+		power = modifiers[i].Calculate(power)
+		totalPower += power
 	}
 	return totalPower
 }
 
 type BattleCardPowerModifier struct {
-	MultiplicativeBuff   float64 // 乗算バフ（1.0以上、1.2なら20%増加）
-	MultiplicativeDebuff float64 // 乗算デバフ（1.0未満、0.8なら20%減少、ProtectedFromDebuffがtrueなら無効）
-	AdditiveBuff         float64 // 加算バフ（常に適用される正の値）
-	AdditiveDebuff       float64 // 加算デバフ（ProtectedFromDebuffがtrueなら無効、正の値として格納し負として扱う）
-	ProtectionFromDebuff float64 // デバフ耐性 (0.0~1.0 0.0が基準、1.0でデバフ無効)
+	MultiplicativeBuff   float64
+	MultiplicativeDebuff float64
+	BuffBoostedPower     float64
+	AdditiveBuff         float64
+	AdditiveDebuff       float64
+	ProtectionFromDebuff float64
+}
+
+func (m *BattleCardPowerModifier) Calculate(power float64) float64 {
+	power += m.additiveBuffValue()
+	power *= m.multiplicativeBuffValue()
+	power *= m.multiplicativeDebuffValue()
+	power += m.additiveDebuffValue()
+	return power
+}
+
+func (m *BattleCardPowerModifier) buffBoostedPowerValue() float64 {
+	return m.BuffBoostedPower + 1.0
+}
+
+func (m *BattleCardPowerModifier) additiveBuffValue() float64 {
+	return m.AdditiveBuff * m.buffBoostedPowerValue()
+}
+
+func (m *BattleCardPowerModifier) multiplicativeBuffValue() float64 {
+	return m.MultiplicativeBuff*m.buffBoostedPowerValue() + 1.0
+}
+
+func (m *BattleCardPowerModifier) protectionFromDebuffValue() float64 {
+	v := 1.0 - m.ProtectionFromDebuff
+	if v < 0.0 {
+		return 0.0
+	}
+	return v
+}
+
+func (m *BattleCardPowerModifier) multiplicativeDebuffValue() float64 {
+	v := 1.0 - m.MultiplicativeDebuff*m.protectionFromDebuffValue()
+	if v < 0.0 {
+		return 0.0
+	}
+	return v
+}
+
+func (m *BattleCardPowerModifier) additiveDebuffValue() float64 {
+	return -m.AdditiveDebuff * m.protectionFromDebuffValue()
 }

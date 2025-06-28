@@ -155,8 +155,11 @@ type BattleCardSkillID string
 // BattleCardSkill はバトルカードのスキル
 type BattleCardSkill struct {
 	BattleCardSkillID BattleCardSkillID
-	Order             int
 	Calculator        BattleCardSkillCalculator
+}
+
+func (s *BattleCardSkill) Calculate(options *BattleCardSkillCalculationOptions) {
+	s.Calculator.Calculate(options)
 }
 
 type BattleCardSkillCalculator interface {
