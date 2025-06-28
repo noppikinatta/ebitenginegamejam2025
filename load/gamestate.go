@@ -44,7 +44,7 @@ func createMyNation() *core.MyNation {
 		BasicYield: core.ResourceQuantity{
 			Food:  1,
 			Wood:  1,
-			Money: 3,
+			Money: 1,
 			Iron:  0,
 			Mana:  0,
 		},
