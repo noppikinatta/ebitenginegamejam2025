@@ -1,64 +1,64 @@
-story-1, In the year 1024 of the Kingdom Calendar, the Demon Lord, who according to legend resurrects once every hundred years, has been revived.\nHowever, since his body before and after resurrection are different entities, the Demon Lord began to ponder philosophical questions about his own identity and became troubled.\nNow is our chance! Let us form alliances with nations and defeat the Demon Lord!
-battlecard-1, Soldier
-battlecard-2, Knight
-battlecard-3, General
-battlecard-4, Archer
-battlecard-5, Fortune Teller
-battlecard-6, Wizard
-battlecard-7, Sage
-battlecard-8, Blacksmith
-battlecard-9, Golem
-battlecard-10, Samurai
-battlecard-11, Ninja
-battlecard-12, Monk
-battlecard-13, Bard
-battlecard-14, Gunner
-battlecard-15, Jester
-battlecard-16, Wrestler
-structurecard-1, Farm
-structurecard-2, Lumberjack's Hut
-structurecard-3, Mine
-structurecard-4, Market
-structurecard-5, Camp
-structurecard-6, Catapult
-structurecard-7, Ancestral Shrine
-structurecard-8, Mana Node
-structurecard-9, Armory
-structurecard-10, Ranch
-structurecard-11, Sawmill
-structurecard-12, Ballista
-structurecard-13, Urban Cannon
-enemy-1, Goblin
-enemy-2, Saber Rat
-enemy-3, Rattlesnake
-enemy-4, Condor
-enemy-5, Slime
-enemy-6, Matango
-enemy-7, Brown Bear
-enemy-8, Skeleton
-enemy-9, Elemental
-enemy-10, Dragon
-enemy-11, Wyvern
-enemy-12, Vampire
-enemy-13, Living Armor
-enemy-14, Archdemon
-enemy-15, Dullahan
-enemy-16, Obelisk
-boss-1, Demon Lord
-question-1, Why am I myself and not you?
-question-2, Does intelligence truly exist?\nWhat is the difference between reflex and intelligence?
-question-3, Do consciousnesses other than mine truly exist?\nAre they merely behaving as if they have consciousness?
-question-4, Why do we exist rather than not exist?
-question-5, When we are not observing ourselves, do we exist?
-question-6, Where are my beginning and end?\nWhat is the essential difference between a strand of my hair and half of myself?
-question-7, What is a soul?\nDo soul and body exist separately?
-question-8, Why do we feel time?\nCan we prove that time is not part of us?
-question-9, When we expand ourselves infinitely,\nare the particles that compose us one single me?
-question-10, Do I exist?\nIs what I see merely footage to make me believe I exist?
-question-11, When part of me separates from me, why do I feel it is no longer me?
-question-12, When I cease to exist, does the world still exist?
-question-13, Is it correct to ask what I am?\nIs it correct to ask what I am?
-question-14, By questioning what I am,\ncan I prove that I exist?
-question-15, Are the doubts I harbor truly doubts?
-question-16, Does a reason for me being me exist?\nDo you and I appear different but are actually the same thing?
-question-boss, When all the matter that comprises me is replaced,\ncan it still be called me?\nCan you prove that my consciousness has not been replaced?
+story-1,"In the year 1024 of the Kingdom Calendar, the Demon Lord, who according to legend resurrects once every hundred years, has been revived.\nHowever, since his body before and after resurrection are different entities, the Demon Lord began to ponder philosophical questions about his own identity and became troubled.\nNow is our chance! Let us form alliances with nations and defeat the Demon Lord!"
+battlecard-1,"Soldier"
+battlecard-2,"Knight"
+battlecard-3,"General"
+battlecard-4,"Archer"
+battlecard-5,"Fortune Teller"
+battlecard-6,"Wizard"
+battlecard-7,"Sage"
+battlecard-8,"Blacksmith"
+battlecard-9,"Golem"
+battlecard-10,"Samurai"
+battlecard-11,"Ninja"
+battlecard-12,"Monk"
+battlecard-13,"Bard"
+battlecard-14,"Gunner"
+battlecard-15,"Jester"
+battlecard-16,"Wrestler"
+structurecard-1,"Farm"
+structurecard-2,"Lumberjack's Hut"
+structurecard-3,"Mine"
+structurecard-4,"Market"
+structurecard-5,"Camp"
+structurecard-6,"Catapult"
+structurecard-7,"Ancestral Shrine"
+structurecard-8,"Mana Node"
+structurecard-9,"Armory"
+structurecard-10,"Ranch"
+structurecard-11,"Sawmill"
+structurecard-12,"Ballista"
+structurecard-13,"Urban Cannon"
+enemy-1,"Goblin"
+enemy-2,"Saber Rat"
+enemy-3,"Rattlesnake"
+enemy-4,"Condor"
+enemy-5,"Slime"
+enemy-6,"Matango"
+enemy-7,"Brown Bear"
+enemy-8,"Skeleton"
+enemy-9,"Elemental"
+enemy-10,"Dragon"
+enemy-11,"Wyvern"
+enemy-12,"Vampire"
+enemy-13,"Living Armor"
+enemy-14,"Archdemon"
+enemy-15,"Dullahan"
+enemy-16,"Obelisk"
+boss-1,"Demon Lord"
+question-1,"Why am I myself and not you?"
+question-2,"Does intelligence truly exist?\nWhat is the difference between reflex and intelligence?"
+question-3,"Do consciousnesses other than mine truly exist?\nAre they merely behaving as if they have consciousness?"
+question-4,"Why do we exist rather than not exist?"
+question-5,"When we are not observing ourselves, do we exist?"
+question-6,"Where are my beginning and end?\nWhat is the essential difference between a strand of my hair and half of myself?"
+question-7,"What is a soul?\nDo soul and body exist separately?"
+question-8,"Why do we feel time?\nCan we prove that time is not part of us?"
+question-9,"When we expand ourselves infinitely,\nare the particles that compose us one single me?"
+question-10,"Do I exist?\nIs what I see merely footage to make me believe I exist?"
+question-11,"When part of me separates from me, why do I feel it is no longer me?"
+question-12,"When I cease to exist, does the world still exist?"
+question-13,"Is it correct to ask what I am?\nIs it correct to ask what I am?"
+question-14,"By questioning what I am,\ncan I prove that I exist?"
+question-15,"Are the doubts I harbor truly doubts?"
+question-16,"Does a reason for me being me exist?\nDo you and I appear different but are actually the same thing?"
+question-boss,"When all the matter that comprises me is replaced,\ncan it still be called me?\nCan you prove that my consciousness has not been replaced?"

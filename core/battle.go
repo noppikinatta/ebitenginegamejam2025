@@ -7,16 +7,16 @@ type BattlefieldEffect interface {
 
 // Battlefield は未制圧のWildernessで戦闘開始時に生成される戦場オブジェクトです。
 type Battlefield struct {
-	Enemy        *Enemy              // 戦闘相手のEnemy。
-	Effects      []BattlefieldEffect // 戦場効果の配列
-	SupportPower float64             // 周囲のTerritoryに置いたStructureCardの影響で増加したPower。
-	BattleCards  []*BattleCard       // 戦闘中に出すBattleCardの集合。
-	CardSlot     int                 // BattleCardを置くことができる枚数。
+	Enemy            *Enemy              // 戦闘相手のEnemy。
+	Effects          []BattlefieldEffect // 戦場効果の配列
+	BaseSupportPower float64             // 周囲のTerritoryに置いたStructureCardの影響で増加したPower。
+	BattleCards      []*BattleCard       // 戦闘中に出すBattleCardの集合。
+	CardSlot         int                 // BattleCardを置くことができる枚数。
 }
 
 // CanBeat 戦闘を勝利できるかどうかを返す。
 func (b *Battlefield) CanBeat() bool {
-	totalPower := b.SupportPower
+	totalPower := b.BaseSupportPower
 
 	// 各BattleCardのパワーを計算（敵スキルの影響を考慮）
 	for _, card := range b.BattleCards {
@@ -44,11 +44,11 @@ func (b *Battlefield) Beat() {
 // NewBattlefield Battlefieldのインスタンスを作成する。
 func NewBattlefield(enemy *Enemy, supportPower float64) *Battlefield {
 	return &Battlefield{
-		Enemy:        enemy,
-		Effects:      make([]BattlefieldEffect, 0),
-		SupportPower: supportPower,
-		BattleCards:  make([]*BattleCard, 0, enemy.BattleCardSlot),
-		CardSlot:     enemy.BattleCardSlot,
+		Enemy:            enemy,
+		Effects:          make([]BattlefieldEffect, 0),
+		BaseSupportPower: supportPower,
+		BattleCards:      make([]*BattleCard, 0, enemy.BattleCardSlot),
+		CardSlot:         enemy.BattleCardSlot,
 	}
 }
 
@@ -70,4 +70,20 @@ func (b *Battlefield) RemoveBattleCard(index int) (*BattleCard, bool) {
 	card := b.BattleCards[index]
 	b.BattleCards = append(b.BattleCards[:index], b.BattleCards[index+1:]...)
 	return card, true
+}
+
+func (b *Battlefield) CalculateTotalPower() float64 {
+	totalPower := b.BaseSupportPower
+	for _, card := range b.BattleCards {
+		totalPower += float64(card.Power)
+	}
+	return totalPower
+}
+
+type BattleCardPowerModifier struct {
+	MultiplicativeBuff   float64 // 乗算バフ（1.0以上、1.2なら20%増加）
+	MultiplicativeDebuff float64 // 乗算デバフ（1.0未満、0.8なら20%減少、ProtectedFromDebuffがtrueなら無効）
+	AdditiveBuff         float64 // 加算バフ（常に適用される正の値）
+	AdditiveDebuff       float64 // 加算デバフ（ProtectedFromDebuffがtrueなら無効、正の値として格納し負として扱う）
+	ProtectionFromDebuff float64 // デバフ耐性 (0.0~1.0 0.0が基準、1.0でデバフ無効)
 }

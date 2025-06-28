@@ -154,27 +154,38 @@ type BattleCardSkillID string
 
 // BattleCardSkill はバトルカードのスキル
 type BattleCardSkill struct {
-	BattleCardSkillID       BattleCardSkillID
-	EnemySkillBlocker       EnemySkillBlocker
-	BattleCardPowerModifier BattleCardPowerModifier
+	BattleCardSkillID BattleCardSkillID
+	Order             int
+	Calculator        BattleCardSkillCalculator
 }
 
-// EnemySkillBlocker は、Enemyのスキルをブロックするスキルです。
-type EnemySkillBlocker interface {
-	CanBlock(enemySkill *EnemySkill) bool // 引数enemySkillがブロックできるかどうかを返す。
+type BattleCardSkillCalculator interface {
+	Calculate(options *BattleCardSkillCalculationOptions)
 }
 
-// BattleCardPowerModifier は、BattleCardの戦闘力を変更するスキルです。
-type BattleCardPowerModifier interface {
-	CanAffect(battleCard *BattleCard) bool // 引数battleCardの戦闘力を変更できるかどうかを返す。
-	Modify(battleCard *BattleCard) float64 // 引数battleCardの戦闘力を変更する。
+type BattleCardSkillCalculationOptions struct {
+	SupportPowerMultiplier   float64
+	BattleCardIndex          int
+	BattleCards              []*BattleCard
+	BattleCardPowerModifiers []*BattleCardPowerModifier
+	Enemy                    *Enemy
 }
 
-// BattleCardState はBattleCardの戦闘中の状態を表します。
-type BattleCardState struct {
-	BattleCard          *BattleCard
-	AffectedEnemySkills []bool // EnemySkillの対象になっているかのフラグ。EnemySkillは複数あるのでそれぞれの判定結果を格納する。
-	AffectedCardSkills  []bool // BattleCardSkillの対象になっているかのフラグ。場に出ている全てのBattleCardのSkillが影響するかもしれない。このスライスの長さは場に出ているBattleCardの枚数に等しい。
+type BattleCardSkillCalculationFunc func(options *BattleCardSkillCalculationOptions)
+
+func (f BattleCardSkillCalculationFunc) Calculate(options *BattleCardSkillCalculationOptions) {
+	f(options)
+}
+
+type BattleCardSkillCalculatorEnemyType struct {
+	EnemyType  EnemyType
+	Multiplier float64
+}
+
+func (c *BattleCardSkillCalculatorEnemyType) Calculate(options *BattleCardSkillCalculationOptions) {
+	if options.Enemy.EnemyType == c.EnemyType {
+		options.BattleCardPowerModifiers[options.BattleCardIndex].MultiplicativeBuff += c.Multiplier
+	}
 }
 
 // YieldModifier はTerritoryの収益を変更するスキル
@@ -215,6 +226,6 @@ type SupportPowerBattlefieldModifier struct {
 }
 
 func (m *SupportPowerBattlefieldModifier) Modify(battlefield *Battlefield) *Battlefield {
-	battlefield.SupportPower += m.Value
+	battlefield.BaseSupportPower += m.Value
 	return battlefield
 }

@@ -1,64 +1,64 @@
-story-1, 王国歴1024年、伝説では100年に一度復活するという魔王が復活した。\nしかし、復活前と復活後の肉体は別の物であったため、魔王は自己の同一性について\n哲学的な問いかけをし、悩み始めた。\n今がチャンスだ! 諸国と同盟を組み、魔王を滅ぼそう!
-battlecard-1, 兵士
-battlecard-2, 騎士
-battlecard-3, 将軍
-battlecard-4, 弓使い
-battlecard-5, 占い師
-battlecard-6, 魔法使い
-battlecard-7, 賢者
-battlecard-8, 鍛冶屋
-battlecard-9, ゴーレム
-battlecard-10, 侍
-battlecard-11, 忍者
-battlecard-12, 武僧
-battlecard-13, 吟遊詩人
-battlecard-14, 火縄銃兵
-battlecard-15, 道化師
-battlecard-16, レスラー
-structurecard-1, 農場
-structurecard-2, 木こり小屋
-structurecard-3, 坑道
-structurecard-4, 市場
-structurecard-5, 野営地
-structurecard-6, カタパルト
-structurecard-7, 祖廟
-structurecard-8, マナ・ノード
-structurecard-9, 武器庫
-structurecard-10, 牧場
-structurecard-11, 製材所
-structurecard-12, バリスタ
-structurecard-13, ウルバン砲
-enemy-1, ゴブリン
-enemy-2, サーベルねずみ
-enemy-3, ガラガラヘビ
-enemy-4, コンドル
-enemy-5, スライム
-enemy-6, マタンゴ
-enemy-7, ハイイログマ
-enemy-8, スケルトン
-enemy-9, エレメンタル
-enemy-10, ドラゴン
-enemy-11, ワイバーン
-enemy-12, ヴァンパイア
-enemy-13, リビングアーマー
-enemy-14, アークデーモン
-enemy-15, デュラハン
-enemy-16, オベリスク
-boss-1, 魔王
-question-1, 私が私でありあなたではないのはなぜでしょうか?
-question-2, 知性は本当に存在するのでしょうか?\n反射と知性の違いはなんでしょうか?
-question-3, 私以外の意識は本当に存在しているのでしょうか?\n意識があるかのように振舞っているだけなのではないでしょうか?
-question-4, なぜ私たちが存在しないのではなく、私たちが存在するのでしょうか?
-question-5, 私たちが私たちを観測していないとき、私たちは存在しているのでしょうか?
-question-6, 私の始まりと終わりはどこなのでしょうか?\n私の髪の毛の一本と私の半分の本質的な違いは何でしょうか?
-question-7, 魂とはなんでしょうか?\n魂と肉体は別々に存在するのでしょうか?
-question-8, なぜ私たちは時間を感じるのでしょうか?\n時間が私たちの一部ではないと証明できるのでしょうか?
-question-9, 私たちを限りなく拡大していくとき、\n私たちを構成する粒子はひとつの私なのでしょうか?
-question-10, 私は存在するのでしょうか?\n私がみているものは、私が存在するとみなすための映像なのでしょうか?
-question-11, 私の一部が私から離れるとき、私ではないと感じるのはなぜでしょうか?
-question-12, 私が存在しなくなったとき、世界は存在しているのでしょうか?
-question-13, 私とは何かを問うことは正しいのでしょうか?\n私とは何かを問うことは正しいのでしょうか?
-question-14, 私が何であるか疑問を抱くことで、\n私が存在することを証明することはできるのでしょうか?
-question-15, 私が抱いている疑問は果たして疑問なのでしょうか?
-question-16, 私が私である理由は存在するのでしょうか?\n私とあなたは別のものに見えて実際は同じものなのでしょうか?
-question-boss, 私を構成する物質が全て入れ替わったとき、\nそれを私と呼んでもよいのでしょうか?\n私の意識が入れ替わっていないことを証明できるのでしょうか?
+story-1,"王国歴1024年、伝説では100年に一度復活するという魔王が復活した。\nしかし、復活前と復活後の肉体は別の物であったため、魔王は自己の同一性について\n哲学的な問いかけをし、悩み始めた。\n今がチャンスだ! 諸国と同盟を組み、魔王を滅ぼそう!"
+battlecard-1,"兵士"
+battlecard-2,"騎士"
+battlecard-3,"将軍"
+battlecard-4,"弓使い"
+battlecard-5,"占い師"
+battlecard-6,"魔法使い"
+battlecard-7,"賢者"
+battlecard-8,"鍛冶屋"
+battlecard-9,"ゴーレム"
+battlecard-10,"侍"
+battlecard-11,"忍者"
+battlecard-12,"武僧"
+battlecard-13,"吟遊詩人"
+battlecard-14,"観測員"
+battlecard-15,"道化師"
+battlecard-16,"レスラー"
+structurecard-1,"農場"
+structurecard-2,"木こり小屋"
+structurecard-3,"坑道"
+structurecard-4,"市場"
+structurecard-5,"野営地"
+structurecard-6,"カタパルト"
+structurecard-7,"祖廟"
+structurecard-8,"マナ・ノード"
+structurecard-9,"武器庫"
+structurecard-10,"牧場"
+structurecard-11,"製材所"
+structurecard-12,"バリスタ"
+structurecard-13,"ウルバン砲"
+enemy-1,"ゴブリン"
+enemy-2,"サーベルねずみ"
+enemy-3,"ガラガラヘビ"
+enemy-4,"コンドル"
+enemy-5,"スライム"
+enemy-6,"クロコダイル"
+enemy-7,"ハイイログマ"
+enemy-8,"スケルトン"
+enemy-9,"エレメンタル"
+enemy-10,"ドラゴン"
+enemy-11,"グリフォン"
+enemy-12,"ヴァンパイア"
+enemy-13,"リビングアーマー"
+enemy-14,"アークデーモン"
+enemy-15,"デュラハン"
+enemy-16,"オベリスク"
+boss-1,"魔王"
+question-1,"私が私でありあなたではないのはなぜでしょうか?"
+question-2,"知性は本当に存在するのでしょうか?\n反射と知性の違いはなんでしょうか?"
+question-3,"私以外の意識は本当に存在しているのでしょうか?\n意識があるかのように振舞っているだけなのではないでしょうか?"
+question-4,"なぜ私たちが存在しないのではなく、私たちが存在するのでしょうか?"
+question-5,"私たちが私たちを観測していないとき、私たちは存在しているのでしょうか?"
+question-6,"私の始まりと終わりはどこなのでしょうか?\n私の髪の毛の一本と私の半分の本質的な違いは何でしょうか?"
+question-7,"魂とはなんでしょうか?\n魂と肉体は別々に存在するのでしょうか?"
+question-8,"なぜ私たちは時間を感じるのでしょうか?\n時間が私たちの一部ではないと証明できるのでしょうか?"
+question-9,"私たちを限りなく拡大していくとき、\n私たちを構成する粒子はひとつの私なのでしょうか?"
+question-10,"私は存在するのでしょうか?\n私がみているものは、私が存在するとみなすための映像なのでしょうか?"
+question-11,"私の一部が私から離れるとき、私ではないと感じるのはなぜでしょうか?"
+question-12,"私が存在しなくなったとき、世界は存在しているのでしょうか?"
+question-13,"私とは何かを問うことは正しいのでしょうか?\n私とは何かを問うことは正しいのでしょうか?"
+question-14,"私が何であるか疑問を抱くことで、\n私が存在することを証明することはできるのでしょうか?"
+question-15,"私が抱いている疑問は果たして疑問なのでしょうか?"
+question-16,"私が私である理由は存在するのでしょうか?\n私とあなたは別のものに見えて実際は同じものなのでしょうか?"
+question-boss,"私を構成する物質が全て入れ替わったとき、\nそれを私と呼んでもよいのでしょうか?\n私の意識が入れ替わっていないことを証明できるのでしょうか?"

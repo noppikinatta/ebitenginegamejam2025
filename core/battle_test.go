@@ -47,7 +47,7 @@ func TestBattlefield_CanBeat(t *testing.T) {
 			battlefield: &core.Battlefield{
 				Enemy:        weakEnemy,
 				BattleCards:  []*core.BattleCard{weakCard},
-				SupportPower: 0.0,
+				BaseSupportPower: 0.0,
 			},
 			expected: false,
 		},
@@ -56,7 +56,7 @@ func TestBattlefield_CanBeat(t *testing.T) {
 			battlefield: &core.Battlefield{
 				Enemy:        weakEnemy,
 				BattleCards:  []*core.BattleCard{weakCard, weakCard}, // 5 + 5 = 10
-				SupportPower: 0.0,
+				BaseSupportPower: 0.0,
 			},
 			expected: true,
 		},
@@ -65,7 +65,7 @@ func TestBattlefield_CanBeat(t *testing.T) {
 			battlefield: &core.Battlefield{
 				Enemy:        weakEnemy,
 				BattleCards:  []*core.BattleCard{strongCard},
-				SupportPower: 0.0,
+				BaseSupportPower: 0.0,
 			},
 			expected: true,
 		},
@@ -74,7 +74,7 @@ func TestBattlefield_CanBeat(t *testing.T) {
 			battlefield: &core.Battlefield{
 				Enemy:        weakEnemy,
 				BattleCards:  []*core.BattleCard{weakCard}, // 5 + 6 = 11 > 10
-				SupportPower: 6.0,
+				BaseSupportPower: 6.0,
 			},
 			expected: true,
 		},
@@ -83,7 +83,7 @@ func TestBattlefield_CanBeat(t *testing.T) {
 			battlefield: &core.Battlefield{
 				Enemy:        strongEnemy,
 				BattleCards:  []*core.BattleCard{strongCard}, // 30 < 50
-				SupportPower: 0.0,
+				BaseSupportPower: 0.0,
 			},
 			expected: false,
 		},
@@ -92,7 +92,7 @@ func TestBattlefield_CanBeat(t *testing.T) {
 			battlefield: &core.Battlefield{
 				Enemy:        strongEnemy,
 				BattleCards:  []*core.BattleCard{strongCard, strongCard}, // 30 + 30 + 5 = 65 > 50
-				SupportPower: 5.0,
+				BaseSupportPower: 5.0,
 			},
 			expected: true,
 		},
@@ -126,7 +126,7 @@ func TestBattlefield_Beat(t *testing.T) {
 	battlefield := &core.Battlefield{
 		Enemy:        enemy,
 		BattleCards:  []*core.BattleCard{card},
-		SupportPower: 0.0,
+		BaseSupportPower: 0.0,
 	}
 
 	// 勝利可能かチェック
@@ -205,7 +205,7 @@ func TestBattlefield_PowerCalculation(t *testing.T) {
 			battlefield := &core.Battlefield{
 				Enemy:        enemy,
 				BattleCards:  tt.cards,
-				SupportPower: tt.supportPower,
+				BaseSupportPower: tt.supportPower,
 			}
 
 			result := battlefield.CanBeat()
@@ -278,7 +278,7 @@ func TestBattlefield_WithEnemySkills(t *testing.T) {
 			battlefield := &core.Battlefield{
 				Enemy:        enemy,
 				BattleCards:  tt.cards,
-				SupportPower: 0.0,
+				BaseSupportPower: 0.0,
 			}
 
 			result := battlefield.CanBeat()
