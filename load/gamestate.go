@@ -125,7 +125,6 @@ func createCardGenerator() *core.CardGenerator {
 	return &core.CardGenerator{
 		BattleCards:    createBattleCards(),
 		StructureCards: createStructureCards(),
-		ResourceCards:  createResourceCards(),
 	}
 }
 
@@ -344,34 +343,108 @@ func createBattleCards() map[core.CardID]*core.BattleCard {
 func createStructureCards() map[core.CardID]*core.StructureCard {
 	cards := []*core.StructureCard{
 		{
-			CardID: "structure_card_1",
+			CardID:         "structurecard-farm",
+			DescriptionKey: "structurecard-farm-desc",
+			YieldModifier: &core.AddYieldModifier{
+				ResourceQuantity: core.ResourceQuantity{
+					Food: 2,
+				},
+			},
+		},
+		{
+			CardID:         "structurecard-woodcutter",
+			DescriptionKey: "structurecard-woodcutter-desc",
+			YieldModifier: &core.AddYieldModifier{
+				ResourceQuantity: core.ResourceQuantity{
+					Wood: 2,
+				},
+			},
+		},
+		{
+			CardID:         "structurecard-tunnel",
+			DescriptionKey: "structurecard-tunnel-desc",
+			YieldModifier: &core.AddYieldModifier{
+				ResourceQuantity: core.ResourceQuantity{
+					Iron: 2,
+				},
+			},
+		},
+		{
+			CardID:         "structurecard-market",
+			DescriptionKey: "structurecard-market-desc",
+			YieldModifier: &core.AddYieldModifier{
+				ResourceQuantity: core.ResourceQuantity{
+					Money: 2,
+				},
+			},
+		},
+		{
+			CardID:         "structurecard-mana-node",
+			DescriptionKey: "structurecard-mana-node-desc",
+			YieldModifier: &core.AddYieldModifier{
+				ResourceQuantity: core.ResourceQuantity{
+					Mana: 2,
+				},
+			},
+		},
+		{
+			CardID:         "structurecard-granary",
+			DescriptionKey: "structurecard-granary-desc",
 			YieldModifier: &core.MultiplyYieldModifier{
-				Multiply: 1.5,
+				FoodMultiply: 0.5,
 			},
-			BattlefieldModifier: &core.CardSlotBattlefieldModifier{
-				Value: 1,
+		},
+		{
+			CardID:         "structurecard-sawmill",
+			DescriptionKey: "structurecard-sawmill-desc",
+			YieldModifier: &core.MultiplyYieldModifier{
+				WoodMultiply: 0.5,
 			},
+		},
+		{
+			CardID:         "structurecard-smelter",
+			DescriptionKey: "structurecard-smelter-desc",
+			YieldModifier: &core.MultiplyYieldModifier{
+				IronMultiply: 0.5,
+			},
+		},
+		{
+			CardID:         "structurecard-mint",
+			DescriptionKey: "structurecard-mint-desc",
+			YieldModifier: &core.MultiplyYieldModifier{
+				MoneyMultiply: 0.5,
+			},
+		},
+		{
+			CardID:         "structurecard-temple",
+			DescriptionKey: "structurecard-temple-desc",
+			YieldModifier: &core.MultiplyYieldModifier{
+				ManaMultiply: 0.5,
+			},
+		},
+		{
+			CardID:              "structurecard-camp",
+			DescriptionKey:      "structurecard-camp-desc",
+			BattlefieldModifier: &core.CardSlotBattlefieldModifier{Value: 1},
+		},
+		{
+			CardID:              "structurecard-catapult",
+			DescriptionKey:      "structurecard-catapult-desc",
+			BattlefieldModifier: &core.SupportPowerBattlefieldModifier{Value: 3},
+		},
+		{
+			CardID:              "structurecard-ballista",
+			DescriptionKey:      "structurecard-ballista-desc",
+			BattlefieldModifier: &core.SupportPowerBattlefieldModifier{Value: 5},
+		},
+		{
+			CardID:              "structurecard-orban-cannon",
+			DescriptionKey:      "structurecard-orban-cannon-desc",
+			BattlefieldModifier: &core.SupportPowerBattlefieldModifier{Value: 8},
 		},
 	}
 
 	cardMap := make(map[core.CardID]*core.StructureCard)
-	for _, card := range cards {
-		cardMap[card.CardID] = card
-	}
-	return cardMap
-}
-
-func createResourceCards() map[core.CardID]*core.ResourceCard {
-	cards := []*core.ResourceCard{
-		{
-			CardID: "resource_card_1",
-			ResourceQuantity: core.ResourceQuantity{
-				Food: 1,
-			},
-		},
-	}
-
-	cardMap := make(map[core.CardID]*core.ResourceCard)
 	for _, card := range cards {
 		cardMap[card.CardID] = card
 	}

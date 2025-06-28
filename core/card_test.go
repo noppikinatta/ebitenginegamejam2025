@@ -126,12 +126,6 @@ func TestCardDatabase_GetCards(t *testing.T) {
 				CardID: "structure_1",
 			},
 		},
-		ResourceCards: map[core.CardID]*core.ResourceCard{
-			"resource_1": {
-				CardID:           "resource_1",
-				ResourceQuantity: core.ResourceQuantity{Money: 100},
-			},
-		},
 	}
 
 	tests := []struct {
@@ -142,15 +136,13 @@ func TestCardDatabase_GetCards(t *testing.T) {
 	}{
 		{
 			name:     "存在するカードのみ",
-			cardIDs:  []core.CardID{"battle_1", "structure_1", "resource_1"},
+			cardIDs:  []core.CardID{"battle_1", "structure_1"},
 			expectOk: true,
 			expectCards: func(cards *core.Cards) bool {
 				return len(cards.BattleCards) == 1 &&
 					len(cards.StructureCards) == 1 &&
-					len(cards.ResourceCards) == 1 &&
 					cards.BattleCards[0].CardID == "battle_1" &&
-					cards.StructureCards[0].CardID == "structure_1" &&
-					cards.ResourceCards[0].CardID == "resource_1"
+					cards.StructureCards[0].CardID == "structure_1"
 			},
 		},
 		{
@@ -167,8 +159,7 @@ func TestCardDatabase_GetCards(t *testing.T) {
 			expectOk: true,
 			expectCards: func(cards *core.Cards) bool {
 				return len(cards.BattleCards) == 0 &&
-					len(cards.StructureCards) == 0 &&
-					len(cards.ResourceCards) == 0
+					len(cards.StructureCards) == 0
 			},
 		},
 		{
@@ -177,8 +168,7 @@ func TestCardDatabase_GetCards(t *testing.T) {
 			expectOk: true,
 			expectCards: func(cards *core.Cards) bool {
 				return len(cards.BattleCards) == 2 &&
-					len(cards.StructureCards) == 0 &&
-					len(cards.ResourceCards) == 0
+					len(cards.StructureCards) == 0
 			},
 		},
 	}

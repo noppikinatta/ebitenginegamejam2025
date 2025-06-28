@@ -57,7 +57,6 @@ func (c *CardPack) Open(intner Intner) []CardID {
 type Cards struct {
 	BattleCards    []*BattleCard
 	StructureCards []*StructureCard
-	ResourceCards  []*ResourceCard
 }
 
 // BattleCardPower 本来intにしたいが、計算上float64の方が都合が良い。表示時には小数点以下第一位までにするかもしれない。
@@ -77,21 +76,15 @@ type BattleCard struct {
 // StructureCard は、Territoryに配置するカードです。この構造体はimmutableです。
 type StructureCard struct {
 	CardID              CardID
+	DescriptionKey      string
 	YieldModifier       YieldModifier       // はTerritoryのYieldを変更するスキルです。
 	BattlefieldModifier BattlefieldModifier // はBattlefieldの状態を変更するスキルです。
-}
-
-// ResourceCard は、Resourceを獲得するカードです。この構造体はimmutableです。
-type ResourceCard struct {
-	CardID           CardID
-	ResourceQuantity ResourceQuantity // は獲得するResourceの量です。
 }
 
 // CardGenerator はカードを生成するための構造体です。
 type CardGenerator struct {
 	BattleCards    map[CardID]*BattleCard
 	StructureCards map[CardID]*StructureCard
-	ResourceCards  map[CardID]*ResourceCard
 }
 
 // Generate は引数のCardIDの配列に対応するカードを生成します。
@@ -101,7 +94,6 @@ func (g *CardGenerator) Generate(cardIDs []CardID) (*Cards, bool) {
 	cards := &Cards{
 		BattleCards:    make([]*BattleCard, 0),
 		StructureCards: make([]*StructureCard, 0),
-		ResourceCards:  make([]*ResourceCard, 0),
 	}
 
 	for _, cardID := range cardIDs {
@@ -116,13 +108,6 @@ func (g *CardGenerator) Generate(cardIDs []CardID) (*Cards, bool) {
 		if structureCard, exists := g.StructureCards[cardID]; exists {
 			newStructureCard := *structureCard
 			cards.StructureCards = append(cards.StructureCards, &newStructureCard)
-			continue
-		}
-
-		// ResourceCardとして存在するかチェック
-		if resourceCard, exists := g.ResourceCards[cardID]; exists {
-			newResourceCard := *resourceCard
-			cards.ResourceCards = append(cards.ResourceCards, &newResourceCard)
 			continue
 		}
 
@@ -146,7 +131,6 @@ func (cd *CardDeck) Add(cards *Cards) {
 
 	cd.BattleCards = append(cd.BattleCards, cards.BattleCards...)
 	cd.StructureCards = append(cd.StructureCards, cards.StructureCards...)
-	cd.ResourceCards = append(cd.ResourceCards, cards.ResourceCards...)
 }
 
 // BattleCardSkillID はバトルカードスキルの識別子
@@ -323,17 +307,29 @@ type YieldModifier interface {
 	Modify(quantity ResourceQuantity) ResourceQuantity // 引数quantityを変更する。
 }
 
+type AddYieldModifier struct {
+	ResourceQuantity ResourceQuantity
+}
+
+func (m *AddYieldModifier) Modify(quantity ResourceQuantity) ResourceQuantity {
+	return quantity.Add(m.ResourceQuantity)
+}
+
 type MultiplyYieldModifier struct {
-	Multiply float64
+	FoodMultiply  float64
+	MoneyMultiply float64
+	WoodMultiply  float64
+	IronMultiply  float64
+	ManaMultiply  float64
 }
 
 func (m *MultiplyYieldModifier) Modify(quantity ResourceQuantity) ResourceQuantity {
 	return ResourceQuantity{
-		Food:  int(float64(quantity.Food) * m.Multiply),
-		Money: int(float64(quantity.Money) * m.Multiply),
-		Wood:  int(float64(quantity.Wood) * m.Multiply),
-		Iron:  int(float64(quantity.Iron) * m.Multiply),
-		Mana:  int(float64(quantity.Mana) * m.Multiply),
+		Food:  int(float64(quantity.Food) * (1.0 + m.FoodMultiply)),
+		Money: int(float64(quantity.Money) * (1.0 + m.MoneyMultiply)),
+		Wood:  int(float64(quantity.Wood) * (1.0 + m.WoodMultiply)),
+		Iron:  int(float64(quantity.Iron) * (1.0 + m.IronMultiply)),
+		Mana:  int(float64(quantity.Mana) * (1.0 + m.ManaMultiply)),
 	}
 }
 

@@ -64,11 +64,6 @@ func (c *CardDeckView) getAllCards() []interface{} {
 		allCards = append(allCards, card)
 	}
 
-	// ResourceCardsを追加
-	for _, card := range c.CardDeck.ResourceCards {
-		allCards = append(allCards, card)
-	}
-
 	return allCards
 }
 
@@ -121,8 +116,6 @@ func (c *CardDeckView) RemoveSelectedCard() interface{} {
 		c.removeBattleCard(card)
 	case *core.StructureCard:
 		c.removeStructureCard(card)
-	case *core.ResourceCard:
-		c.removeResourceCard(card)
 	}
 
 	// 選択をクリア
@@ -151,16 +144,6 @@ func (c *CardDeckView) removeStructureCard(card *core.StructureCard) {
 	}
 }
 
-// removeResourceCard ResourceCardをデッキから削除
-func (c *CardDeckView) removeResourceCard(card *core.ResourceCard) {
-	for i, cardToRemove := range c.CardDeck.ResourceCards {
-		if cardToRemove == card {
-			c.CardDeck.ResourceCards = append(c.CardDeck.ResourceCards[:i], c.CardDeck.ResourceCards[i+1:]...)
-			break
-		}
-	}
-}
-
 // AddCard カードをデッキに追加
 func (c *CardDeckView) AddCard(card interface{}) {
 	if c.CardDeck == nil {
@@ -172,8 +155,6 @@ func (c *CardDeckView) AddCard(card interface{}) {
 		c.CardDeck.BattleCards = append(c.CardDeck.BattleCards, newCard)
 	case *core.StructureCard:
 		c.CardDeck.StructureCards = append(c.CardDeck.StructureCards, newCard)
-	case *core.ResourceCard:
-		c.CardDeck.ResourceCards = append(c.CardDeck.ResourceCards, newCard)
 	}
 }
 
