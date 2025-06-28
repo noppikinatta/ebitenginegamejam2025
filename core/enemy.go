@@ -16,6 +16,7 @@ type Enemy struct {
 	Power          float64
 	Skills         []EnemySkill
 	BattleCardSlot int // このEnemyとの戦闘で、プレイヤーが出せるBattleCardの枚数。
+	Question       string
 }
 
 type EnemySkill interface {

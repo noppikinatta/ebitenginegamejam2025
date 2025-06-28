@@ -1,6 +1,10 @@
 package load
 
-import "github.com/noppikinatta/ebitenginegamejam2025/core"
+import (
+	"fmt"
+
+	"github.com/noppikinatta/ebitenginegamejam2025/core"
+)
 
 // LoadGameState ゲームの初期状態を生成する（ダミーデータ）
 func LoadGameState() *core.GameState {
@@ -436,26 +440,70 @@ func createMapGrid(myNation *core.MyNation) *core.MapGrid {
 		},
 	}
 
-	for i := range points {
-		if points[i] != nil {
-			continue
+	// WildernessPointとBossPointを配置
+	wildernessConfigs := []struct {
+		x, y        int
+		enemyID     core.EnemyID
+		enemyType   core.EnemyType
+		power       float64
+		cardSlot    int
+		skills      []core.EnemySkill
+		terrainType string
+		baseYield   core.ResourceQuantity
+	}{
+		{1, 0, "enemy-goblin", "enemy-type-demonic", 3, 3, []core.EnemySkill{}, "terrain-forest", core.ResourceQuantity{Wood: 2}},
+		{0, 1, "enemy-sabrelouse", "enemy-type-animal", 4, 3, []core.EnemySkill{}, "terrain-mountain", core.ResourceQuantity{Iron: 2}},
+		{1, 1, "enemy-rattlesnake", "enemy-type-dragon", 6, 3, []core.EnemySkill{}, "terrain-plain", core.ResourceQuantity{Food: 2}},
+		{2, 1, "enemy-condor", "enemy-type-flying", 6, 3, []core.EnemySkill{createEvasionSkill()}, "terrain-desert", core.ResourceQuantity{}},
+		{1, 2, "enemy-slime", "enemy-type-unknown", 6, 3, []core.EnemySkill{createSoftSkill()}, "terrain-desert", core.ResourceQuantity{}},
+		{0, 3, "enemy-crocodile", "enemy-type-dragon", 10, 4, []core.EnemySkill{}, "terrain-mountain", core.ResourceQuantity{Iron: 2}},
+		{3, 0, "enemy-grizzly", "enemy-type-animal", 12, 4, []core.EnemySkill{}, "terrain-forest", core.ResourceQuantity{Wood: 2}},
+		{1, 3, "enemy-skeleton", "enemy-type-undead", 12, 4, []core.EnemySkill{createLongbowSkill()}, "terrain-mana-node", core.ResourceQuantity{Mana: 3}},
+		{3, 1, "enemy-elemental", "enemy-type-unknown", 20, 5, []core.EnemySkill{createIncorporealitySkill()}, "terrain-mountain", core.ResourceQuantity{Iron: 2}},
+		{1, 4, "enemy-dragon", "enemy-type-dragon", 30, 6, []core.EnemySkill{createPressureSkill()}, "terrain-plain", core.ResourceQuantity{Food: 2}},
+		{4, 1, "enemy-griffin", "enemy-type-flying", 25, 4, []core.EnemySkill{createEvasionSkill()}, "terrain-plain", core.ResourceQuantity{Food: 2}},
+		{2, 3, "enemy-vampire", "enemy-type-undead", 30, 6, []core.EnemySkill{createCharmSkill()}, "terrain-forest", core.ResourceQuantity{Wood: 2}},
+		{3, 2, "enemy-living-armor", "enemy-type-unknown", 50, 7, []core.EnemySkill{}, "terrain-mana-node", core.ResourceQuantity{Mana: 3}},
+		{3, 4, "enemy-arc-demon", "enemy-type-demonic", 45, 7, []core.EnemySkill{createMagicBarrierSkill()}, "terrain-forest", core.ResourceQuantity{Wood: 2}},
+		{4, 3, "enemy-durendal", "enemy-type-undead", 45, 7, []core.EnemySkill{createSideAttackSkill()}, "terrain-mountain", core.ResourceQuantity{Iron: 2}},
+		{3, 3, "enemy-obelisk", "enemy-type-unknown", 40, 8, []core.EnemySkill{createLaserSkill()}, "terrain-mana-node", core.ResourceQuantity{Mana: 3}},
+	}
+
+	for i, config := range wildernessConfigs {
+		enemy := &core.Enemy{
+			EnemyID:        config.enemyID,
+			EnemyType:      config.enemyType,
+			Power:          config.power,
+			Skills:         config.skills,
+			BattleCardSlot: config.cardSlot,
+			Question:       fmt.Sprintf("question-%d", i+1),
 		}
 
-		x, y := size.XY(i)
-
-		if x == 4 && y == 4 {
-			points[i] = &core.BossPoint{
-				Boss:     &core.Enemy{Power: 30, BattleCardSlot: 10},
-				Defeated: false,
-			}
-			continue
+		territory := &core.Territory{
+			BaseYield: config.baseYield,
+			CardSlot:  3, // 全て3に設定
 		}
 
-		points[i] = &core.WildernessPoint{
-			Controlled: false,
-			Enemy:      &core.Enemy{Power: 10, BattleCardSlot: 5},
-			Territory:  &core.Territory{BaseYield: core.ResourceQuantity{Food: 5}, CardSlot: 3},
+		points[size.Index(config.x, config.y)] = &core.WildernessPoint{
+			TerrainType: config.terrainType,
+			Controlled:  false,
+			Enemy:       enemy,
+			Territory:   territory,
 		}
+	}
+
+	// ボスポイント (4,4)
+	boss := &core.Enemy{
+		EnemyID:        "enemy-final-boss",
+		EnemyType:      "enemy-type-demonic",
+		Power:          60,
+		Skills:         []core.EnemySkill{createWaveSkill()},
+		BattleCardSlot: 8,
+		Question:       "question-boss",
+	}
+	points[size.Index(4, 4)] = &core.BossPoint{
+		Boss:     boss,
+		Defeated: false,
 	}
 
 	mapGrid := &core.MapGrid{
@@ -795,4 +843,80 @@ func createStructureCards() map[core.CardID]*core.StructureCard {
 		cardMap[card.CardID] = card
 	}
 	return cardMap
+}
+
+// 敵スキルの生成ヘルパー関数
+
+func createEvasionSkill() core.EnemySkill {
+	// 力タイプのカードパワー-2
+	return &core.EnemySkillCardTypeAdditiveDebuff{
+		CardType: "cardtype-str",
+		Value:    2.0,
+	}
+}
+
+func createSoftSkill() core.EnemySkill {
+	// 魔タイプ以外のカードパワー-50%
+	return &core.EnemySkillCardTypeExceptMultiplicativeDebuff{
+		CardType: "cardtype-mag",
+		Value:    0.5,
+	}
+}
+
+func createLongbowSkill() core.EnemySkill {
+	// 最も後ろのカードパワー-100%
+	return &core.EnemySkillIndexBackwardMultiplicativeDebuff{
+		NumOfCards: 1,
+		Value:      1.0,
+	}
+}
+
+func createIncorporealitySkill() core.EnemySkill {
+	// 魔タイプ以外のカードパワー-100%
+	return &core.EnemySkillCardTypeExceptMultiplicativeDebuff{
+		CardType: "cardtype-mag",
+		Value:    1.0,
+	}
+}
+
+func createPressureSkill() core.EnemySkill {
+	// 全てのカードパワー-1
+	return core.EnemySkillAdditiveDebuff(1.0)
+}
+
+func createCharmSkill() core.EnemySkill {
+	// 先頭から3枚のカードパワー-100%
+	return &core.EnemySkillIndexForwardMultiplicativeDebuff{
+		NumOfCards: 3,
+		Value:      1.0,
+	}
+}
+
+func createMagicBarrierSkill() core.EnemySkill {
+	// 魔法タイプのカードパワー-100%
+	return &core.EnemySkillCardTypeMultiplicativeDebuff{
+		CardType: "cardtype-mag",
+		Value:    1.0,
+	}
+}
+
+func createLaserSkill() core.EnemySkill {
+	// 後方から3枚のカードパワー-100%
+	return &core.EnemySkillIndexBackwardMultiplicativeDebuff{
+		NumOfCards: 3,
+		Value:      1.0,
+	}
+}
+
+func createSideAttackSkill() core.EnemySkill {
+	// 先頭から5枚のカードパワー-50%
+	return &core.EnemySkillIndexForwardMultiplicativeDebuff{
+		NumOfCards: 5,
+		Value:      0.5,
+	}
+}
+
+func createWaveSkill() core.EnemySkill {
+	// 全てのカードパワー-2
+	return core.EnemySkillAdditiveDebuff(2.0)
 }
