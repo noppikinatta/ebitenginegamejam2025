@@ -6,6 +6,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/noppikinatta/ebitenginegamejam2025/core"
 	"github.com/noppikinatta/ebitenginegamejam2025/drawing"
+	"github.com/noppikinatta/ebitenginegamejam2025/lang"
 )
 
 // TerritoryView Territory表示Widget
@@ -142,7 +143,7 @@ func (tv *TerritoryView) drawHeader(screen *ebiten.Image) {
 		pointName = string(tv.Territory.TerritoryID)
 	}
 	if pointName == "" {
-		pointName = "Unknown Territory"
+		pointName = lang.Text("ui-unknown-point")
 	}
 
 	opt := &ebiten.DrawImageOptions{}
@@ -175,11 +176,11 @@ func (tv *TerritoryView) drawYield(screen *ebiten.Image) {
 		name  string
 		value int
 	}{
-		{"Money", currentYield.Money},
-		{"Food", currentYield.Food},
-		{"Wood", currentYield.Wood},
-		{"Iron", currentYield.Iron},
-		{"Mana", currentYield.Mana},
+		{lang.Text("resource-money"), currentYield.Money},
+		{lang.Text("resource-food"), currentYield.Food},
+		{lang.Text("resource-wood"), currentYield.Wood},
+		{lang.Text("resource-iron"), currentYield.Iron},
+		{lang.Text("resource-mana"), currentYield.Mana},
 	}
 
 	for i, resource := range resourceTypes {
@@ -214,17 +215,17 @@ func (tv *TerritoryView) drawEffectDescription(screen *ebiten.Image) {
 	// タイトル
 	opt := &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(65, 65)
-	drawing.DrawText(screen, "Structure Effects:", 12, opt)
+	drawing.DrawText(screen, lang.Text("territory-structure-effects"), 12, opt)
 
 	if tv.Territory == nil || len(tv.Territory.Cards) == 0 {
 		// カードが配置されていない場合
 		opt = &ebiten.DrawImageOptions{}
 		opt.GeoM.Translate(65, 85)
-		drawing.DrawText(screen, "No structure cards placed.", 10, opt)
+		drawing.DrawText(screen, lang.Text("territory-no-structures"), 10, opt)
 
 		opt = &ebiten.DrawImageOptions{}
 		opt.GeoM.Translate(65, 105)
-		drawing.DrawText(screen, "Place cards to get bonuses!", 10, opt)
+		drawing.DrawText(screen, lang.Text("territory-place-cards"), 10, opt)
 		return
 	}
 
@@ -240,13 +241,13 @@ func (tv *TerritoryView) drawEffectDescription(screen *ebiten.Image) {
 		// カード名
 		opt = &ebiten.DrawImageOptions{}
 		opt.GeoM.Translate(65, y)
-		cardName := fmt.Sprintf("Card: %s", card.CardID)
+		cardName := lang.Text("structurecard-" + string(card.CardID))
 		drawing.DrawText(screen, cardName, 10, opt)
 
-		// 効果説明（ダミーテキスト）
+		// 効果説明
 		opt = &ebiten.DrawImageOptions{}
 		opt.GeoM.Translate(200, y)
-		effect := "Boosts resource production" // 実際の効果説明は後で実装
+		effect := lang.Text("territory-boosts-production")
 		drawing.DrawText(screen, effect, 9, opt)
 	}
 }
@@ -330,7 +331,7 @@ func (tv *TerritoryView) drawChangeIndicator(screen *ebiten.Image) {
 	indices := []uint16{0, 1, 2, 0, 2, 3}
 	screen.DrawTriangles(vertices, indices, drawing.WhitePixel, &ebiten.DrawTrianglesOptions{})
 
-	// 「*」マークを表示
+	// "*"マークを表示
 	opt := &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(455, 35)
 	drawing.DrawText(screen, "*", 20, opt)
@@ -342,11 +343,11 @@ func (tv *TerritoryView) drawConstructionButton(screen *ebiten.Image) {
 
 	// ボタンの色を決定
 	var colorR, colorG, colorB float32 = 0.4, 0.4, 0.4 // 変更なしは灰色
-	var buttonText string = "No Changes"
+	var buttonText string = lang.Text("ui-no-changes")
 
 	if isChanged {
 		colorR, colorG, colorB = 0.2, 0.6, 0.8 // 変更ありは青
-		buttonText = "CONFIRM"
+		buttonText = lang.Text("ui-confirm")
 	}
 
 	// ボタン背景 (200,220,120,40)

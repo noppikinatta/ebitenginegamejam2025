@@ -6,6 +6,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/noppikinatta/ebitenginegamejam2025/core"
 	"github.com/noppikinatta/ebitenginegamejam2025/drawing"
+	"github.com/noppikinatta/ebitenginegamejam2025/lang"
 )
 
 // InfoViewMode InfoViewの表示モード
@@ -133,7 +134,7 @@ func (iv *InfoView) drawHistoryView(screen *ebiten.Image) {
 	// タイトル
 	opt := &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(525, 25)
-	drawing.DrawText(screen, "History", 12, opt)
+	drawing.DrawText(screen, lang.Text("ui-history"), 12, opt)
 
 	// イベント履歴表示（120x20 × 14行）
 	for i, event := range iv.History {
@@ -158,7 +159,7 @@ func (iv *InfoView) drawHistoryView(screen *ebiten.Image) {
 	if len(iv.History) == 0 {
 		opt = &ebiten.DrawImageOptions{}
 		opt.GeoM.Translate(525, 50)
-		drawing.DrawText(screen, "No events yet.", 9, opt)
+		drawing.DrawText(screen, lang.Text("ui-no-events"), 9, opt)
 	}
 }
 

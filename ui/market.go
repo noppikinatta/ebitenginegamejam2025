@@ -8,6 +8,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/noppikinatta/ebitenginegamejam2025/core"
 	"github.com/noppikinatta/ebitenginegamejam2025/drawing"
+	"github.com/noppikinatta/ebitenginegamejam2025/lang"
 )
 
 // MarketView Market表示Widget
@@ -154,7 +155,7 @@ func (mv *MarketView) drawMarketItem(screen *ebiten.Image, item *core.MarketItem
 	// CardPack名 (40,60,220,20) -> 相対位置(40,0,220,20)
 	opt := &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(x+40, y)
-	cardPackName := fmt.Sprintf("Pack %s", item.CardPack.CardPackID)
+	cardPackName := lang.Text("cardpack-" + string(item.CardPack.CardPackID))
 	drawing.DrawText(screen, cardPackName, 14, opt)
 
 	// CardPack説明 (40,80,220,40) -> 相対位置(40,20,220,40)
@@ -162,9 +163,9 @@ func (mv *MarketView) drawMarketItem(screen *ebiten.Image, item *core.MarketItem
 	opt.GeoM.Translate(x+40, y+20)
 	var description string
 	if !isAvailable {
-		description = fmt.Sprintf("Required Level: %.1f", item.RequiredLevel)
+		description = lang.ExecuteTemplate("market-required-level", map[string]any{"level": item.RequiredLevel})
 	} else {
-		description = "Card pack with various cards" // ダミーテキスト
+		description = lang.Text("market-card-pack-desc")
 	}
 	drawing.DrawText(screen, description, 10, opt)
 
@@ -199,11 +200,11 @@ func (mv *MarketView) drawCardPackPrice(screen *ebiten.Image, item *core.MarketI
 		name  string
 		value int
 	}{
-		{"Money", price.Money},
-		{"Food", price.Food},
-		{"Wood", price.Wood},
-		{"Iron", price.Iron},
-		{"Mana", price.Mana},
+		{lang.Text("resource-money"), price.Money},
+		{lang.Text("resource-food"), price.Food},
+		{lang.Text("resource-wood"), price.Wood},
+		{lang.Text("resource-iron"), price.Iron},
+		{lang.Text("resource-mana"), price.Mana},
 	}
 
 	currentX := x

@@ -6,6 +6,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/noppikinatta/ebitenginegamejam2025/core"
 	"github.com/noppikinatta/ebitenginegamejam2025/drawing"
+	"github.com/noppikinatta/ebitenginegamejam2025/lang"
 )
 
 // CardDeckView カードデッキWidget
@@ -235,7 +236,7 @@ func (c *CardDeckView) drawCards(screen *ebiten.Image) {
 		// カードデッキがない場合のメッセージ
 		opt := &ebiten.DrawImageOptions{}
 		opt.GeoM.Translate(320, 320)
-		drawing.DrawText(screen, "No card deck", 12, opt)
+		drawing.DrawText(screen, lang.Text("card-no-deck"), 12, opt)
 		return
 	}
 
@@ -245,7 +246,7 @@ func (c *CardDeckView) drawCards(screen *ebiten.Image) {
 		// カードがない場合のメッセージ
 		opt := &ebiten.DrawImageOptions{}
 		opt.GeoM.Translate(300, 320)
-		drawing.DrawText(screen, "No cards in deck", 12, opt)
+		drawing.DrawText(screen, lang.Text("card-no-cards"), 12, opt)
 		return
 	}
 
@@ -358,7 +359,7 @@ func (c *CardDeckView) drawBattleCardInfo(screen *ebiten.Image, card *core.Battl
 	// カードID (上部、8pt)
 	opt := &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(float64(x+2), float64(y+8))
-	cardID := string(card.CardID)
+	cardID := lang.Text("battlecard-" + string(card.CardID))
 	if len(cardID) > 6 {
 		cardID = cardID[:5] + "..."
 	}
@@ -372,7 +373,7 @@ func (c *CardDeckView) drawBattleCardInfo(screen *ebiten.Image, card *core.Battl
 	// Type (下部、8pt)
 	opt = &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(float64(x+2), float64(y+45))
-	cardType := string(card.Type)
+	cardType := lang.Text("cardtype-" + string(card.Type))
 	if len(cardType) > 6 {
 		cardType = cardType[:5] + "..."
 	}
@@ -384,7 +385,7 @@ func (c *CardDeckView) drawStructureCardInfo(screen *ebiten.Image, card *core.St
 	// カードID (上部、8pt)
 	opt := &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(float64(x+2), float64(y+8))
-	cardID := string(card.CardID)
+	cardID := lang.Text("structurecard-" + string(card.CardID))
 	if len(cardID) > 6 {
 		cardID = cardID[:5] + "..."
 	}
@@ -402,7 +403,7 @@ func (c *CardDeckView) drawStructureCardInfo(screen *ebiten.Image, card *core.St
 	// "STR" (下部、8pt)
 	opt = &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(float64(x+10), float64(y+45))
-	drawing.DrawText(screen, "STR", 8, opt)
+	drawing.DrawText(screen, lang.Text("card-str-short"), 8, opt)
 }
 
 // min 最小値を返すヘルパー関数

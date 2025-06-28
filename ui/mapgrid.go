@@ -1,12 +1,11 @@
 package ui
 
 import (
-	"fmt"
-
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/noppikinatta/ebitenginegamejam2025/core"
 	"github.com/noppikinatta/ebitenginegamejam2025/drawing"
 	"github.com/noppikinatta/ebitenginegamejam2025/geom"
+	"github.com/noppikinatta/ebitenginegamejam2025/lang"
 )
 
 // MapGridView マップグリッド表示Widget
@@ -181,19 +180,19 @@ func (m *MapGridView) drawPointImage(screen *ebiten.Image, x, y float64, point c
 func (m *MapGridView) getPointName(x, y int, point core.Point) string {
 	switch p := point.(type) {
 	case *core.MyNationPoint:
-		return "My Nation"
+		return lang.Text("nation-mynation")
 	case *core.OtherNationPoint:
-		return fmt.Sprintf("Nation %s", p.OtherNation.NationID)
+		return lang.Text("nation-" + string(p.OtherNation.NationID))
 	case *core.WildernessPoint:
 		if p.Controlled {
-			return fmt.Sprintf("Area %d,%d", x, y)
+			return lang.ExecuteTemplate("point-area", map[string]any{"x": x, "y": y})
 		} else {
-			return fmt.Sprintf("Wild %d,%d", x, y)
+			return lang.ExecuteTemplate("point-wild", map[string]any{"x": x, "y": y})
 		}
 	case *core.BossPoint:
-		return "Boss"
+		return lang.Text("point-boss")
 	default:
-		return fmt.Sprintf("Point %d,%d", x, y)
+		return lang.ExecuteTemplate("point-area", map[string]any{"x": x, "y": y})
 	}
 }
 

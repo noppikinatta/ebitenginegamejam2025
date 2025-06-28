@@ -5,6 +5,7 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/noppikinatta/ebitenginegamejam2025/drawing"
+	"github.com/noppikinatta/ebitenginegamejam2025/lang"
 )
 
 type Widget interface {
@@ -76,16 +77,17 @@ func DrawButton(screen *ebiten.Image, x, y, width, height float64, text string) 
 
 // GetResourceIcon 資源タイプに応じたアイコン文字を返す
 func GetResourceIcon(resourceType string) string {
+	// 多言語化されたリソース名に対応
 	switch resourceType {
-	case "Money":
+	case lang.Text("resource-money"), "Money":
 		return "Mo"
-	case "Food":
+	case lang.Text("resource-food"), "Food":
 		return "Fo"
-	case "Wood":
+	case lang.Text("resource-wood"), "Wood":
 		return "Wo"
-	case "Iron":
+	case lang.Text("resource-iron"), "Iron":
 		return "In"
-	case "Mana":
+	case lang.Text("resource-mana"), "Mana":
 		return "Ma"
 	default:
 		return "?"

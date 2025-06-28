@@ -6,6 +6,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/noppikinatta/ebitenginegamejam2025/core"
 	"github.com/noppikinatta/ebitenginegamejam2025/drawing"
+	"github.com/noppikinatta/ebitenginegamejam2025/lang"
 )
 
 // BattleView Battle表示Widget
@@ -164,9 +165,9 @@ func (bv *BattleView) drawHeader(screen *ebiten.Image) {
 	// タイトルテキスト
 	pointName := bv.PointName
 	if pointName == "" {
-		pointName = "Unknown Point"
+		pointName = lang.Text("ui-unknown-point")
 	}
-	title := fmt.Sprintf("Battle of %s", pointName)
+	title := lang.ExecuteTemplate("battle-title", map[string]any{"location": pointName})
 
 	opt := &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(10, 30)
@@ -203,28 +204,28 @@ func (bv *BattleView) drawEnemy(screen *ebiten.Image) {
 		// 敵の名前
 		opt := &ebiten.DrawImageOptions{}
 		opt.GeoM.Translate(185, 70)
-		enemyName := fmt.Sprintf("Enemy: %s", enemy.EnemyID)
+		enemyName := fmt.Sprintf("%s: %s", lang.Text("battle-enemy"), lang.Text("enemy-"+string(enemy.EnemyID)))
 		drawing.DrawText(screen, enemyName, 12, opt)
 
 		// 敵のPower
 		opt = &ebiten.DrawImageOptions{}
 		opt.GeoM.Translate(185, 90)
-		powerText := fmt.Sprintf("Power: %.1f", enemy.Power)
+		powerText := fmt.Sprintf("%s: %.1f", lang.Text("battle-power"), enemy.Power)
 		drawing.DrawText(screen, powerText, 12, opt)
 
 		// CardSlot制限
 		opt = &ebiten.DrawImageOptions{}
 		opt.GeoM.Translate(185, 110)
-		slotText := fmt.Sprintf("Card Limit: %d", enemy.BattleCardSlot)
+		slotText := fmt.Sprintf("%s: %d", lang.Text("battle-card-limit"), enemy.BattleCardSlot)
 		drawing.DrawText(screen, slotText, 10, opt)
 
 		// 勝利可能性
 		opt = &ebiten.DrawImageOptions{}
 		opt.GeoM.Translate(185, 130)
 		if bv.CanDefeatEnemy() {
-			drawing.DrawText(screen, "CLICK TO WIN!", 14, opt)
+			drawing.DrawText(screen, lang.Text("ui-click-to-win"), 14, opt)
 		} else {
-			drawing.DrawText(screen, "Need more power", 10, opt)
+			drawing.DrawText(screen, lang.Text("ui-need-more-power"), 10, opt)
 		}
 	}
 }
@@ -335,9 +336,9 @@ func (bv *BattleView) drawConquerButton(screen *ebiten.Image) {
 	opt := &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(215, 295)
 	if canConquer {
-		drawing.DrawText(screen, "CONQUER", 14, opt)
+		drawing.DrawText(screen, lang.Text("ui-conquer"), 14, opt)
 	} else {
-		drawing.DrawText(screen, "Need Power", 12, opt)
+		drawing.DrawText(screen, lang.Text("ui-need-power"), 12, opt)
 	}
 }
 
