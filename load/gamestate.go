@@ -10,9 +10,9 @@ import (
 func LoadGameState() *core.GameState {
 	myNation := createMyNation()
 	treasury := createTreasury()
-	cardDeck := createCardDeck()
-	mapGrid := createMapGrid(myNation)
 	cardGenerator := createCardGenerator()
+	cardDeck := createCardDeck(cardGenerator)
+	mapGrid := createMapGrid(myNation)
 
 	gs := &core.GameState{
 		MyNation:      myNation,
@@ -45,8 +45,15 @@ func createTreasury() *core.Treasury {
 	return &core.Treasury{}
 }
 
-func createCardDeck() *core.CardDeck {
-	return &core.CardDeck{}
+func createCardDeck(cardGenerator *core.CardGenerator) *core.CardDeck {
+	firstCards, _ := cardGenerator.Generate([]core.CardID{
+		"battlecard-soldier",
+	})
+
+	deck := core.CardDeck{}
+	deck.Add(firstCards)
+
+	return &deck
 }
 
 func createMapGrid(myNation *core.MyNation) *core.MapGrid {

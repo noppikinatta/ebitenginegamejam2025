@@ -5,7 +5,6 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/noppikinatta/ebitenginegamejam2025/drawing"
-	"github.com/noppikinatta/ebitenginegamejam2025/lang"
 )
 
 type Widget interface {
@@ -24,7 +23,8 @@ func DrawResource(screen *ebiten.Image, x, y float64, resourceType string, value
 	// 左20x20に資源アイコン（今は文字で代用）
 	opt := &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(x, y)
-	drawing.DrawText(screen, resourceType, 10, opt)
+	resourceIcon := drawing.Image(resourceType)
+	screen.DrawImage(resourceIcon, opt)
 
 	// 右40x20に数値表示
 	var text string
@@ -35,8 +35,8 @@ func DrawResource(screen *ebiten.Image, x, y float64, resourceType string, value
 	}
 
 	opt = &ebiten.DrawImageOptions{}
-	opt.GeoM.Translate(x+20, y)
-	drawing.DrawText(screen, text, 12, opt)
+	opt.GeoM.Translate(x+20, y+2)
+	drawing.DrawText(screen, text, 10, opt)
 }
 
 // DrawCard カードを描画する（40x60領域）
@@ -73,23 +73,4 @@ func DrawButton(screen *ebiten.Image, x, y, width, height float64, text string) 
 	opt := &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(x+width/2-10, y+height/2-6) // 中央寄せ（概算）
 	drawing.DrawText(screen, text, 12, opt)
-}
-
-// GetResourceIcon 資源タイプに応じたアイコン文字を返す
-func GetResourceIcon(resourceType string) string {
-	// 多言語化されたリソース名に対応
-	switch resourceType {
-	case lang.Text("resource-money"), "Money":
-		return "Mo"
-	case lang.Text("resource-food"), "Food":
-		return "Fo"
-	case lang.Text("resource-wood"), "Wood":
-		return "Wo"
-	case lang.Text("resource-iron"), "Iron":
-		return "In"
-	case lang.Text("resource-mana"), "Mana":
-		return "Ma"
-	default:
-		return "?"
-	}
 }

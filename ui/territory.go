@@ -176,21 +176,21 @@ func (tv *TerritoryView) drawYield(screen *ebiten.Image) {
 		name  string
 		value int
 	}{
-		{lang.Text("resource-money"), currentYield.Money},
-		{lang.Text("resource-food"), currentYield.Food},
-		{lang.Text("resource-wood"), currentYield.Wood},
-		{lang.Text("resource-iron"), currentYield.Iron},
-		{lang.Text("resource-mana"), currentYield.Mana},
+		{"resource-money", currentYield.Money},
+		{"resource-food", currentYield.Food},
+		{"resource-wood", currentYield.Wood},
+		{"resource-iron", currentYield.Iron},
+		{"resource-mana", currentYield.Mana},
 	}
 
 	for i, resource := range resourceTypes {
 		y := 60.0 + float64(i)*20
 
 		// Resource画像(20x20)
-		icon := GetResourceIcon(resource.name)
+		icon := drawing.Image(resource.name)
 		opt := &ebiten.DrawImageOptions{}
 		opt.GeoM.Translate(5, y)
-		drawing.DrawText(screen, icon, 12, opt)
+		screen.DrawImage(icon, opt)
 
 		// 産出量数字(40x20)
 		opt = &ebiten.DrawImageOptions{}

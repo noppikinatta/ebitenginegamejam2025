@@ -200,23 +200,23 @@ func (mv *MarketView) drawCardPackPrice(screen *ebiten.Image, item *core.MarketI
 		name  string
 		value int
 	}{
-		{lang.Text("resource-money"), price.Money},
-		{lang.Text("resource-food"), price.Food},
-		{lang.Text("resource-wood"), price.Wood},
-		{lang.Text("resource-iron"), price.Iron},
-		{lang.Text("resource-mana"), price.Mana},
+		{"resource-money", price.Money},
+		{"resource-food", price.Food},
+		{"resource-wood", price.Wood},
+		{"resource-iron", price.Iron},
+		{"resource-mana", price.Mana},
 	}
 
 	currentX := x
 	for _, resource := range resourceTypes {
 		if resource.value > 0 && currentX < x+width-60 {
 			// Resource画像(20x20)とPrice数字(40x20)
-			icon := GetResourceIcon(resource.name)
+			icon := drawing.Image(resource.name)
 
 			// Resourceアイコン
 			opt := &ebiten.DrawImageOptions{}
 			opt.GeoM.Translate(currentX, y)
-			drawing.DrawText(screen, icon, 12, opt)
+			screen.DrawImage(icon, opt)
 
 			// Price数字（購入不可能な場合は赤文字）
 			opt = &ebiten.DrawImageOptions{}

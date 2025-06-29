@@ -3,7 +3,6 @@ package ui
 import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/noppikinatta/ebitenginegamejam2025/core"
-	"github.com/noppikinatta/ebitenginegamejam2025/lang"
 )
 
 // ResourceView 資源表示Widget
@@ -30,19 +29,19 @@ func (rv *ResourceView) Draw(screen *ebiten.Image) {
 	resources := rv.GameState.Treasury.Resources
 	yield := rv.GameState.GetYield()
 
-	// 5種類の資源を60x20ずつで表示
-	// Money (0, 0, 60, 20)
-	DrawResource(screen, 0, 0, GetResourceIcon(lang.Text("resource-money")), resources.Money, yield.Money)
+	// 5種類の資源を80x20ずつで表示
+	// Money (0, 0, 80, 20)
+	DrawResource(screen, 0, 0, "resource-money", resources.Money, yield.Money)
 
-	// Food (60, 0, 60, 20)
-	DrawResource(screen, 60, 0, GetResourceIcon(lang.Text("resource-food")), resources.Food, yield.Food)
+	// Food (80, 0, 80, 20)
+	DrawResource(screen, 80, 0, "resource-food", resources.Food, yield.Food)
 
-	// Wood (120, 0, 60, 20)
-	DrawResource(screen, 120, 0, GetResourceIcon(lang.Text("resource-wood")), resources.Wood, yield.Wood)
+	// Wood (160, 0, 80, 20)
+	DrawResource(screen, 160, 0, "resource-wood", resources.Wood, yield.Wood)
 
-	// Iron (180, 0, 60, 20)
-	DrawResource(screen, 180, 0, GetResourceIcon(lang.Text("resource-iron")), resources.Iron, yield.Iron)
+	// Iron (240, 0, 80, 20)
+	DrawResource(screen, 240, 0, "resource-iron", resources.Iron, yield.Iron)
 
-	// Mana (240, 0, 60, 20)
-	DrawResource(screen, 240, 0, GetResourceIcon(lang.Text("resource-mana")), resources.Mana, yield.Mana)
+	// Mana (320, 0, 80, 20)
+	DrawResource(screen, 320, 0, "resource-mana", resources.Mana, yield.Mana)
 }
