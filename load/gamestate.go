@@ -486,11 +486,11 @@ func createMapGrid(myNation *core.MyNation) *core.MapGrid {
 		{1, 3, "enemy-skeleton", "enemy-type-undead", 12, 4, []core.EnemySkill{createLongbowSkill()}, "terrain-mana-node", core.ResourceQuantity{Mana: 3}},
 		{3, 1, "enemy-elemental", "enemy-type-unknown", 20, 5, []core.EnemySkill{createIncorporealitySkill()}, "terrain-mountain", core.ResourceQuantity{Iron: 2}},
 		{1, 4, "enemy-dragon", "enemy-type-dragon", 30, 6, []core.EnemySkill{createPressureSkill()}, "terrain-plain", core.ResourceQuantity{Food: 2}},
-		{4, 1, "enemy-griffin", "enemy-type-flying", 25, 4, []core.EnemySkill{createEvasionSkill()}, "terrain-plain", core.ResourceQuantity{Food: 2}},
-		{2, 3, "enemy-vampire", "enemy-type-undead", 30, 6, []core.EnemySkill{createCharmSkill()}, "terrain-forest", core.ResourceQuantity{Wood: 2}},
+		{4, 1, "enemy-griffin", "enemy-type-flying", 25, 5, []core.EnemySkill{createEvasionSkill()}, "terrain-plain", core.ResourceQuantity{Food: 2}},
+		{2, 3, "enemy-vampire", "enemy-type-undead", 30, 7, []core.EnemySkill{createCharmSkill()}, "terrain-forest", core.ResourceQuantity{Wood: 2}},
 		{3, 2, "enemy-living-armor", "enemy-type-unknown", 50, 7, []core.EnemySkill{}, "terrain-mana-node", core.ResourceQuantity{Mana: 3}},
-		{3, 4, "enemy-arc-demon", "enemy-type-demonic", 45, 7, []core.EnemySkill{createMagicBarrierSkill()}, "terrain-forest", core.ResourceQuantity{Wood: 2}},
-		{4, 3, "enemy-durendal", "enemy-type-undead", 45, 7, []core.EnemySkill{createSideAttackSkill()}, "terrain-mountain", core.ResourceQuantity{Iron: 2}},
+		{3, 4, "enemy-arc-demon", "enemy-type-demonic", 40, 8, []core.EnemySkill{createMagicBarrierSkill()}, "terrain-forest", core.ResourceQuantity{Wood: 2}},
+		{4, 3, "enemy-durendal", "enemy-type-undead", 40, 8, []core.EnemySkill{createSideAttackSkill()}, "terrain-mountain", core.ResourceQuantity{Iron: 2}},
 		{3, 3, "enemy-obelisk", "enemy-type-unknown", 40, 8, []core.EnemySkill{createLaserSkill()}, "terrain-mana-node", core.ResourceQuantity{Mana: 3}},
 	}
 
@@ -523,7 +523,7 @@ func createMapGrid(myNation *core.MyNation) *core.MapGrid {
 		EnemyType:      "enemy-type-demonic",
 		Power:          60,
 		Skills:         []core.EnemySkill{createWaveSkill()},
-		BattleCardSlot: 8,
+		BattleCardSlot: 9,
 		Question:       "question-boss",
 	}
 	points[size.Index(4, 4)] = &core.BossPoint{

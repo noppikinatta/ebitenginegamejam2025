@@ -94,11 +94,13 @@ func (bv *BattleView) HandleInput(input *Input) error {
 		}
 
 		// 制圧ボタンのクリック判定 (200,280,120,40)
-		if cursorX >= 200 && cursorX < 320 && cursorY >= 280 && cursorY < 320 {
+		if cursorX >= 200 && cursorX < 320 && cursorY >= 280 && cursorY < 300 {
 			if bv.CanDefeatEnemy() {
 				bv.Conquer()
 			}
 			if bv.OnBackClicked != nil {
+				bv.GameState.CardDeck.Add(&core.Cards{BattleCards: bv.Battlefield.BattleCards})
+				bv.Battlefield.BattleCards = make([]*core.BattleCard, 0)
 				bv.OnBackClicked()
 			}
 			return nil
