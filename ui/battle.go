@@ -344,7 +344,7 @@ func (bv *BattleView) createBattlefield(point core.BattlePoint) *core.Battlefiel
 		panic("BattleView.createBattlefield: 戦闘地点がマップグリッドに存在しません")
 	}
 	enemy := point.GetEnemy()
-	supportPower := 0.0
+	battlefield := core.NewBattlefield(enemy, 0.0)
 
 	// x,yをもとに上下左右のPointを調査
 	mapGrid := bv.GameState.MapGrid
@@ -366,19 +366,15 @@ func (bv *BattleView) createBattlefield(point core.BattlePoint) *core.Battlefiel
 					// Territory.CardsのStructureCard.BattlefieldModifierを適用
 					for _, card := range territory.Cards {
 						if card.BattlefieldModifier != nil {
-							// BattlefieldModifierを適用（現在は簡単な実装）
-							// TODO: 実際のModifierの適用ロジック
+							card.BattlefieldModifier.Modify(battlefield)
 						}
 					}
-
-					// 簡単な支援力計算（隣接する制圧済み領土ごとに+1）
-					supportPower += 1.0
 				}
 			}
 		}
 	}
 
-	return core.NewBattlefield(enemy, supportPower)
+	return battlefield
 }
 
 // CanPlaceCard カードを配置できるかどうかを判定
