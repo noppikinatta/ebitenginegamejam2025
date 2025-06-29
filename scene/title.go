@@ -4,8 +4,9 @@ import (
 	"image/color"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/noppikinatta/bamenn"
+	"github.com/noppikinatta/ebitenginegamejam2025/drawing"
+	"github.com/noppikinatta/ebitenginegamejam2025/lang"
 	"github.com/noppikinatta/ebitenginegamejam2025/ui"
 )
 
@@ -14,13 +15,11 @@ type Title struct {
 	nextScene  ebiten.Game
 	sequence   *bamenn.Sequence
 	transition bamenn.Transition
-	story      string
 }
 
 func NewTitle(input *ui.Input) *Title {
 	return &Title{
 		input: input,
-		story: "In the Kingdom Year 1000, nations stood divided.\nYou must unite them under one banner.\nForge alliances, defeat enemies, and bring peace to the land.\n\nThe Union awaits your leadership.",
 	}
 }
 
@@ -42,23 +41,13 @@ func (t *Title) Draw(screen *ebiten.Image) {
 	// 背景色を設定
 	screen.Fill(color.RGBA{20, 20, 40, 255})
 
-	// タイトルテキストを表示
-	ebitenutil.DebugPrintAt(screen, "UNION STRATEGY GAME", 200, 50)
+	opt := &ebiten.DrawImageOptions{}
+	opt.GeoM.Translate(20, 180)
+	drawing.DrawText(screen, lang.Text("story-1"), 12, opt)
 
-	// ストーリーテキストを表示
-	ebitenutil.DebugPrintAt(screen, "Story:", 50, 100)
-	lines := []string{
-		"In the Kingdom Year 1000, nations stood divided.",
-		"You must unite them under one banner.",
-		"Forge alliances, defeat enemies, and bring peace to the land.",
-		"",
-		"The Union awaits your leadership.",
-	}
-	for i, line := range lines {
-		ebitenutil.DebugPrintAt(screen, line, 60, 120+i*20)
-	}
-
-	ebitenutil.DebugPrintAt(screen, "Click to Start", 220, 300)
+	opt = &ebiten.DrawImageOptions{}
+	opt.GeoM.Translate(220, 320)
+	drawing.DrawText(screen, "Click to Start", 14, opt)
 }
 
 func (t *Title) Layout(outsideWidth, outsideHeight int) (int, int) {

@@ -14,7 +14,7 @@ import (
 type TerritoryView struct {
 	Territory   *core.Territory       // 表示するTerritory
 	OldCards    []*core.StructureCard // 変更前のカード
-	PointName   string                // 地点名
+	TerrainType string                // 地形名
 	GameState   *core.GameState       // ゲーム状態
 	HoveredCard interface{}
 	MouseX      int
@@ -33,15 +33,11 @@ func NewTerritoryView(onBackClicked func()) *TerritoryView {
 }
 
 // SetTerritory 表示するTerritoryを設定
-func (tv *TerritoryView) SetTerritory(territory *core.Territory) {
+func (tv *TerritoryView) SetTerritory(territory *core.Territory, terrainType string) {
 	tv.Territory = territory
 	tv.OldCards = make([]*core.StructureCard, len(territory.Cards))
 	copy(tv.OldCards, territory.Cards)
-}
-
-// SetPointName 地点名を設定
-func (tv *TerritoryView) SetPointName(pointName string) {
-	tv.PointName = pointName
+	tv.TerrainType = terrainType
 }
 
 // SetGameState ゲーム状態を設定
@@ -109,10 +105,10 @@ func (tv *TerritoryView) HandleInput(input *Input) error {
 			// 変更があった場合は建設決定処理を実行
 			if tv.IsChanged() {
 				tv.ConfirmConstruction()
-				if tv.OnBackClicked != nil {
-					tv.OnBackClicked()
-					return nil
-				}
+			}
+			if tv.OnBackClicked != nil {
+				tv.OnBackClicked()
+				return nil
 			}
 		}
 
@@ -172,17 +168,11 @@ func (tv *TerritoryView) drawHeader(screen *ebiten.Image) {
 	screen.DrawTriangles(vertices, indices, drawing.WhitePixel, &ebiten.DrawTrianglesOptions{})
 
 	// タイトルテキスト
-	pointName := tv.PointName
-	if pointName == "" && tv.Territory != nil {
-		pointName = string(tv.Territory.TerritoryID)
-	}
-	if pointName == "" {
-		pointName = lang.Text("ui-unknown-point")
-	}
+	terrainName := lang.Text(tv.TerrainType)
 
 	opt := &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(10, 30)
-	drawing.DrawText(screen, pointName, 16, opt)
+	drawing.DrawText(screen, terrainName, 16, opt)
 }
 
 // drawBackButton 戻るボタンを描画

@@ -131,11 +131,14 @@ func DrawCardDescriptionTooltip(screen *ebiten.Image, card interface{}, mouseX, 
 
 	switch typedCard := card.(type) {
 	case *core.BattleCard:
-		drawing.DrawRect(screen, left, top, 240, 40, 0, 0, 0, 0.5)
+		drawing.DrawRect(screen, left, top, 240, 60, 0, 0, 0, 0.5)
+		typeName := lang.Text(string(typedCard.Type))
 		skillName := lang.Text(string(typedCard.Skill.BattleCardSkillID))
 		skillDescription := lang.Text(string(typedCard.Skill.DescriptionKey))
 		opt := &ebiten.DrawImageOptions{}
 		opt.GeoM.Translate(left, top)
+		drawing.DrawText(screen, typeName, 12, opt)
+		opt.GeoM.Translate(0, 16)
 		drawing.DrawText(screen, skillName, 12, opt)
 		opt.GeoM.Translate(0, 16)
 		drawing.DrawText(screen, skillDescription, 9, opt)

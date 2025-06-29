@@ -142,7 +142,7 @@ func (m *MainView) SetSelectedPoint(point core.Point) {
 	case *core.WildernessPoint:
 		if p.Controlled {
 			if m.Territory != nil {
-				m.Territory.SetTerritory(p.Territory)
+				m.Territory.SetTerritory(p.Territory, string(p.TerrainType))
 			}
 		} else {
 			if m.Battle != nil {
