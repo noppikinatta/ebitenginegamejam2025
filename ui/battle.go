@@ -157,11 +157,14 @@ func (bv *BattleView) drawHeader(screen *ebiten.Image) {
 	screen.DrawTriangles(vertices, indices, drawing.WhitePixel, &ebiten.DrawTrianglesOptions{})
 
 	// タイトルテキスト
-	pointName := bv.PointName
-	if pointName == "" {
-		pointName = lang.Text("ui-unknown-point")
+	pointName := ""
+	if p, ok := bv.BattlePoint.(*core.WildernessPoint); ok {
+		pointName = p.TerrainType
 	}
-	title := lang.ExecuteTemplate("battle-title", map[string]any{"location": pointName})
+	if _, ok := bv.BattlePoint.(*core.BossPoint); ok {
+		pointName = "point-boss"
+	}
+	title := lang.ExecuteTemplate("battle-title", map[string]any{"location": lang.Text(pointName)})
 
 	opt := &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(10, 30)
@@ -170,7 +173,7 @@ func (bv *BattleView) drawHeader(screen *ebiten.Image) {
 
 // drawBackButton 戻るボタンを描画
 func (bv *BattleView) drawBackButton(screen *ebiten.Image) {
-	DrawButton(screen, 480, 20, 40, 40, "X")
+	DrawButton(screen, 480, 20, 40, 40, "ui-close")
 }
 
 // drawEnemy 敵画像を描画
@@ -195,23 +198,33 @@ func (bv *BattleView) drawEnemy(screen *ebiten.Image) {
 	// 敵の情報を描画
 	if bv.BattlePoint != nil {
 		enemy := bv.BattlePoint.GetEnemy()
-		// 敵の名前
+
+		enemyImage := drawing.Image(string(enemy.EnemyID))
 		opt := &ebiten.DrawImageOptions{}
+		opt.GeoM.Scale(2, 2)
+		opt.GeoM.Translate(180, 60)
+		screen.DrawImage(enemyImage, opt)
+
+		// 敵のタイプ
+		opt = &ebiten.DrawImageOptions{}
 		opt.GeoM.Translate(185, 70)
-		enemyName := fmt.Sprintf("%s: %s", lang.Text("battle-enemy"), lang.Text("enemy-"+string(enemy.EnemyID)))
-		drawing.DrawText(screen, enemyName, 12, opt)
+		enemyType := lang.ExecuteTemplate("battle-enemy-type", map[string]any{"type": lang.Text(string(enemy.EnemyType))})
+		drawing.DrawText(screen, enemyType, 12, opt)
 
 		// 敵のPower
 		opt = &ebiten.DrawImageOptions{}
 		opt.GeoM.Translate(185, 90)
+		powerIcon := drawing.Image("ui-power")
+		screen.DrawImage(powerIcon, opt)
+		opt.GeoM.Translate(16, 0)
 		powerText := fmt.Sprintf("%s: %.1f", lang.Text("battle-power"), enemy.Power)
 		drawing.DrawText(screen, powerText, 12, opt)
 
-		// CardSlot制限
+		// 敵のセリフ
 		opt = &ebiten.DrawImageOptions{}
-		opt.GeoM.Translate(185, 110)
-		slotText := fmt.Sprintf("%s: %d", lang.Text("battle-card-limit"), enemy.BattleCardSlot)
-		drawing.DrawText(screen, slotText, 10, opt)
+		opt.GeoM.Translate(16, 160)
+		enemyTalk := lang.ExecuteTemplate("battle-enemy-talk", map[string]any{"name": lang.Text(string(enemy.EnemyID)), "text": lang.Text(string(enemy.Question))})
+		drawing.DrawText(screen, enemyTalk, 12, opt)
 
 		// 勝利可能性
 		opt = &ebiten.DrawImageOptions{}

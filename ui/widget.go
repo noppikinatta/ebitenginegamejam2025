@@ -99,7 +99,7 @@ func DrawBattleCard(screen *ebiten.Image, x, y float64, battleCard *core.BattleC
 }
 
 // DrawButton ボタンを描画する（クリック判定は後で実装）
-func DrawButton(screen *ebiten.Image, x, y, width, height float64, text string) {
+func DrawButton(screen *ebiten.Image, x, y, width, height float64, imageKey string) {
 	// ボタンの枠を描画
 	vertices := []ebiten.Vertex{
 		{DstX: float32(x), DstY: float32(y), SrcX: 0, SrcY: 0, ColorR: 0.8, ColorG: 0.8, ColorB: 0.8, ColorA: 1},
@@ -110,8 +110,14 @@ func DrawButton(screen *ebiten.Image, x, y, width, height float64, text string) 
 	indices := []uint16{0, 1, 2, 0, 2, 3}
 	screen.DrawTriangles(vertices, indices, drawing.WhitePixel, &ebiten.DrawTrianglesOptions{})
 
-	// ボタンテキストを描画
+	// ボタン画像を描画
+	image := drawing.Image(imageKey)
+	imageBounds := image.Bounds()
+	imageWidth := float64(imageBounds.Dx())
+	imageHeight := float64(imageBounds.Dy())
+	imageX := x + width/2 - imageWidth/2
+	imageY := y + height/2 - imageHeight/2
 	opt := &ebiten.DrawImageOptions{}
-	opt.GeoM.Translate(x+width/2-10, y+height/2-6) // 中央寄せ（概算）
-	drawing.DrawText(screen, text, 12, opt)
+	opt.GeoM.Translate(imageX, imageY)
+	screen.DrawImage(image, opt)
 }

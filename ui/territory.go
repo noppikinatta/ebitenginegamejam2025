@@ -153,7 +153,7 @@ func (tv *TerritoryView) drawHeader(screen *ebiten.Image) {
 
 // drawBackButton 戻るボタンを描画
 func (tv *TerritoryView) drawBackButton(screen *ebiten.Image) {
-	DrawButton(screen, 480, 20, 40, 40, "X")
+	DrawButton(screen, 480, 20, 40, 40, "ui-close")
 }
 
 // drawYield 産出量表示を描画

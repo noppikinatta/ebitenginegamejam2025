@@ -102,7 +102,7 @@ func (mv *MarketView) drawHeader(screen *ebiten.Image) {
 
 // drawBackButton 戻るボタンを描画
 func (mv *MarketView) drawBackButton(screen *ebiten.Image) {
-	DrawButton(screen, 480, 20, 40, 40, "X")
+	DrawButton(screen, 480, 20, 40, 40, "ui-close")
 }
 
 // drawMarketItems MarketItem一覧を描画
