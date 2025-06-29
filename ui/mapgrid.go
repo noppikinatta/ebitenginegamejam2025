@@ -139,41 +139,42 @@ func (m *MapGridView) Draw(screen *ebiten.Image) {
 
 // drawPointImage Pointの画像を描画
 func (m *MapGridView) drawPointImage(screen *ebiten.Image, x, y float64, point core.Point, interactive bool) {
-	// 24x24の矩形を描画（後でイラストに差し替え）
-	var color [4]float32
-
 	switch typedPoint := point.(type) {
 	case *core.MyNationPoint:
-		color = [4]float32{0.2, 0.8, 0.2, 1} // 緑
+		pointImg := drawing.Image("point-mynation")
+		opt := &ebiten.DrawImageOptions{}
+		opt.GeoM.Translate(x, y)
+		screen.DrawImage(pointImg, opt)
 	case *core.OtherNationPoint:
-		color = [4]float32{0.2, 0.2, 0.8, 1} // 青
-	case *core.WildernessPoint:
-		if typedPoint.Controlled {
-			color = [4]float32{0.8, 0.8, 0.2, 1} // 黄（制圧済み）
-		} else {
-			color = [4]float32{0.8, 0.2, 0.2, 1} // 赤（未制圧）
+		pointImg := drawing.Image("point-othernation")
+		opt := &ebiten.DrawImageOptions{}
+		opt.GeoM.Translate(x, y)
+		if !interactive {
+			opt.ColorScale.Scale(0.5, 0.5, 0.5, 1)
 		}
+		screen.DrawImage(pointImg, opt)
+	case *core.WildernessPoint:
+		pointImg := drawing.Image(typedPoint.TerrainType)
+		opt := &ebiten.DrawImageOptions{}
+		opt.GeoM.Translate(x, y)
+		if !interactive {
+			opt.ColorScale.Scale(0.5, 0.5, 0.5, 1)
+		}
+		screen.DrawImage(pointImg, opt)
 	case *core.BossPoint:
-		color = [4]float32{0.8, 0.2, 0.8, 1} // 紫
+		pointImg := drawing.Image("point-boss")
+		opt := &ebiten.DrawImageOptions{}
+		opt.GeoM.Translate(x, y)
+		if !interactive {
+			opt.ColorScale.Scale(0.5, 0.5, 0.5, 1)
+		}
+		screen.DrawImage(pointImg, opt)
 	default:
-		color = [4]float32{0.5, 0.5, 0.5, 1} // 灰
+		opt := &ebiten.DrawImageOptions{}
+		opt.GeoM.Scale(24, 24)
+		opt.GeoM.Translate(x, y)
+		screen.DrawImage(drawing.WhitePixel, opt)
 	}
-
-	if !interactive {
-		// 明るさを半分にする
-		color[0] *= 0.5
-		color[1] *= 0.5
-		color[2] *= 0.5
-	}
-
-	vertices := []ebiten.Vertex{
-		{DstX: float32(x), DstY: float32(y), SrcX: 0, SrcY: 0, ColorR: color[0], ColorG: color[1], ColorB: color[2], ColorA: color[3]},
-		{DstX: float32(x + 24), DstY: float32(y), SrcX: 0, SrcY: 0, ColorR: color[0], ColorG: color[1], ColorB: color[2], ColorA: color[3]},
-		{DstX: float32(x + 24), DstY: float32(y + 24), SrcX: 0, SrcY: 0, ColorR: color[0], ColorG: color[1], ColorB: color[2], ColorA: color[3]},
-		{DstX: float32(x), DstY: float32(y + 24), SrcX: 0, SrcY: 0, ColorR: color[0], ColorG: color[1], ColorB: color[2], ColorA: color[3]},
-	}
-	indices := []uint16{0, 1, 2, 0, 2, 3}
-	screen.DrawTriangles(vertices, indices, drawing.WhitePixel, &ebiten.DrawTrianglesOptions{})
 }
 
 // getPointName Point名を取得
@@ -182,7 +183,7 @@ func (m *MapGridView) getPointName(x, y int, point core.Point) string {
 	case *core.MyNationPoint:
 		return lang.Text("nation-mynation")
 	case *core.OtherNationPoint:
-		return lang.Text("nation-" + string(p.OtherNation.NationID))
+		return lang.Text(string(p.OtherNation.NationID))
 	case *core.WildernessPoint:
 		if p.Controlled {
 			return lang.ExecuteTemplate("point-area", map[string]any{"x": x, "y": y})
