@@ -20,25 +20,39 @@ type Enemy struct {
 }
 
 type EnemySkill interface {
+	ID() EnemySkillID
 	Calculate(options *EnemySkillCalculationOptions)
 }
 
+type BaseEnemySkill struct {
+	IDField EnemySkillID
+}
+
+func (s *BaseEnemySkill) ID() EnemySkillID {
+	return s.IDField
+}
+
 type EnemySkillCalculationOptions struct {
+	BaseEnemySkill
 	SupportPowerMultiplier   float64
 	BattleCards              []*BattleCard
 	BattleCardPowerModifiers []*BattleCardPowerModifier
 	Enemy                    *Enemy
 }
 
-type EnemySkillAdditiveDebuff float64
+type EnemySkillAdditiveDebuff struct {
+	BaseEnemySkill
+	Value float64
+}
 
-func (s EnemySkillAdditiveDebuff) Calculate(options *EnemySkillCalculationOptions) {
+func (s *EnemySkillAdditiveDebuff) Calculate(options *EnemySkillCalculationOptions) {
 	for i := range options.BattleCards {
-		options.BattleCardPowerModifiers[i].AdditiveDebuff += float64(s)
+		options.BattleCardPowerModifiers[i].AdditiveDebuff += s.Value
 	}
 }
 
 type EnemySkillCardTypeAdditiveDebuff struct {
+	BaseEnemySkill
 	CardType BattleCardType
 	Value    float64
 }
@@ -52,6 +66,7 @@ func (s *EnemySkillCardTypeAdditiveDebuff) Calculate(options *EnemySkillCalculat
 }
 
 type EnemySkillCardTypeMultiplicativeDebuff struct {
+	BaseEnemySkill
 	CardType BattleCardType
 	Value    float64
 }
@@ -65,6 +80,7 @@ func (s *EnemySkillCardTypeMultiplicativeDebuff) Calculate(options *EnemySkillCa
 }
 
 type EnemySkillCardTypeExceptMultiplicativeDebuff struct {
+	BaseEnemySkill
 	CardType BattleCardType
 	Value    float64
 }
@@ -78,6 +94,7 @@ func (s *EnemySkillCardTypeExceptMultiplicativeDebuff) Calculate(options *EnemyS
 }
 
 type EnemySkillIndexForwardMultiplicativeDebuff struct {
+	BaseEnemySkill
 	NumOfCards int
 	Value      float64
 }
@@ -91,6 +108,7 @@ func (s *EnemySkillIndexForwardMultiplicativeDebuff) Calculate(options *EnemySki
 }
 
 type EnemySkillIndexBackwardMultiplicativeDebuff struct {
+	BaseEnemySkill
 	NumOfCards int
 	Value      float64
 }

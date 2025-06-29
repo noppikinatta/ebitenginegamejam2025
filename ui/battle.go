@@ -180,11 +180,7 @@ func (bv *BattleView) drawBackButton(screen *ebiten.Image) {
 func (bv *BattleView) drawEnemy(screen *ebiten.Image) {
 	// 敵画像の背景 (180,60,160,160)
 	var color [4]float32
-	if bv.CanDefeatEnemy() {
-		color = [4]float32{0.2, 0.8, 0.2, 1} // 緑（勝てる）
-	} else {
-		color = [4]float32{0.8, 0.2, 0.2, 1} // 赤（勝てない）
-	}
+	color = [4]float32{0.8, 0.8, 0.8, 1}
 
 	vertices := []ebiten.Vertex{
 		{DstX: 180, DstY: 60, SrcX: 0, SrcY: 0, ColorR: color[0], ColorG: color[1], ColorB: color[2], ColorA: color[3]},
@@ -226,13 +222,15 @@ func (bv *BattleView) drawEnemy(screen *ebiten.Image) {
 		enemyTalk := lang.ExecuteTemplate("battle-enemy-talk", map[string]any{"name": lang.Text(string(enemy.EnemyID)), "text": lang.Text(string(enemy.Question))})
 		drawing.DrawText(screen, enemyTalk, 12, opt)
 
-		// 勝利可能性
-		opt = &ebiten.DrawImageOptions{}
-		opt.GeoM.Translate(185, 130)
-		if bv.CanDefeatEnemy() {
-			drawing.DrawText(screen, lang.Text("ui-click-to-win"), 14, opt)
-		} else {
-			drawing.DrawText(screen, lang.Text("ui-need-more-power"), 10, opt)
+		// 敵のスキル
+		for i, skill := range enemy.Skills {
+			opt = &ebiten.DrawImageOptions{}
+			opt.GeoM.Translate(350, 60+float64(i*60))
+			skillName := lang.Text(string(skill.ID()))
+			drawing.DrawText(screen, skillName, 12, opt)
+			opt.GeoM.Translate(0, 16)
+			skillDescription := lang.Text(string(skill.ID()) + "-desc")
+			drawing.DrawText(screen, skillDescription, 9, opt)
 		}
 	}
 }
@@ -262,27 +260,10 @@ func (bv *BattleView) drawBattleCards(screen *ebiten.Image) {
 		DrawBattleCard(screen, cardX, cardY, card)
 	}
 
-	// 空きスロットを表示
-	for i := len(bv.Battlefield.BattleCards); i < 12; i++ {
+	for i := len(bv.Battlefield.BattleCards); i < bv.Battlefield.CardSlot; i++ {
 		cardX := float64(i * 40)
 		cardY := 220.0
-
-		// 空きスロットの枠線
-		vertices := []ebiten.Vertex{
-			{DstX: float32(cardX), DstY: float32(cardY), SrcX: 0, SrcY: 0, ColorR: 0.5, ColorG: 0.5, ColorB: 0.5, ColorA: 0.5},
-			{DstX: float32(cardX + 40), DstY: float32(cardY), SrcX: 0, SrcY: 0, ColorR: 0.5, ColorG: 0.5, ColorB: 0.5, ColorA: 0.5},
-			{DstX: float32(cardX + 40), DstY: float32(cardY + 60), SrcX: 0, SrcY: 0, ColorR: 0.5, ColorG: 0.5, ColorB: 0.5, ColorA: 0.5},
-			{DstX: float32(cardX), DstY: float32(cardY + 60), SrcX: 0, SrcY: 0, ColorR: 0.5, ColorG: 0.5, ColorB: 0.5, ColorA: 0.5},
-		}
-		indices := []uint16{0, 1, 2, 0, 2, 3}
-		screen.DrawTriangles(vertices, indices, drawing.WhitePixel, &ebiten.DrawTrianglesOptions{})
-
-		// 敵のBattleCardSlot制限で使用不可の場合
-		if bv.BattlePoint != nil && i >= bv.BattlePoint.GetEnemy().BattleCardSlot {
-			opt := &ebiten.DrawImageOptions{}
-			opt.GeoM.Translate(cardX+10, cardY+25)
-			drawing.DrawText(screen, "X", 16, opt)
-		}
+		DrawCardBackground(screen, cardX, cardY, 0.5)
 	}
 }
 
@@ -303,7 +284,8 @@ func (bv *BattleView) drawPowerDisplay(screen *ebiten.Image) {
 
 	opt := &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(485, 225)
-	drawing.DrawText(screen, "Power", 10, opt)
+	powerIcon := drawing.Image("ui-power")
+	screen.DrawImage(powerIcon, opt)
 
 	opt = &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(485, 240)
@@ -340,11 +322,13 @@ func (bv *BattleView) drawConquerButton(screen *ebiten.Image) {
 	screen.DrawTriangles(vertices, indices, drawing.WhitePixel, &ebiten.DrawTrianglesOptions{})
 
 	// ボタンテキスト
-	opt := &ebiten.DrawImageOptions{}
-	opt.GeoM.Translate(215, 295)
 	if canConquer {
+		opt := &ebiten.DrawImageOptions{}
+		opt.GeoM.Translate(210, 280)
 		drawing.DrawText(screen, lang.Text("ui-conquer"), 14, opt)
 	} else {
+		opt := &ebiten.DrawImageOptions{}
+		opt.GeoM.Translate(210, 280)
 		drawing.DrawText(screen, lang.Text("ui-need-power"), 12, opt)
 	}
 }

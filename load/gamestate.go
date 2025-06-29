@@ -858,6 +858,9 @@ func createStructureCards() map[core.CardID]*core.StructureCard {
 func createEvasionSkill() core.EnemySkill {
 	// 力タイプのカードパワー-2
 	return &core.EnemySkillCardTypeAdditiveDebuff{
+		BaseEnemySkill: core.BaseEnemySkill{
+			IDField: "enemy-skill-evasion",
+		},
 		CardType: "cardtype-str",
 		Value:    2.0,
 	}
@@ -866,6 +869,9 @@ func createEvasionSkill() core.EnemySkill {
 func createSoftSkill() core.EnemySkill {
 	// 魔タイプ以外のカードパワー-50%
 	return &core.EnemySkillCardTypeExceptMultiplicativeDebuff{
+		BaseEnemySkill: core.BaseEnemySkill{
+			IDField: "enemy-skill-soft",
+		},
 		CardType: "cardtype-mag",
 		Value:    0.5,
 	}
@@ -874,6 +880,9 @@ func createSoftSkill() core.EnemySkill {
 func createLongbowSkill() core.EnemySkill {
 	// 最も後ろのカードパワー-100%
 	return &core.EnemySkillIndexBackwardMultiplicativeDebuff{
+		BaseEnemySkill: core.BaseEnemySkill{
+			IDField: "enemy-skill-longbow",
+		},
 		NumOfCards: 1,
 		Value:      1.0,
 	}
@@ -882,6 +891,9 @@ func createLongbowSkill() core.EnemySkill {
 func createIncorporealitySkill() core.EnemySkill {
 	// 魔タイプ以外のカードパワー-100%
 	return &core.EnemySkillCardTypeExceptMultiplicativeDebuff{
+		BaseEnemySkill: core.BaseEnemySkill{
+			IDField: "enemy-skill-incorporeality",
+		},
 		CardType: "cardtype-mag",
 		Value:    1.0,
 	}
@@ -889,12 +901,20 @@ func createIncorporealitySkill() core.EnemySkill {
 
 func createPressureSkill() core.EnemySkill {
 	// 全てのカードパワー-1
-	return core.EnemySkillAdditiveDebuff(1.0)
+	return &core.EnemySkillAdditiveDebuff{
+		BaseEnemySkill: core.BaseEnemySkill{
+			IDField: "enemy-skill-pressure",
+		},
+		Value: 1.0,
+	}
 }
 
 func createCharmSkill() core.EnemySkill {
 	// 先頭から3枚のカードパワー-100%
 	return &core.EnemySkillIndexForwardMultiplicativeDebuff{
+		BaseEnemySkill: core.BaseEnemySkill{
+			IDField: "enemy-skill-charm",
+		},
 		NumOfCards: 3,
 		Value:      1.0,
 	}
@@ -903,6 +923,9 @@ func createCharmSkill() core.EnemySkill {
 func createMagicBarrierSkill() core.EnemySkill {
 	// 魔法タイプのカードパワー-100%
 	return &core.EnemySkillCardTypeMultiplicativeDebuff{
+		BaseEnemySkill: core.BaseEnemySkill{
+			IDField: "enemy-skill-magic-barrier",
+		},
 		CardType: "cardtype-mag",
 		Value:    1.0,
 	}
@@ -911,6 +934,9 @@ func createMagicBarrierSkill() core.EnemySkill {
 func createLaserSkill() core.EnemySkill {
 	// 後方から3枚のカードパワー-100%
 	return &core.EnemySkillIndexBackwardMultiplicativeDebuff{
+		BaseEnemySkill: core.BaseEnemySkill{
+			IDField: "enemy-skill-laser",
+		},
 		NumOfCards: 3,
 		Value:      1.0,
 	}
@@ -919,6 +945,9 @@ func createLaserSkill() core.EnemySkill {
 func createSideAttackSkill() core.EnemySkill {
 	// 先頭から5枚のカードパワー-50%
 	return &core.EnemySkillIndexForwardMultiplicativeDebuff{
+		BaseEnemySkill: core.BaseEnemySkill{
+			IDField: "enemy-skill-side-attack",
+		},
 		NumOfCards: 5,
 		Value:      0.5,
 	}
@@ -926,5 +955,10 @@ func createSideAttackSkill() core.EnemySkill {
 
 func createWaveSkill() core.EnemySkill {
 	// 全てのカードパワー-2
-	return core.EnemySkillAdditiveDebuff(2.0)
+	return &core.EnemySkillAdditiveDebuff{
+		BaseEnemySkill: core.BaseEnemySkill{
+			IDField: "enemy-skill-wave",
+		},
+		Value: 2.0,
+	}
 }

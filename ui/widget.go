@@ -41,18 +41,22 @@ func DrawResource(screen *ebiten.Image, x, y float64, resourceType string, value
 	drawing.DrawText(screen, text, 10, opt)
 }
 
-// DrawCard カードを描画する（40x60領域）
-func DrawCard(screen *ebiten.Image, x, y float64, cardID string) {
+func DrawCardBackground(screen *ebiten.Image, x, y float64, alpha float32) {
 	var r, g, b float32
 	r = 1.9
 	g = 0.8
 	b = 0.7
 	// 枠を描画（四角形）
-	drawing.DrawRect(screen, x+1, y+1, 38, 58, r, g, b, 1)
+	drawing.DrawRect(screen, x+1, y+1, 38, 58, r*alpha, g*alpha, b*alpha, alpha)
 	r = 0.9
 	g = 0.7
 	b = 0.5
-	drawing.DrawRect(screen, x+3, y+3, 34, 54, r, g, b, 1)
+	drawing.DrawRect(screen, x+3, y+3, 34, 54, r*alpha, g*alpha, b*alpha, alpha)
+}
+
+// DrawCard カードを描画する（40x60領域）
+func DrawCard(screen *ebiten.Image, x, y float64, cardID string) {
+	DrawCardBackground(screen, x, y, 1)
 
 	// カード名を描画
 	opt := &ebiten.DrawImageOptions{}
