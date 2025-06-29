@@ -84,7 +84,7 @@ type OtherNation struct {
 func (on *OtherNation) Purchase(index int, treasury *Treasury) (*CardPack, bool) {
 	cardPack, ok := on.BaseNation.Purchase(index, treasury)
 	if ok {
-		on.Market.Level += 0.2
+		on.Market.Level += 0.5
 	}
 	return cardPack, ok
 }

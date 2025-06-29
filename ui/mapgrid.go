@@ -1,7 +1,11 @@
 package ui
 
 import (
+	"fmt"
+	"image/color"
+
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/vector"
 	"github.com/noppikinatta/ebitenginegamejam2025/core"
 	"github.com/noppikinatta/ebitenginegamejam2025/drawing"
 	"github.com/noppikinatta/ebitenginegamejam2025/geom"
@@ -112,6 +116,27 @@ func (m *MapGridView) Draw(screen *ebiten.Image) {
 			screenX := cellTopLeft.X + m.TopLeft.X
 			screenY := cellTopLeft.Y + m.TopLeft.Y
 
+			// 到達可能性の線を描画
+			if m.GameState.CanInteract(x, y) {
+				cellCenterX := screenX + m.CellSize.X/2
+				cellCenterY := screenY + m.CellSize.Y/2
+				m.drawConnectionLines(screen, x, y, cellCenterX, cellCenterY)
+			}
+		}
+	}
+
+	for y := 0; y < 5; y++ {
+		for x := 0; x < 5; x++ {
+			point := mapGrid.GetPoint(x, y)
+			if point == nil {
+				continue
+			}
+
+			// セルの左上座標を取得
+			cellTopLeft := m.CellLocations[y*5+x]
+			screenX := cellTopLeft.X + m.TopLeft.X
+			screenY := cellTopLeft.Y + m.TopLeft.Y
+
 			// Point画像を描画（24x24、セル中央）
 			imageX := screenX + (m.CellSize.X-24)/2
 			imageY := screenY + (m.CellSize.Y-24)/2 - 10 // 文字のスペースを考慮
@@ -119,19 +144,23 @@ func (m *MapGridView) Draw(screen *ebiten.Image) {
 			m.drawPointImage(screen, imageX, imageY, point, interactive)
 
 			// Point名を描画（Point画像の下）
-			textX := screenX + m.CellSize.X/2 - 20 // 中央寄せ（概算）
-			textY := imageY + 24 + 5
+			textX := screenX + 8
+			textY := imageY + 24 + 2
 			pointName := m.getPointName(x, y, point)
 
 			opt := &ebiten.DrawImageOptions{}
 			opt.GeoM.Translate(textX, textY)
 			drawing.DrawText(screen, pointName, 12, opt)
 
-			// 到達可能性の線を描画
-			if m.GameState.CanInteract(x, y) {
-				cellCenterX := screenX + m.CellSize.X/2
-				cellCenterY := screenY + m.CellSize.Y/2
-				m.drawConnectionLines(screen, x, y, cellCenterX, cellCenterY)
+			// もしコントロールされていない場合は、敵のパワーを描画
+			if p, ok := point.(*core.WildernessPoint); ok && !p.Controlled && interactive {
+				power := p.Enemy.Power
+				opt := &ebiten.DrawImageOptions{}
+				opt.GeoM.Translate(imageX, imageY+8)
+				powerIcon := drawing.Image("ui-power")
+				screen.DrawImage(powerIcon, opt)
+				opt.GeoM.Translate(16, 0)
+				drawing.DrawText(screen, fmt.Sprintf("%.1f", power), 12, opt)
 			}
 		}
 	}
@@ -185,11 +214,7 @@ func (m *MapGridView) getPointName(x, y int, point core.Point) string {
 	case *core.OtherNationPoint:
 		return lang.Text(string(p.OtherNation.NationID))
 	case *core.WildernessPoint:
-		if p.Controlled {
-			return lang.ExecuteTemplate("point-area", map[string]any{"x": x, "y": y})
-		} else {
-			return lang.ExecuteTemplate("point-wild", map[string]any{"x": x, "y": y})
-		}
+		return lang.Text(p.TerrainType)
 	case *core.BossPoint:
 		return lang.Text("point-boss")
 	default:
@@ -226,13 +251,5 @@ func (m *MapGridView) drawConnectionLines(screen *ebiten.Image, x, y int, center
 
 // drawLine 2点間に線を描画
 func (m *MapGridView) drawLine(screen *ebiten.Image, x1, y1, x2, y2 float64) {
-	// 簡単な線描画（太さ2ピクセル）
-	vertices := []ebiten.Vertex{
-		{DstX: float32(x1), DstY: float32(y1), SrcX: 0, SrcY: 0, ColorR: 1, ColorG: 1, ColorB: 1, ColorA: 0.8},
-		{DstX: float32(x2), DstY: float32(y2), SrcX: 0, SrcY: 0, ColorR: 1, ColorG: 1, ColorB: 1, ColorA: 0.8},
-		{DstX: float32(x2), DstY: float32(y2 + 2), SrcX: 0, SrcY: 0, ColorR: 1, ColorG: 1, ColorB: 1, ColorA: 0.8},
-		{DstX: float32(x1), DstY: float32(y1 + 2), SrcX: 0, SrcY: 0, ColorR: 1, ColorG: 1, ColorB: 1, ColorA: 0.8},
-	}
-	indices := []uint16{0, 1, 2, 0, 2, 3}
-	screen.DrawTriangles(vertices, indices, drawing.WhitePixel, &ebiten.DrawTrianglesOptions{})
+	vector.StrokeLine(screen, float32(x1), float32(y1), float32(x2), float32(y2), 2, color.White, true)
 }
