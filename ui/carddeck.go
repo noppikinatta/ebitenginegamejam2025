@@ -23,6 +23,8 @@ type CardDeckView struct {
 
 	// マウスカーソル位置（外部から設定）
 	MouseX, MouseY int
+
+	HoveredCard interface{}
 }
 
 // NewCardDeckView CardDeckViewを作成する
@@ -161,15 +163,40 @@ func (c *CardDeckView) AddCard(card interface{}) {
 
 // HandleInput 入力処理
 func (c *CardDeckView) HandleInput(input *Input) error {
-	if input.Mouse.IsJustReleased(ebiten.MouseButtonLeft) {
-		cursorX, cursorY := input.Mouse.CursorPosition()
+	cursorX, cursorY := input.Mouse.CursorPosition()
+	c.MouseX = cursorX
+	c.MouseY = cursorY
 
+	cardIndex := c.CardIndex(cursorX, cursorY)
+
+	if cardIndex != -1 {
+		c.HoveredCard = c.getAllCards()[cardIndex]
+	} else {
+		c.HoveredCard = nil
+	}
+
+	if input.Mouse.IsJustReleased(ebiten.MouseButtonLeft) {
 		// CardDeckView領域内かチェック (0,300,640,60)
 		if cursorY >= 300 && cursorY < 360 && cursorX >= 0 && cursorX < 640 {
 			c.handleCardClick(cursorX, cursorY)
 		}
 	}
 	return nil
+}
+
+func (c *CardDeckView) CardIndex(cursorX, cursorY int) int {
+	if cursorX < 0 || cursorX >= 640 || cursorY < 300 || cursorY >= 360 {
+		return -1
+	}
+
+	allCards := c.getAllCards()
+	cardIndex := cursorX / 40
+
+	if cardIndex < 0 || cardIndex >= len(allCards) || cardIndex >= 16 {
+		return -1
+	}
+
+	return cardIndex
 }
 
 // handleCardClick カードクリック処理
@@ -179,12 +206,9 @@ func (c *CardDeckView) handleCardClick(cursorX, cursorY int) {
 	}
 
 	allCards := c.getAllCards()
-
-	// カードインデックスを計算 (40x60サイズ)
-	cardIndex := cursorX / 40
-
-	if cardIndex < 0 || cardIndex >= len(allCards) || cardIndex >= 16 {
-		return // 範囲外
+	cardIndex := c.CardIndex(cursorX, cursorY)
+	if cardIndex == -1 {
+		return
 	}
 
 	card := allCards[cardIndex]
@@ -215,6 +239,8 @@ func (c *CardDeckView) Draw(screen *ebiten.Image) {
 
 	// カード描画
 	c.drawCards(screen)
+
+	c.drawHoveredCardTooltip(screen)
 }
 
 // drawBackground 背景を描画
@@ -278,4 +304,12 @@ func (c *CardDeckView) drawCard(screen *ebiten.Image, card interface{}, x, y flo
 	case *core.StructureCard:
 		DrawCard(screen, x, y, string(typedCard.CardID))
 	}
+}
+
+func (c *CardDeckView) drawHoveredCardTooltip(screen *ebiten.Image) {
+	if c.HoveredCard == nil {
+		return
+	}
+
+	DrawCardDescriptionTooltip(screen, c.HoveredCard, c.MouseX, c.MouseY)
 }

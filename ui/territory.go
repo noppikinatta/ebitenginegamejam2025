@@ -12,10 +12,13 @@ import (
 // TerritoryView Territory表示Widget
 // 位置: MainView内で描画
 type TerritoryView struct {
-	Territory *core.Territory       // 表示するTerritory
-	Cards     []*core.StructureCard // 一時的カード置き場（Territory.Cardsとメモリ共有しない）
-	PointName string                // 地点名
-	GameState *core.GameState       // ゲーム状態
+	Territory   *core.Territory       // 表示するTerritory
+	OldCards    []*core.StructureCard // 変更前のカード
+	PointName   string                // 地点名
+	GameState   *core.GameState       // ゲーム状態
+	HoveredCard interface{}
+	MouseX      int
+	MouseY      int
 
 	// View切り替えのコールバック
 	OnBackClicked func()                         // MapGridViewに戻る
@@ -25,7 +28,6 @@ type TerritoryView struct {
 // NewTerritoryView TerritoryViewを作成する
 func NewTerritoryView(onBackClicked func()) *TerritoryView {
 	return &TerritoryView{
-		Cards:         make([]*core.StructureCard, 0),
 		OnBackClicked: onBackClicked,
 	}
 }
@@ -33,10 +35,8 @@ func NewTerritoryView(onBackClicked func()) *TerritoryView {
 // SetTerritory 表示するTerritoryを設定
 func (tv *TerritoryView) SetTerritory(territory *core.Territory) {
 	tv.Territory = territory
-
-	// Territory.Cardsの内容を一時置き場にコピー（メモリ共有を避ける）
-	tv.Cards = make([]*core.StructureCard, len(territory.Cards))
-	copy(tv.Cards, territory.Cards)
+	tv.OldCards = make([]*core.StructureCard, len(territory.Cards))
+	copy(tv.OldCards, territory.Cards)
 }
 
 // SetPointName 地点名を設定
@@ -79,8 +79,17 @@ func (tv *TerritoryView) GetCurrentYield() core.ResourceQuantity {
 
 // HandleInput 入力処理
 func (tv *TerritoryView) HandleInput(input *Input) error {
+	cursorX, cursorY := input.Mouse.CursorPosition()
+	tv.MouseX = cursorX
+	tv.MouseY = cursorY
+	cardIndex := tv.cardIndex(cursorX, cursorY)
+	if cardIndex != -1 {
+		tv.HoveredCard = tv.Territory.Cards[cardIndex]
+	} else {
+		tv.HoveredCard = nil
+	}
+
 	if input.Mouse.IsJustReleased(ebiten.MouseButtonLeft) {
-		cursorX, cursorY := input.Mouse.CursorPosition()
 
 		// 戻るボタンのクリック判定 (480,20,40,40)
 		if cursorX >= 480 && cursorX < 520 && cursorY >= 20 && cursorY < 60 {
@@ -95,10 +104,33 @@ func (tv *TerritoryView) HandleInput(input *Input) error {
 			}
 		}
 
+		// 建設決定ボタンのクリック判定 (200,220,120,40)
+		if cursorX >= 200 && cursorX < 320 && cursorY >= 220 && cursorY < 260 {
+			// 変更があった場合は建設決定処理を実行
+			if tv.IsChanged() {
+				tv.ConfirmConstruction()
+				if tv.OnBackClicked != nil {
+					tv.OnBackClicked()
+					return nil
+				}
+			}
+		}
+
 		// StructureCardのクリック判定（CardDeckに戻す）
 		tv.handleStructureCardClick(cursorX, cursorY)
 	}
 	return nil
+}
+
+func (tv *TerritoryView) cardIndex(cursorX, cursorY int) int {
+	if cursorX < 0 || cursorX >= 520 || cursorY < 160 || cursorY >= 220 {
+		return -1
+	}
+	cardIndex := cursorX / 40
+	if cardIndex < 0 || cardIndex >= len(tv.Territory.Cards) {
+		return -1
+	}
+	return cardIndex
 }
 
 // Draw 描画処理
@@ -123,6 +155,8 @@ func (tv *TerritoryView) Draw(screen *ebiten.Image) {
 
 	// 建設決定ボタン (200,220,120,40)
 	tv.drawConstructionButton(screen)
+
+	tv.drawHoveredCardTooltip(screen)
 }
 
 // drawHeader ヘッダを描画
@@ -241,13 +275,13 @@ func (tv *TerritoryView) drawEffectDescription(screen *ebiten.Image) {
 		// カード名
 		opt = &ebiten.DrawImageOptions{}
 		opt.GeoM.Translate(65, y)
-		cardName := lang.Text("structurecard-" + string(card.CardID))
+		cardName := lang.Text(string(card.CardID))
 		drawing.DrawText(screen, cardName, 10, opt)
 
 		// 効果説明
 		opt = &ebiten.DrawImageOptions{}
 		opt.GeoM.Translate(200, y)
-		effect := lang.Text("territory-boosts-production")
+		effect := lang.Text(string(card.DescriptionKey))
 		drawing.DrawText(screen, effect, 9, opt)
 	}
 }
@@ -265,7 +299,7 @@ func (tv *TerritoryView) drawStructureCards(screen *ebiten.Image) {
 	screen.DrawTriangles(vertices, indices, drawing.WhitePixel, &ebiten.DrawTrianglesOptions{})
 
 	// 配置されたStructureCardを描画（一時置き場tv.Cardsを使用）
-	for i, card := range tv.Cards {
+	for i, card := range tv.Territory.Cards {
 		cardX := float64(i * 40)
 		cardY := 160.0
 
@@ -275,7 +309,7 @@ func (tv *TerritoryView) drawStructureCards(screen *ebiten.Image) {
 	// 空きスロットを表示
 	if tv.Territory != nil {
 		maxSlots := tv.Territory.CardSlot
-		for i := len(tv.Cards); i < maxSlots && i < 13; i++ { // 最大13枚まで表示（520÷40=13）
+		for i := len(tv.Territory.Cards); i < maxSlots && i < 13; i++ { // 最大13枚まで表示（520÷40=13）
 			cardX := float64(i * 40)
 			cardY := 160.0
 
@@ -292,14 +326,22 @@ func (tv *TerritoryView) drawStructureCards(screen *ebiten.Image) {
 	}
 }
 
+func (tv *TerritoryView) drawHoveredCardTooltip(screen *ebiten.Image) {
+	if tv.HoveredCard == nil {
+		return
+	}
+
+	DrawCardDescriptionTooltip(screen, tv.HoveredCard, tv.MouseX, tv.MouseY)
+}
+
 // handleStructureCardClick StructureCardのクリック処理
 func (tv *TerritoryView) handleStructureCardClick(cursorX, cursorY int) {
 	// StructureCard置き場 (0,160,520,60) 内の各カード (40x60)
 	if cursorY >= 160 && cursorY < 220 {
 		cardIndex := cursorX / 40
 
-		if cardIndex >= 0 && cardIndex < len(tv.Cards) {
-			targetCard := tv.Cards[cardIndex]
+		if cardIndex >= 0 && cardIndex < len(tv.Territory.Cards) {
+			targetCard := tv.Territory.Cards[cardIndex]
 
 			// カードをCardDeckに戻す
 			tv.RemoveCard(targetCard)
@@ -368,15 +410,15 @@ func (tv *TerritoryView) IsChanged() bool {
 	}
 
 	// 長さが異なれば変更有り
-	if len(tv.Cards) != len(tv.Territory.Cards) {
+	if len(tv.Territory.Cards) != len(tv.OldCards) {
 		return true
 	}
 
 	// 両スライスのStructureCardポインタが全て同じかチェック（順番は問わない）
-	for _, viewCard := range tv.Cards {
+	for _, oldCard := range tv.OldCards {
 		found := false
 		for _, territoryCard := range tv.Territory.Cards {
-			if viewCard == territoryCard {
+			if oldCard == territoryCard {
 				found = true
 				break
 			}
@@ -394,10 +436,6 @@ func (tv *TerritoryView) ConfirmConstruction() {
 	if tv.Territory == nil {
 		return
 	}
-
-	// TerritoryView.Cardsの内容をTerritory.Cardsにコピー
-	tv.Territory.Cards = make([]*core.StructureCard, len(tv.Cards))
-	copy(tv.Territory.Cards, tv.Cards)
 }
 
 // CanPlaceCard カードを配置できるかどうかを判定
@@ -405,7 +443,7 @@ func (tv *TerritoryView) CanPlaceCard() bool {
 	if tv.Territory == nil {
 		return false
 	}
-	return len(tv.Cards) < tv.Territory.CardSlot
+	return len(tv.Territory.Cards) < tv.Territory.CardSlot
 }
 
 // PlaceCard カードを配置する
@@ -414,7 +452,7 @@ func (tv *TerritoryView) PlaceCard(card *core.StructureCard) bool {
 		return false
 	}
 
-	tv.Cards = append(tv.Cards, card)
+	tv.Territory.Cards = append(tv.Territory.Cards, card)
 	return true
 }
 
@@ -422,7 +460,7 @@ func (tv *TerritoryView) PlaceCard(card *core.StructureCard) bool {
 func (tv *TerritoryView) RemoveCard(card *core.StructureCard) bool {
 	// カードのインデックスを見つける
 	cardIndex := -1
-	for i, structureCard := range tv.Cards {
+	for i, structureCard := range tv.Territory.Cards {
 		if structureCard == card {
 			cardIndex = i
 			break
@@ -434,7 +472,7 @@ func (tv *TerritoryView) RemoveCard(card *core.StructureCard) bool {
 	}
 
 	// Cardsから除去
-	tv.Cards = append(tv.Cards[:cardIndex], tv.Cards[cardIndex+1:]...)
+	tv.Territory.Cards = append(tv.Territory.Cards[:cardIndex], tv.Territory.Cards[cardIndex+1:]...)
 
 	// GameState.CardDeckに追加
 	if tv.GameState != nil {

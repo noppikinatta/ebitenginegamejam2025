@@ -15,7 +15,6 @@ import (
 // 位置: MainView内で描画
 type MarketView struct {
 	Nation    core.Nation     // MyNationまたはOtherNation
-	Treasury  *core.Treasury  // 購入可能性判定用
 	GameState *core.GameState // ゲーム状態
 
 	// View切り替えのコールバック
@@ -33,11 +32,6 @@ func NewMarketView(onBackClicked func()) *MarketView {
 // SetNation 表示する国家を設定
 func (mv *MarketView) SetNation(nation core.Nation) {
 	mv.Nation = nation
-}
-
-// SetTreasury 国庫を設定
-func (mv *MarketView) SetTreasury(treasury *core.Treasury) {
-	mv.Treasury = treasury
 }
 
 // SetGameState ゲーム状態を設定
@@ -155,7 +149,7 @@ func (mv *MarketView) drawMarketItem(screen *ebiten.Image, item *core.MarketItem
 	// CardPack名 (40,60,220,20) -> 相対位置(40,0,220,20)
 	opt := &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(x+40, y)
-	cardPackName := lang.Text("cardpack-" + string(item.CardPack.CardPackID))
+	cardPackName := lang.Text(string(item.CardPack.CardPackID))
 	drawing.DrawText(screen, cardPackName, 14, opt)
 
 	// CardPack説明 (40,80,220,40) -> 相対位置(40,20,220,40)
@@ -194,17 +188,19 @@ func (mv *MarketView) drawCardPackPrice(screen *ebiten.Image, item *core.MarketI
 	// 値段情報を取得
 	_, canPurchase := mv.getCardPackPrice(index)
 	price := item.Price
+	subtracted := mv.GameState.Treasury.Resources.Sub(price)
 
 	// Resource1種類につき60x20で表示
 	resourceTypes := []struct {
 		name  string
 		value int
+		red   bool
 	}{
-		{"resource-money", price.Money},
-		{"resource-food", price.Food},
-		{"resource-wood", price.Wood},
-		{"resource-iron", price.Iron},
-		{"resource-mana", price.Mana},
+		{"resource-money", price.Money, subtracted.Money < 0},
+		{"resource-food", price.Food, subtracted.Food < 0},
+		{"resource-wood", price.Wood, subtracted.Wood < 0},
+		{"resource-iron", price.Iron, subtracted.Iron < 0},
+		{"resource-mana", price.Mana, subtracted.Mana < 0},
 	}
 
 	currentX := x
@@ -221,8 +217,8 @@ func (mv *MarketView) drawCardPackPrice(screen *ebiten.Image, item *core.MarketI
 			// Price数字（購入不可能な場合は赤文字）
 			opt = &ebiten.DrawImageOptions{}
 			opt.GeoM.Translate(currentX+20, y)
-			if !canPurchase {
-				// TODO: 赤文字の実装（現在は通常色）
+			if !canPurchase || resource.red {
+				opt.ColorScale.Scale(1, 0, 0, 1)
 			}
 			priceText := fmt.Sprintf("%d", resource.value)
 			drawing.DrawText(screen, priceText, 12, opt)
@@ -246,14 +242,14 @@ func (mv *MarketView) getAllMarketItems() []*core.MarketItem {
 
 // getCardPackPrice CardPackの価格と購入可能性を取得
 func (mv *MarketView) getCardPackPrice(index int) (*core.ResourceQuantity, bool) {
-	if mv.Treasury == nil || mv.Nation == nil {
+	if mv.GameState.Treasury == nil || mv.Nation == nil {
 		return nil, false
 	}
 
 	market := mv.Nation.GetMarket()
 	if market != nil && index < len(market.Items) {
 		item := market.Items[index]
-		canPurchase := mv.Nation.CanPurchase(index, mv.Treasury)
+		canPurchase := mv.Nation.CanPurchase(index, mv.GameState.Treasury)
 		return &item.Price, canPurchase
 	}
 

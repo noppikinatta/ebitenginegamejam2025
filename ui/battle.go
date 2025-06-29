@@ -16,6 +16,9 @@ type BattleView struct {
 	PointName   string            // 戦闘地点名
 	Battlefield *core.Battlefield // 戦場情報
 	GameState   *core.GameState   // ゲーム状態
+	HoveredCard interface{}
+	MouseX      int
+	MouseY      int
 
 	// View切り替えのコールバック
 	OnBackClicked func() // MapGridViewに戻る
@@ -63,8 +66,21 @@ func (bv *BattleView) CanDefeatEnemy() bool {
 
 // HandleInput 入力処理
 func (bv *BattleView) HandleInput(input *Input) error {
+	cursorX, cursorY := input.Mouse.CursorPosition()
+	cardIndex := bv.cardIndex(cursorX, cursorY)
+	bv.MouseX = cursorX
+	bv.MouseY = cursorY
+
+	if cardIndex != -1 {
+		bv.HoveredCard = bv.Battlefield.BattleCards[cardIndex]
+	} else {
+		bv.HoveredCard = nil
+	}
+
 	if input.Mouse.IsJustReleased(ebiten.MouseButtonLeft) {
-		cursorX, cursorY := input.Mouse.CursorPosition()
+		if cardIndex != -1 {
+			bv.handleBattleCardClick(cursorX, cursorY)
+		}
 
 		// 戻るボタンのクリック判定 (480,20,40,40)
 		if cursorX >= 480 && cursorX < 520 && cursorY >= 20 && cursorY < 60 {
@@ -105,6 +121,17 @@ func (bv *BattleView) HandleInput(input *Input) error {
 	return nil
 }
 
+func (bv *BattleView) cardIndex(cursorX, cursorY int) int {
+	if cursorX < 0 || cursorX >= 480 || cursorY < 220 || cursorY >= 280 {
+		return -1
+	}
+	cardIndex := cursorX / 40
+	if cardIndex < 0 || cardIndex >= len(bv.Battlefield.BattleCards) {
+		return -1
+	}
+	return cardIndex
+}
+
 // handleBattleCardClick BattleCardのクリック処理
 func (bv *BattleView) handleBattleCardClick(cursorX, cursorY int) {
 	// BattleCard置き場 (0,220,480,60) 内の各カード (40x60)
@@ -142,6 +169,8 @@ func (bv *BattleView) Draw(screen *ebiten.Image) {
 
 	// 制圧ボタン描画 (200,280,120,40)
 	bv.drawConquerButton(screen)
+
+	bv.drawHoveredCardTooltip(screen)
 }
 
 // drawHeader ヘッダを描画
@@ -331,6 +360,14 @@ func (bv *BattleView) drawConquerButton(screen *ebiten.Image) {
 		opt.GeoM.Translate(210, 280)
 		drawing.DrawText(screen, lang.Text("ui-need-power"), 12, opt)
 	}
+}
+
+func (bv *BattleView) drawHoveredCardTooltip(screen *ebiten.Image) {
+	if bv.HoveredCard == nil {
+		return
+	}
+
+	DrawCardDescriptionTooltip(screen, bv.HoveredCard, bv.MouseX, bv.MouseY)
 }
 
 // createBattlefield 戦場を作成する

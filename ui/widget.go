@@ -125,3 +125,25 @@ func DrawButton(screen *ebiten.Image, x, y, width, height float64, imageKey stri
 	opt.GeoM.Translate(imageX, imageY)
 	screen.DrawImage(image, opt)
 }
+
+func DrawCardDescriptionTooltip(screen *ebiten.Image, card interface{}, mouseX, mouseY int) {
+	left, top := float64(mouseX-20), float64(mouseY-80)
+
+	switch typedCard := card.(type) {
+	case *core.BattleCard:
+		drawing.DrawRect(screen, left, top, 240, 40, 0, 0, 0, 0.5)
+		skillName := lang.Text(string(typedCard.Skill.BattleCardSkillID))
+		skillDescription := lang.Text(string(typedCard.Skill.DescriptionKey))
+		opt := &ebiten.DrawImageOptions{}
+		opt.GeoM.Translate(left, top)
+		drawing.DrawText(screen, skillName, 12, opt)
+		opt.GeoM.Translate(0, 16)
+		drawing.DrawText(screen, skillDescription, 9, opt)
+	case *core.StructureCard:
+		drawing.DrawRect(screen, left, top, 400, 60, 0, 0, 0, 0.5)
+		description := lang.Text(string(typedCard.DescriptionKey))
+		opt := &ebiten.DrawImageOptions{}
+		opt.GeoM.Translate(left, top)
+		drawing.DrawText(screen, description, 9, opt)
+	}
+}
