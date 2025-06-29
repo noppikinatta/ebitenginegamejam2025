@@ -18,6 +18,7 @@ func CreateSequence(input *ui.Input) ebiten.Game {
 
 	title.Init(inGame, seq, tran)
 	inGame.Init(result, seq, tran)
+	result.Init(title, seq, tran)
 
 	return &wrapperGame{
 		langSwitcher: &langSwitcher{},

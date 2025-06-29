@@ -4,7 +4,9 @@ import (
 	"image/color"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"github.com/noppikinatta/bamenn"
+	"github.com/noppikinatta/ebitenginegamejam2025/drawing"
+	"github.com/noppikinatta/ebitenginegamejam2025/lang"
 	"github.com/noppikinatta/ebitenginegamejam2025/ui"
 )
 
@@ -13,8 +15,11 @@ type GameHistory struct {
 }
 
 type Result struct {
-	history *GameHistory
-	input   *ui.Input
+	history    *GameHistory
+	input      *ui.Input
+	nextScene  ebiten.Game
+	sequence   *bamenn.Sequence
+	transition bamenn.Transition
 }
 
 func NewResult(input *ui.Input) *Result {
@@ -30,7 +35,17 @@ func NewResult(input *ui.Input) *Result {
 	}
 }
 
+func (r *Result) Init(nextScene ebiten.Game, sequence *bamenn.Sequence, transition bamenn.Transition) {
+	r.nextScene = nextScene
+	r.sequence = sequence
+	r.transition = transition
+}
+
 func (r *Result) Update() error {
+	if r.input.Mouse.IsJustPressed(ebiten.MouseButtonLeft) {
+		r.sequence.SwitchWithTransition(r.nextScene, r.transition)
+	}
+
 	return nil
 }
 
@@ -38,14 +53,13 @@ func (r *Result) Draw(screen *ebiten.Image) {
 	// Background color
 	screen.Fill(color.RGBA{60, 40, 80, 255})
 
-	// Title
-	ebitenutil.DebugPrintAt(screen, "VICTORY!", 280, 50)
-	ebitenutil.DebugPrintAt(screen, "Game History:", 50, 100)
+	opt := &ebiten.DrawImageOptions{}
+	opt.GeoM.Translate(20, 180)
+	drawing.DrawText(screen, lang.Text("story-2"), 12, opt)
 
-	// Display history entries
-	for i, entry := range r.history.entries {
-		ebitenutil.DebugPrintAt(screen, entry, 60, 130+i*20)
-	}
+	opt = &ebiten.DrawImageOptions{}
+	opt.GeoM.Translate(220, 320)
+	drawing.DrawText(screen, "Click to Back", 14, opt)
 }
 
 func (r *Result) Layout(outsideWidth, outsideHeight int) (int, int) {

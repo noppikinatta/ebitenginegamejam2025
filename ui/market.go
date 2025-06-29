@@ -158,10 +158,8 @@ func (mv *MarketView) drawMarketItem(screen *ebiten.Image, item *core.MarketItem
 	var description string
 	if !isAvailable {
 		description = lang.ExecuteTemplate("market-required-level", map[string]any{"level": item.RequiredLevel})
-	} else {
-		description = lang.Text("market-card-pack-desc")
+		drawing.DrawText(screen, description, 10, opt)
 	}
-	drawing.DrawText(screen, description, 10, opt)
 
 	// CardPackの値段 (0,120,260,20) -> 相対位置(0,60,260,20)
 	mv.drawCardPackPrice(screen, item, index, x, y+60, 260, 20)

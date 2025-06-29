@@ -63,6 +63,7 @@ func createMapGrid(myNation *core.MyNation) *core.MapGrid {
 
 	cardPacks := map[string]*core.CardPack{
 		"cardpack-free": {
+			CardPackID: "cardpack-free",
 			NumPerOpen: 1,
 			Ratios: map[core.CardID]int{
 				"battlecard-soldier": 10,
@@ -70,6 +71,7 @@ func createMapGrid(myNation *core.MyNation) *core.MapGrid {
 			},
 		},
 		"cardpack-soldiers": {
+			CardPackID: "cardpack-soldiers",
 			NumPerOpen: 3,
 			Ratios: map[core.CardID]int{
 				"battlecard-soldier": 5,
@@ -78,6 +80,7 @@ func createMapGrid(myNation *core.MyNation) *core.MapGrid {
 			},
 		},
 		"cardpack-knights": {
+			CardPackID: "cardpack-knights",
 			NumPerOpen: 3,
 			Ratios: map[core.CardID]int{
 				"battlecard-knight":      3,
@@ -86,6 +89,7 @@ func createMapGrid(myNation *core.MyNation) *core.MapGrid {
 			},
 		},
 		"cardpack-politics": {
+			CardPackID: "cardpack-politics",
 			NumPerOpen: 2,
 			Ratios: map[core.CardID]int{
 				"structurecard-farm":       1,
@@ -95,6 +99,7 @@ func createMapGrid(myNation *core.MyNation) *core.MapGrid {
 			},
 		},
 		"cardpack-war": {
+			CardPackID: "cardpack-war",
 			NumPerOpen: 5,
 			Ratios: map[core.CardID]int{
 				"structurecard-catapult": 2,
@@ -103,6 +108,7 @@ func createMapGrid(myNation *core.MyNation) *core.MapGrid {
 			},
 		},
 		"cardpack-magic": {
+			CardPackID: "cardpack-magic",
 			NumPerOpen: 3,
 			Ratios: map[core.CardID]int{
 				"battlecard-wizard":    5,
@@ -111,6 +117,7 @@ func createMapGrid(myNation *core.MyNation) *core.MapGrid {
 			},
 		},
 		"cardpack-mystic": {
+			CardPackID: "cardpack-mystic",
 			NumPerOpen: 3,
 			Ratios: map[core.CardID]int{
 				"battlecard-fortune":   2,
@@ -120,6 +127,7 @@ func createMapGrid(myNation *core.MyNation) *core.MapGrid {
 			},
 		},
 		"cardpack-mineral": {
+			CardPackID: "cardpack-mineral",
 			NumPerOpen: 2,
 			Ratios: map[core.CardID]int{
 				"structurecard-tunnel":  4,
@@ -128,6 +136,7 @@ func createMapGrid(myNation *core.MyNation) *core.MapGrid {
 			},
 		},
 		"cardpack-mechanical": {
+			CardPackID: "cardpack-mechanical",
 			NumPerOpen: 2,
 			Ratios: map[core.CardID]int{
 				"battlecard-golem":       1,
@@ -137,6 +146,7 @@ func createMapGrid(myNation *core.MyNation) *core.MapGrid {
 			},
 		},
 		"cardpack-fancy": {
+			CardPackID: "cardpack-fancy",
 			NumPerOpen: 3,
 			Ratios: map[core.CardID]int{
 				"battlecard-clown":    5,
@@ -146,6 +156,7 @@ func createMapGrid(myNation *core.MyNation) *core.MapGrid {
 			},
 		},
 		"cardpack-samurai": {
+			CardPackID: "cardpack-samurai",
 			NumPerOpen: 2,
 			Ratios: map[core.CardID]int{
 				"battlecard-samurai": 4,
@@ -155,6 +166,7 @@ func createMapGrid(myNation *core.MyNation) *core.MapGrid {
 			},
 		},
 		"cardpack-siege": {
+			CardPackID: "cardpack-siege",
 			NumPerOpen: 2,
 			Ratios: map[core.CardID]int{
 				"structurecard-catapult":     2,
@@ -164,6 +176,7 @@ func createMapGrid(myNation *core.MyNation) *core.MapGrid {
 			},
 		},
 		"cardpack-finance": {
+			CardPackID: "cardpack-finance",
 			NumPerOpen: 2,
 			Ratios: map[core.CardID]int{
 				"battlecard-blacksmith": 2,
@@ -172,6 +185,7 @@ func createMapGrid(myNation *core.MyNation) *core.MapGrid {
 			},
 		},
 		"cardpack-building": {
+			CardPackID: "cardpack-building",
 			NumPerOpen: 2,
 			Ratios: map[core.CardID]int{
 				"structurecard-granary": 1,
@@ -183,6 +197,7 @@ func createMapGrid(myNation *core.MyNation) *core.MapGrid {
 			},
 		},
 		"cardpack-forest": {
+			CardPackID: "cardpack-forest",
 			NumPerOpen: 3,
 			Ratios: map[core.CardID]int{
 				"battlecard-archer":        2,
@@ -192,6 +207,7 @@ func createMapGrid(myNation *core.MyNation) *core.MapGrid {
 			},
 		},
 		"cardpack-desert": {
+			CardPackID: "cardpack-desert",
 			NumPerOpen: 3,
 			Ratios: map[core.CardID]int{
 				"battlecard-fortune":   2,
@@ -201,6 +217,7 @@ func createMapGrid(myNation *core.MyNation) *core.MapGrid {
 			},
 		},
 		"cardpack-mountain": {
+			CardPackID: "cardpack-mountain",
 			NumPerOpen: 3,
 			Ratios: map[core.CardID]int{
 				"battlecard-blacksmith":    2,
@@ -532,6 +549,18 @@ func createCardGenerator() *core.CardGenerator {
 
 func createBattleCards() map[core.CardID]*core.BattleCard {
 	cards := []*core.BattleCard{
+		{
+			CardID:    "battlecard-debug",
+			BasePower: 999,
+			Skill: &core.BattleCardSkill{
+				BattleCardSkillID: "battlecardskill-debug",
+				DescriptionKey:    "battlecardskill-debug-desc",
+				Calculator: &core.BattleCardSkillCalculatorProofBuff{
+					Value: 999.0,
+				},
+			},
+			Type: "cardtype-str",
+		},
 		{
 			CardID:    "battlecard-soldier",
 			BasePower: 3,

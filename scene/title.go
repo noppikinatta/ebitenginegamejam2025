@@ -41,8 +41,13 @@ func (t *Title) Draw(screen *ebiten.Image) {
 	// 背景色を設定
 	screen.Fill(color.RGBA{20, 20, 40, 255})
 
+	titleImg := drawing.Image("title")
 	opt := &ebiten.DrawImageOptions{}
-	opt.GeoM.Translate(20, 180)
+	opt.GeoM.Translate(160, 0)
+	screen.DrawImage(titleImg, opt)
+
+	opt = &ebiten.DrawImageOptions{}
+	opt.GeoM.Translate(20, 200)
 	drawing.DrawText(screen, lang.Text("story-1"), 12, opt)
 
 	opt = &ebiten.DrawImageOptions{}

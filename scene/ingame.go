@@ -47,6 +47,11 @@ func (g *InGame) Update() error {
 		return nil
 	}
 
+	if g.gameState.IsVictory() {
+		g.sequence.SwitchWithTransition(g.nextScene, g.transition)
+		return nil
+	}
+
 	// マウス位置をGameUIに設定
 	mouseX, mouseY := ebiten.CursorPosition()
 	g.gameUI.SetMousePosition(mouseX, mouseY)

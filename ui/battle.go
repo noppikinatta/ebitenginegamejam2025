@@ -94,12 +94,12 @@ func (bv *BattleView) HandleInput(input *Input) error {
 		}
 
 		// 制圧ボタンのクリック判定 (200,280,120,40)
-		if bv.CanDefeatEnemy() && cursorX >= 200 && cursorX < 320 && cursorY >= 280 && cursorY < 320 {
-			if bv.Conquer() {
-				// 制圧成功時、MapGridViewに戻る
-				if bv.OnBackClicked != nil {
-					bv.OnBackClicked()
-				}
+		if cursorX >= 200 && cursorX < 320 && cursorY >= 280 && cursorY < 320 {
+			if bv.CanDefeatEnemy() {
+				bv.Conquer()
+			}
+			if bv.OnBackClicked != nil {
+				bv.OnBackClicked()
 			}
 			return nil
 		}
