@@ -48,11 +48,7 @@ func (bv *BattleView) SetGameState(gameState *core.GameState) {
 
 // GetTotalPower 配置されたBattleCardの総Power値を計算
 func (bv *BattleView) GetTotalPower() float64 {
-	var totalPower float64
-	for _, card := range bv.Battlefield.BattleCards {
-		totalPower += float64(card.Power)
-	}
-	return totalPower
+	return bv.Battlefield.CalculateTotalPower()
 }
 
 // CanDefeatEnemy 敵を倒せるかどうかを判定

@@ -27,13 +27,13 @@ func TestBattlefield_CanBeat(t *testing.T) {
 	// テスト用のバトルカード
 	weakCard := &core.BattleCard{
 		CardID: "weak_warrior",
-		Power:  5.0,
+		BasePower:  5.0,
 		Type:   "warrior",
 	}
 
 	strongCard := &core.BattleCard{
 		CardID: "strong_mage",
-		Power:  30.0,
+		BasePower:  30.0,
 		Type:   "mage",
 	}
 
@@ -119,7 +119,7 @@ func TestBattlefield_Beat(t *testing.T) {
 
 	card := &core.BattleCard{
 		CardID: "test_card",
-		Power:  25.0,
+		BasePower:  25.0,
 		Type:   "warrior",
 	}
 
@@ -152,19 +152,19 @@ func TestBattlefield_PowerCalculation(t *testing.T) {
 
 	card1 := &core.BattleCard{
 		CardID: "card1",
-		Power:  10.0,
+		BasePower:  10.0,
 		Type:   "warrior",
 	}
 
 	card2 := &core.BattleCard{
 		CardID: "card2",
-		Power:  8.0,
+		BasePower:  8.0,
 		Type:   "mage",
 	}
 
 	card3 := &core.BattleCard{
 		CardID: "card3",
-		Power:  7.5,
+		BasePower:  7.5,
 		Type:   "beast",
 	}
 

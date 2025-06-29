@@ -216,7 +216,7 @@ func (iv *InfoView) drawBattleCardInfo(screen *ebiten.Image, card *core.BattleCa
 	// Power (20)
 	opt = &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(525, y)
-	drawing.DrawText(screen, fmt.Sprintf("Power: %.1f", card.Power), 9, opt)
+	drawing.DrawText(screen, fmt.Sprintf("Power: %.1f", card.BasePower), 9, opt)
 	y += 20
 
 	// Skill名 (20)

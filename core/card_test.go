@@ -112,12 +112,12 @@ func TestCardDatabase_GetCards(t *testing.T) {
 		BattleCards: map[core.CardID]*core.BattleCard{
 			"battle_1": {
 				CardID: "battle_1",
-				Power:  10.0,
+				BasePower:  10.0,
 				Type:   "warrior",
 			},
 			"battle_2": {
 				CardID: "battle_2",
-				Power:  15.0,
+				BasePower:  15.0,
 				Type:   "mage",
 			},
 		},

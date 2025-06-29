@@ -95,7 +95,7 @@ func DrawBattleCard(screen *ebiten.Image, x, y float64, battleCard *core.BattleC
 	powerIcon := drawing.Image("ui-power")
 	screen.DrawImage(powerIcon, opt)
 	opt.GeoM.Translate(16, 0)
-	drawing.DrawText(screen, fmt.Sprintf("%.1f", battleCard.Power), 12, opt)
+	drawing.DrawText(screen, fmt.Sprintf("%.1f", battleCard.Power()), 12, opt)
 }
 
 // DrawButton ボタンを描画する（クリック判定は後で実装）

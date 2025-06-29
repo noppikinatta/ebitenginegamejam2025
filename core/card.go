@@ -67,10 +67,23 @@ type BattleCardType string
 
 // BattleCard は、戦闘でBattlefieldに出すカードです。この構造体はimmutableです。
 type BattleCard struct {
-	CardID CardID
-	Power  BattleCardPower  // はカードの戦闘力です。
-	Skill  *BattleCardSkill // はカードが持っているスキルです。
-	Type   BattleCardType   // は戦士、魔法使い、動物などのカードタイプです。スキルの効果対象の判定に使います。
+	CardID     CardID
+	Experience int
+	BasePower  BattleCardPower  // はカードの戦闘力です。
+	Skill      *BattleCardSkill // はカードが持っているスキルです。
+	Type       BattleCardType   // は戦士、魔法使い、動物などのカードタイプです。スキルの効果対象の判定に使います。
+}
+
+func (c *BattleCard) Level() int {
+	return 1 + c.Experience/100
+}
+
+func (c *BattleCard) Experiment() {
+	c.Experience += (100 / c.Level())
+}
+
+func (c *BattleCard) Power() BattleCardPower {
+	return c.BasePower * (1 + 0.1*BattleCardPower(c.Level()-1))
 }
 
 // StructureCard は、Territoryに配置するカードです。この構造体はimmutableです。
@@ -129,7 +142,20 @@ func (cd *CardDeck) Add(cards *Cards) {
 		return
 	}
 
-	cd.BattleCards = append(cd.BattleCards, cards.BattleCards...)
+	for _, card := range cards.BattleCards {
+		found := false
+		for _, cardInDeck := range cd.BattleCards {
+			if cardInDeck.CardID == card.CardID {
+				cardInDeck.Experiment()
+				found = true
+				break
+			}
+		}
+		if !found {
+			cd.BattleCards = append(cd.BattleCards, card)
+		}
+	}
+
 	cd.StructureCards = append(cd.StructureCards, cards.StructureCards...)
 }
 

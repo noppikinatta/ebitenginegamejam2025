@@ -62,7 +62,7 @@ func (b *Battlefield) CalculateTotalPower() float64 {
 	for i := range modifiers {
 		modifiers[i] = &BattleCardPowerModifier{}
 	}
-	
+
 	cardCalcOptions := &BattleCardSkillCalculationOptions{
 		BattleCards:              b.BattleCards,
 		BattleCardPowerModifiers: modifiers,
@@ -88,7 +88,7 @@ func (b *Battlefield) CalculateTotalPower() float64 {
 
 	totalPower := b.BaseSupportPower * (cardCalcOptions.SupportPowerMultiplier + 1.0)
 	for i, card := range b.BattleCards {
-		power := float64(card.Power)
+		power := float64(card.Power())
 		power = modifiers[i].Calculate(power)
 		totalPower += power
 	}
