@@ -18,9 +18,7 @@ type BattleView struct {
 	GameState   *core.GameState   // ゲーム状態
 
 	// View切り替えのコールバック
-	OnBackClicked  func()                       // MapGridViewに戻る
-	OnPointClicked func(point core.BattlePoint) // 地点クリック時の勝利処理
-	OnCardClicked  func(card *core.BattleCard)  // カードクリック時（CardDeckに戻す）
+	OnBackClicked func() // MapGridViewに戻る
 }
 
 // NewBattleView BattleViewを作成する
@@ -92,8 +90,11 @@ func (bv *BattleView) HandleInput(input *Input) error {
 
 		// 敵画像のクリック判定（勝利処理）
 		if bv.CanDefeatEnemy() && cursorX >= 180 && cursorX < 340 && cursorY >= 60 && cursorY < 220 {
-			if bv.OnPointClicked != nil {
-				bv.OnPointClicked(bv.BattlePoint)
+			if bv.Conquer() {
+				// 制圧成功時、MapGridViewに戻る
+				if bv.OnBackClicked != nil {
+					bv.OnBackClicked()
+				}
 			}
 			return nil
 		}
@@ -118,9 +119,6 @@ func (bv *BattleView) handleBattleCardClick(cursorX, cursorY int) {
 		if targetCard != nil {
 			// カードをCardDeckに戻す
 			bv.RemoveCard(targetCard)
-			if bv.OnCardClicked != nil {
-				bv.OnCardClicked(targetCard)
-			}
 		}
 	}
 }
@@ -456,6 +454,7 @@ func (bv *BattleView) Conquer() bool {
 	bv.BattlePoint.SetControlled(true)
 	bv.GameState.MapGrid.UpdateAccesibles()
 
+	bv.GameState.MyNation.AppendLevel(0.5)
 	bv.GameState.NextTurn()
 
 	return true
