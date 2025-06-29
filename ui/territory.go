@@ -9,30 +9,30 @@ import (
 	"github.com/noppikinatta/ebitenginegamejam2025/lang"
 )
 
-// TerritoryView Territory表示Widget
-// 位置: MainView内で描画
+// TerritoryView Territory display Widget
+// Position: Drawn within MainView
 type TerritoryView struct {
-	Territory   *core.Territory       // 表示するTerritory
-	OldCards    []*core.StructureCard // 変更前のカード
-	TerrainType string                // 地形名
-	GameState   *core.GameState       // ゲーム状態
+	Territory   *core.Territory       // Territory to display
+	OldCards    []*core.StructureCard // Cards before changes
+	TerrainType string                // Terrain name
+	GameState   *core.GameState       // Game state
 	HoveredCard interface{}
 	MouseX      int
 	MouseY      int
 
-	// View切り替えのコールバック
-	OnBackClicked func()                         // MapGridViewに戻る
-	OnCardClicked func(card *core.StructureCard) // カードクリック時（CardDeckに戻す）
+	// View switching callbacks
+	OnBackClicked func()                         // Return to MapGridView
+	OnCardClicked func(card *core.StructureCard) // When card is clicked (return to CardDeck)
 }
 
-// NewTerritoryView TerritoryViewを作成する
+// NewTerritoryView creates a TerritoryView
 func NewTerritoryView(onBackClicked func()) *TerritoryView {
 	return &TerritoryView{
 		OnBackClicked: onBackClicked,
 	}
 }
 
-// SetTerritory 表示するTerritoryを設定
+// SetTerritory sets the Territory to display
 func (tv *TerritoryView) SetTerritory(territory *core.Territory, terrainType string) {
 	tv.Territory = territory
 	tv.OldCards = make([]*core.StructureCard, len(territory.Cards))
@@ -40,12 +40,12 @@ func (tv *TerritoryView) SetTerritory(territory *core.Territory, terrainType str
 	tv.TerrainType = terrainType
 }
 
-// SetGameState ゲーム状態を設定
+// SetGameState sets the game state
 func (tv *TerritoryView) SetGameState(gameState *core.GameState) {
 	tv.GameState = gameState
 }
 
-// AddStructureCard StructureCardを配置する
+// AddStructureCard places a StructureCard
 func (tv *TerritoryView) AddStructureCard(card *core.StructureCard) bool {
 	if tv.Territory == nil {
 		return false
@@ -53,7 +53,7 @@ func (tv *TerritoryView) AddStructureCard(card *core.StructureCard) bool {
 	return tv.Territory.AppendCard(card)
 }
 
-// RemoveStructureCard StructureCardを除去する
+// RemoveStructureCard removes a StructureCard
 func (tv *TerritoryView) RemoveStructureCard(index int) *core.StructureCard {
 	if tv.Territory == nil {
 		return nil
@@ -65,7 +65,7 @@ func (tv *TerritoryView) RemoveStructureCard(index int) *core.StructureCard {
 	return card
 }
 
-// GetCurrentYield 現在の産出量を取得
+// GetCurrentYield gets the current yield
 func (tv *TerritoryView) GetCurrentYield() core.ResourceQuantity {
 	if tv.Territory == nil {
 		return core.ResourceQuantity{}
@@ -73,7 +73,7 @@ func (tv *TerritoryView) GetCurrentYield() core.ResourceQuantity {
 	return tv.Territory.Yield()
 }
 
-// HandleInput 入力処理
+// HandleInput processes input
 func (tv *TerritoryView) HandleInput(input *Input) error {
 	cursorX, cursorY := input.Mouse.CursorPosition()
 	tv.MouseX = cursorX
@@ -87,9 +87,9 @@ func (tv *TerritoryView) HandleInput(input *Input) error {
 
 	if input.Mouse.IsJustReleased(ebiten.MouseButtonLeft) {
 
-		// 戻るボタンのクリック判定 (480,20,40,40)
+		// Back button click detection (480,20,40,40)
 		if cursorX >= 480 && cursorX < 520 && cursorY >= 20 && cursorY < 60 {
-			// 変更があった場合は建設決定処理を実行
+			// Execute construction confirmation if there are changes
 			if tv.IsChanged() {
 				tv.ConfirmConstruction()
 			}
@@ -100,9 +100,9 @@ func (tv *TerritoryView) HandleInput(input *Input) error {
 			}
 		}
 
-		// 建設決定ボタンのクリック判定 (200,220,120,40)
+		// Construction confirmation button click detection (200,220,120,40)
 		if cursorX >= 200 && cursorX < 320 && cursorY >= 220 && cursorY < 260 {
-			// 変更があった場合は建設決定処理を実行
+			// Execute construction confirmation if there are changes
 			if tv.IsChanged() {
 				tv.ConfirmConstruction()
 			}
@@ -112,7 +112,7 @@ func (tv *TerritoryView) HandleInput(input *Input) error {
 			}
 		}
 
-		// StructureCardのクリック判定（CardDeckに戻す）
+		// StructureCard click detection (return to CardDeck)
 		tv.handleStructureCardClick(cursorX, cursorY)
 	}
 	return nil
@@ -129,35 +129,35 @@ func (tv *TerritoryView) cardIndex(cursorX, cursorY int) int {
 	return cardIndex
 }
 
-// Draw 描画処理
+// Draw drawing process
 func (tv *TerritoryView) Draw(screen *ebiten.Image) {
-	// ヘッダ描画 (0,20,520,40)
+	// Draw header (0,20,520,40)
 	tv.drawHeader(screen)
 
-	// 戻るボタン描画 (480,20,40,40)
+	// Draw back button (480,20,40,40)
 	tv.drawBackButton(screen)
 
-	// 変更状態表示 (440,20,40,40)
+	// Draw change indicator (440,20,40,40)
 	tv.drawChangeIndicator(screen)
 
-	// 産出量表示 (0,60,60,100)
+	// Draw yield display (0,60,60,100)
 	tv.drawYield(screen)
 
-	// 効果説明 (60,60,460,100)
+	// Draw effect description (60,60,460,100)
 	tv.drawEffectDescription(screen)
 
-	// StructureCard置き場 (0,160,520,60)
+	// Draw StructureCard slots (0,160,520,60)
 	tv.drawStructureCards(screen)
 
-	// 建設決定ボタン (200,220,120,40)
+	// Draw construction confirmation button (200,220,120,40)
 	tv.drawConstructionButton(screen)
 
 	tv.drawHoveredCardTooltip(screen)
 }
 
-// drawHeader ヘッダを描画
+// drawHeader draws the header
 func (tv *TerritoryView) drawHeader(screen *ebiten.Image) {
-	// ヘッダ背景
+	// Header background
 	vertices := []ebiten.Vertex{
 		{DstX: 0, DstY: 20, SrcX: 0, SrcY: 0, ColorR: 0.2, ColorG: 0.4, ColorB: 0.2, ColorA: 1},
 		{DstX: 520, DstY: 20, SrcX: 0, SrcY: 0, ColorR: 0.2, ColorG: 0.4, ColorB: 0.2, ColorA: 1},
@@ -167,7 +167,7 @@ func (tv *TerritoryView) drawHeader(screen *ebiten.Image) {
 	indices := []uint16{0, 1, 2, 0, 2, 3}
 	screen.DrawTriangles(vertices, indices, drawing.WhitePixel, &ebiten.DrawTrianglesOptions{})
 
-	// タイトルテキスト
+	// Title text
 	terrainName := lang.Text(tv.TerrainType)
 
 	opt := &ebiten.DrawImageOptions{}
@@ -175,14 +175,14 @@ func (tv *TerritoryView) drawHeader(screen *ebiten.Image) {
 	drawing.DrawText(screen, terrainName, 16, opt)
 }
 
-// drawBackButton 戻るボタンを描画
+// drawBackButton draws the back button
 func (tv *TerritoryView) drawBackButton(screen *ebiten.Image) {
 	DrawButton(screen, 480, 20, 40, 40, "ui-close")
 }
 
-// drawYield 産出量表示を描画
+// drawYield draws the yield display
 func (tv *TerritoryView) drawYield(screen *ebiten.Image) {
-	// 産出量表示の背景 (0,60,60,100)
+	// Yield display background (0,60,60,100)
 	vertices := []ebiten.Vertex{
 		{DstX: 0, DstY: 60, SrcX: 0, SrcY: 0, ColorR: 0.3, ColorG: 0.3, ColorB: 0.2, ColorA: 1},
 		{DstX: 60, DstY: 60, SrcX: 0, SrcY: 0, ColorR: 0.3, ColorG: 0.3, ColorB: 0.2, ColorA: 1},
@@ -192,10 +192,10 @@ func (tv *TerritoryView) drawYield(screen *ebiten.Image) {
 	indices := []uint16{0, 1, 2, 0, 2, 3}
 	screen.DrawTriangles(vertices, indices, drawing.WhitePixel, &ebiten.DrawTrianglesOptions{})
 
-	// 現在の産出量を取得
+	// Get current yield
 	currentYield := tv.GetCurrentYield()
 
-	// 5種類の資源を60x20ずつで表示
+	// Display 5 resource types at 60x20 each
 	resourceTypes := []struct {
 		name  string
 		value int
@@ -210,13 +210,13 @@ func (tv *TerritoryView) drawYield(screen *ebiten.Image) {
 	for i, resource := range resourceTypes {
 		y := 60.0 + float64(i)*20
 
-		// Resource画像(20x20)
+		// Resource image (20x20)
 		icon := drawing.Image(resource.name)
 		opt := &ebiten.DrawImageOptions{}
 		opt.GeoM.Translate(5, y)
 		screen.DrawImage(icon, opt)
 
-		// 産出量数字(40x20)
+		// Yield number (40x20)
 		opt = &ebiten.DrawImageOptions{}
 		opt.GeoM.Translate(25, y)
 		yieldText := fmt.Sprintf("%d", resource.value)
@@ -224,9 +224,9 @@ func (tv *TerritoryView) drawYield(screen *ebiten.Image) {
 	}
 }
 
-// drawEffectDescription 効果説明を描画
+// drawEffectDescription draws the effect description
 func (tv *TerritoryView) drawEffectDescription(screen *ebiten.Image) {
-	// 効果説明の背景 (60,60,460,100)
+	// Effect description background (60,60,460,100)
 	vertices := []ebiten.Vertex{
 		{DstX: 60, DstY: 60, SrcX: 0, SrcY: 0, ColorR: 0.25, ColorG: 0.25, ColorB: 0.25, ColorA: 1},
 		{DstX: 520, DstY: 60, SrcX: 0, SrcY: 0, ColorR: 0.25, ColorG: 0.25, ColorB: 0.25, ColorA: 1},
@@ -236,13 +236,13 @@ func (tv *TerritoryView) drawEffectDescription(screen *ebiten.Image) {
 	indices := []uint16{0, 1, 2, 0, 2, 3}
 	screen.DrawTriangles(vertices, indices, drawing.WhitePixel, &ebiten.DrawTrianglesOptions{})
 
-	// タイトル
+	// Title
 	opt := &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(65, 65)
 	drawing.DrawText(screen, lang.Text("territory-structure-effects"), 12, opt)
 
 	if tv.Territory == nil || len(tv.Territory.Cards) == 0 {
-		// カードが配置されていない場合
+		// When no cards are placed
 		opt = &ebiten.DrawImageOptions{}
 		opt.GeoM.Translate(65, 85)
 		drawing.DrawText(screen, lang.Text("territory-no-structures"), 10, opt)
@@ -253,10 +253,10 @@ func (tv *TerritoryView) drawEffectDescription(screen *ebiten.Image) {
 		return
 	}
 
-	// 配置されたStructureCardの効果を表示
+	// Display effects of placed StructureCards
 	startY := 85.0
 	for i, card := range tv.Territory.Cards {
-		if i >= 4 { // 最大4枚まで表示
+		if i >= 4 { // Display up to 4 cards maximum
 			break
 		}
 

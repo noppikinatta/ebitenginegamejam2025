@@ -38,7 +38,7 @@ func (t *Title) Update() error {
 }
 
 func (t *Title) Draw(screen *ebiten.Image) {
-	// 背景色を設定
+	// Set background color
 	screen.Fill(color.RGBA{20, 20, 40, 255})
 
 	titleImg := drawing.Image("title")

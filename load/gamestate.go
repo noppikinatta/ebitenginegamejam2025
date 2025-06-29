@@ -6,7 +6,7 @@ import (
 	"github.com/noppikinatta/ebitenginegamejam2025/core"
 )
 
-// LoadGameState ゲームの初期状態を生成する（ダミーデータ）
+// LoadGameState generates the initial game state (dummy data)
 func LoadGameState() *core.GameState {
 	myNation := createMyNation()
 	treasury := createTreasury()
@@ -279,8 +279,8 @@ func createMapGrid(myNation *core.MyNation) *core.MapGrid {
 	}
 	points[size.Index(0, 0)] = &core.MyNationPoint{MyNation: myNation}
 
-	// 各国
-	points[size.Index(0, 2)] = &core.OtherNationPoint{ // 森の国
+	// Nations
+	points[size.Index(0, 2)] = &core.OtherNationPoint{ // Forest Nation
 		OtherNation: &core.OtherNation{
 			BaseNation: core.BaseNation{
 				NationID: "nation-forest",
@@ -307,7 +307,7 @@ func createMapGrid(myNation *core.MyNation) *core.MapGrid {
 			},
 		},
 	}
-	points[size.Index(2, 0)] = &core.OtherNationPoint{ // 山の国
+	points[size.Index(2, 0)] = &core.OtherNationPoint{ // Mountain Nation
 		OtherNation: &core.OtherNation{
 			BaseNation: core.BaseNation{
 				NationID: "nation-mountain",
@@ -334,7 +334,7 @@ func createMapGrid(myNation *core.MyNation) *core.MapGrid {
 			},
 		},
 	}
-	points[size.Index(2, 2)] = &core.OtherNationPoint{ // 砂漠の国
+	points[size.Index(2, 2)] = &core.OtherNationPoint{ // Desert Nation
 		OtherNation: &core.OtherNation{
 			BaseNation: core.BaseNation{
 				NationID: "nation-desert",
@@ -366,7 +366,7 @@ func createMapGrid(myNation *core.MyNation) *core.MapGrid {
 			},
 		},
 	}
-	points[size.Index(0, 4)] = &core.OtherNationPoint{ // 侍の国
+	points[size.Index(0, 4)] = &core.OtherNationPoint{ // Samurai Nation
 		OtherNation: &core.OtherNation{
 			BaseNation: core.BaseNation{
 				NationID: "nation-samurai",
@@ -393,7 +393,7 @@ func createMapGrid(myNation *core.MyNation) *core.MapGrid {
 			},
 		},
 	}
-	points[size.Index(4, 0)] = &core.OtherNationPoint{ // 魔法の国
+	points[size.Index(4, 0)] = &core.OtherNationPoint{ // Magical Nation
 		OtherNation: &core.OtherNation{
 			BaseNation: core.BaseNation{
 				NationID: "nation-magical",
@@ -415,7 +415,7 @@ func createMapGrid(myNation *core.MyNation) *core.MapGrid {
 			},
 		},
 	}
-	points[size.Index(2, 4)] = &core.OtherNationPoint{ // 機械の国
+	points[size.Index(2, 4)] = &core.OtherNationPoint{ // Mechanical Nation
 		OtherNation: &core.OtherNation{
 			BaseNation: core.BaseNation{
 				NationID: "nation-mechanical",
@@ -442,7 +442,7 @@ func createMapGrid(myNation *core.MyNation) *core.MapGrid {
 			},
 		},
 	}
-	points[size.Index(4, 2)] = &core.OtherNationPoint{ // お祭りの国
+	points[size.Index(4, 2)] = &core.OtherNationPoint{ // Carnival Nation
 		OtherNation: &core.OtherNation{
 			BaseNation: core.BaseNation{
 				NationID: "nation-carnival",
@@ -465,7 +465,7 @@ func createMapGrid(myNation *core.MyNation) *core.MapGrid {
 		},
 	}
 
-	// WildernessPointとBossPointを配置
+	// Place WildernessPoint and BossPoint
 	wildernessConfigs := []struct {
 		x, y        int
 		enemyID     core.EnemyID
@@ -506,7 +506,7 @@ func createMapGrid(myNation *core.MyNation) *core.MapGrid {
 
 		territory := &core.Territory{
 			BaseYield: config.baseYield,
-			CardSlot:  3, // 全て3に設定
+			CardSlot:  3, // Set all to 3
 		}
 
 		points[size.Index(config.x, config.y)] = &core.WildernessPoint{
@@ -517,7 +517,7 @@ func createMapGrid(myNation *core.MyNation) *core.MapGrid {
 		}
 	}
 
-	// ボスポイント (4,4)
+	// Boss Point (4,4)
 	boss := &core.Enemy{
 		EnemyID:        "enemy-final-boss",
 		EnemyType:      "enemy-type-demonic",
@@ -882,10 +882,10 @@ func createStructureCards() map[core.CardID]*core.StructureCard {
 	return cardMap
 }
 
-// 敵スキルの生成ヘルパー関数
+// Helper functions for generating enemy skills
 
 func createEvasionSkill() core.EnemySkill {
-	// 力タイプのカードパワー-2
+	// Strength type card power -2
 	return &core.EnemySkillCardTypeAdditiveDebuff{
 		BaseEnemySkill: core.BaseEnemySkill{
 			IDField: "enemy-skill-evasion",
@@ -896,7 +896,7 @@ func createEvasionSkill() core.EnemySkill {
 }
 
 func createSoftSkill() core.EnemySkill {
-	// 魔タイプ以外のカードパワー-50%
+	// Non-Magic type card power -50%
 	return &core.EnemySkillCardTypeExceptMultiplicativeDebuff{
 		BaseEnemySkill: core.BaseEnemySkill{
 			IDField: "enemy-skill-soft",
@@ -907,7 +907,7 @@ func createSoftSkill() core.EnemySkill {
 }
 
 func createLongbowSkill() core.EnemySkill {
-	// 最も後ろのカードパワー-100%
+	// Rearmost card power -100%
 	return &core.EnemySkillIndexBackwardMultiplicativeDebuff{
 		BaseEnemySkill: core.BaseEnemySkill{
 			IDField: "enemy-skill-longbow",
@@ -918,7 +918,7 @@ func createLongbowSkill() core.EnemySkill {
 }
 
 func createIncorporealitySkill() core.EnemySkill {
-	// 魔タイプ以外のカードパワー-100%
+	// Non-Magic type card power -100%
 	return &core.EnemySkillCardTypeExceptMultiplicativeDebuff{
 		BaseEnemySkill: core.BaseEnemySkill{
 			IDField: "enemy-skill-incorporeality",
@@ -929,7 +929,7 @@ func createIncorporealitySkill() core.EnemySkill {
 }
 
 func createPressureSkill() core.EnemySkill {
-	// 全てのカードパワー-1
+	// All card power -1
 	return &core.EnemySkillAdditiveDebuff{
 		BaseEnemySkill: core.BaseEnemySkill{
 			IDField: "enemy-skill-pressure",
@@ -939,7 +939,7 @@ func createPressureSkill() core.EnemySkill {
 }
 
 func createCharmSkill() core.EnemySkill {
-	// 先頭から3枚のカードパワー-100%
+	// First 3 cards power -100%
 	return &core.EnemySkillIndexForwardMultiplicativeDebuff{
 		BaseEnemySkill: core.BaseEnemySkill{
 			IDField: "enemy-skill-charm",
@@ -950,7 +950,7 @@ func createCharmSkill() core.EnemySkill {
 }
 
 func createMagicBarrierSkill() core.EnemySkill {
-	// 魔法タイプのカードパワー-100%
+	// Magic type card power -100%
 	return &core.EnemySkillCardTypeMultiplicativeDebuff{
 		BaseEnemySkill: core.BaseEnemySkill{
 			IDField: "enemy-skill-magic-barrier",
@@ -961,7 +961,7 @@ func createMagicBarrierSkill() core.EnemySkill {
 }
 
 func createLaserSkill() core.EnemySkill {
-	// 後方から3枚のカードパワー-100%
+	// Last 3 cards power -100%
 	return &core.EnemySkillIndexBackwardMultiplicativeDebuff{
 		BaseEnemySkill: core.BaseEnemySkill{
 			IDField: "enemy-skill-laser",
@@ -972,7 +972,7 @@ func createLaserSkill() core.EnemySkill {
 }
 
 func createSideAttackSkill() core.EnemySkill {
-	// 先頭から5枚のカードパワー-50%
+	// First 5 cards power -50%
 	return &core.EnemySkillIndexForwardMultiplicativeDebuff{
 		BaseEnemySkill: core.BaseEnemySkill{
 			IDField: "enemy-skill-side-attack",
@@ -983,7 +983,7 @@ func createSideAttackSkill() core.EnemySkill {
 }
 
 func createWaveSkill() core.EnemySkill {
-	// 全てのカードパワー-2
+	// All card power -2
 	return &core.EnemySkillAdditiveDebuff{
 		BaseEnemySkill: core.BaseEnemySkill{
 			IDField: "enemy-skill-wave",
