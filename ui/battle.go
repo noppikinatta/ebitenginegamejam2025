@@ -252,7 +252,7 @@ func (bv *BattleView) drawBattleCards(screen *ebiten.Image) {
 		cardY := 220.0
 
 		// カード描画
-		DrawCard(screen, cardX, cardY, fmt.Sprintf("%.1f", card.Power))
+		DrawBattleCard(screen, cardX, cardY, card)
 	}
 
 	// 空きスロットを表示

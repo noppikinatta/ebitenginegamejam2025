@@ -256,8 +256,8 @@ func (c *CardDeckView) drawCards(screen *ebiten.Image) {
 			break
 		}
 
-		x := float32(i * 40)
-		y := float32(300)
+		x := float64(i * 40)
+		y := float64(300)
 
 		c.drawCard(screen, card, x, y, i == c.SelectedIndex)
 	}
@@ -271,145 +271,11 @@ func (c *CardDeckView) drawCards(screen *ebiten.Image) {
 }
 
 // drawCard 個別のカードを描画
-func (c *CardDeckView) drawCard(screen *ebiten.Image, card interface{}, x, y float32, selected bool) {
-	// カード背景色を決定
-	var colorR, colorG, colorB float32
-	switch card.(type) {
+func (c *CardDeckView) drawCard(screen *ebiten.Image, card interface{}, x, y float64, selected bool) {
+	switch typedCard := card.(type) {
 	case *core.BattleCard:
-		colorR, colorG, colorB = 0.8, 0.4, 0.2 // オレンジ系
+		DrawBattleCard(screen, x, y, typedCard)
 	case *core.StructureCard:
-		colorR, colorG, colorB = 0.2, 0.8, 0.4 // 緑系
-	default:
-		colorR, colorG, colorB = 0.5, 0.5, 0.5 // グレー
+		DrawCard(screen, x, y, string(typedCard.CardID))
 	}
-
-	// 選択中の場合は明るくする
-	if selected {
-		colorR = min(colorR*1.5, 1.0)
-		colorG = min(colorG*1.5, 1.0)
-		colorB = min(colorB*1.5, 1.0)
-	}
-
-	// カード背景描画 (40x60)
-	vertices := []ebiten.Vertex{
-		{DstX: x, DstY: y, SrcX: 0, SrcY: 0, ColorR: colorR, ColorG: colorG, ColorB: colorB, ColorA: 1},
-		{DstX: x + 40, DstY: y, SrcX: 0, SrcY: 0, ColorR: colorR, ColorG: colorG, ColorB: colorB, ColorA: 1},
-		{DstX: x + 40, DstY: y + 60, SrcX: 0, SrcY: 0, ColorR: colorR, ColorG: colorG, ColorB: colorB, ColorA: 1},
-		{DstX: x, DstY: y + 60, SrcX: 0, SrcY: 0, ColorR: colorR, ColorG: colorG, ColorB: colorB, ColorA: 1},
-	}
-	indices := []uint16{0, 1, 2, 0, 2, 3}
-	screen.DrawTriangles(vertices, indices, drawing.WhitePixel, &ebiten.DrawTrianglesOptions{})
-
-	// 選択中の場合は枠を描画
-	if selected {
-		c.drawCardBorder(screen, x, y)
-	}
-
-	// カード情報描画
-	switch cardData := card.(type) {
-	case *core.BattleCard:
-		c.drawBattleCardInfo(screen, cardData, x, y)
-	case *core.StructureCard:
-		c.drawStructureCardInfo(screen, cardData, x, y)
-	}
-}
-
-// drawCardBorder カード枠を描画
-func (c *CardDeckView) drawCardBorder(screen *ebiten.Image, x, y float32) {
-	// 上枠
-	vertices := []ebiten.Vertex{
-		{DstX: x, DstY: y, SrcX: 0, SrcY: 0, ColorR: 1, ColorG: 1, ColorB: 0, ColorA: 1},
-		{DstX: x + 40, DstY: y, SrcX: 0, SrcY: 0, ColorR: 1, ColorG: 1, ColorB: 0, ColorA: 1},
-		{DstX: x + 40, DstY: y + 2, SrcX: 0, SrcY: 0, ColorR: 1, ColorG: 1, ColorB: 0, ColorA: 1},
-		{DstX: x, DstY: y + 2, SrcX: 0, SrcY: 0, ColorR: 1, ColorG: 1, ColorB: 0, ColorA: 1},
-	}
-	indices := []uint16{0, 1, 2, 0, 2, 3}
-	screen.DrawTriangles(vertices, indices, drawing.WhitePixel, &ebiten.DrawTrianglesOptions{})
-
-	// 下枠
-	vertices = []ebiten.Vertex{
-		{DstX: x, DstY: y + 58, SrcX: 0, SrcY: 0, ColorR: 1, ColorG: 1, ColorB: 0, ColorA: 1},
-		{DstX: x + 40, DstY: y + 58, SrcX: 0, SrcY: 0, ColorR: 1, ColorG: 1, ColorB: 0, ColorA: 1},
-		{DstX: x + 40, DstY: y + 60, SrcX: 0, SrcY: 0, ColorR: 1, ColorG: 1, ColorB: 0, ColorA: 1},
-		{DstX: x, DstY: y + 60, SrcX: 0, SrcY: 0, ColorR: 1, ColorG: 1, ColorB: 0, ColorA: 1},
-	}
-	screen.DrawTriangles(vertices, indices, drawing.WhitePixel, &ebiten.DrawTrianglesOptions{})
-
-	// 左枠
-	vertices = []ebiten.Vertex{
-		{DstX: x, DstY: y, SrcX: 0, SrcY: 0, ColorR: 1, ColorG: 1, ColorB: 0, ColorA: 1},
-		{DstX: x + 2, DstY: y, SrcX: 0, SrcY: 0, ColorR: 1, ColorG: 1, ColorB: 0, ColorA: 1},
-		{DstX: x + 2, DstY: y + 60, SrcX: 0, SrcY: 0, ColorR: 1, ColorG: 1, ColorB: 0, ColorA: 1},
-		{DstX: x, DstY: y + 60, SrcX: 0, SrcY: 0, ColorR: 1, ColorG: 1, ColorB: 0, ColorA: 1},
-	}
-	screen.DrawTriangles(vertices, indices, drawing.WhitePixel, &ebiten.DrawTrianglesOptions{})
-
-	// 右枠
-	vertices = []ebiten.Vertex{
-		{DstX: x + 38, DstY: y, SrcX: 0, SrcY: 0, ColorR: 1, ColorG: 1, ColorB: 0, ColorA: 1},
-		{DstX: x + 40, DstY: y, SrcX: 0, SrcY: 0, ColorR: 1, ColorG: 1, ColorB: 0, ColorA: 1},
-		{DstX: x + 40, DstY: y + 60, SrcX: 0, SrcY: 0, ColorR: 1, ColorG: 1, ColorB: 0, ColorA: 1},
-		{DstX: x + 38, DstY: y + 60, SrcX: 0, SrcY: 0, ColorR: 1, ColorG: 1, ColorB: 0, ColorA: 1},
-	}
-	screen.DrawTriangles(vertices, indices, drawing.WhitePixel, &ebiten.DrawTrianglesOptions{})
-}
-
-// drawBattleCardInfo BattleCardの詳細を描画
-func (c *CardDeckView) drawBattleCardInfo(screen *ebiten.Image, card *core.BattleCard, x, y float32) {
-	// カードID (上部、8pt)
-	opt := &ebiten.DrawImageOptions{}
-	opt.GeoM.Translate(float64(x+2), float64(y+8))
-	cardID := lang.Text("battlecard-" + string(card.CardID))
-	if len(cardID) > 6 {
-		cardID = cardID[:5] + "..."
-	}
-	drawing.DrawText(screen, cardID, 8, opt)
-
-	// Power (中央、12pt)
-	opt = &ebiten.DrawImageOptions{}
-	opt.GeoM.Translate(float64(x+12), float64(y+25))
-	drawing.DrawText(screen, fmt.Sprintf("%.1f", card.Power), 12, opt)
-
-	// Type (下部、8pt)
-	opt = &ebiten.DrawImageOptions{}
-	opt.GeoM.Translate(float64(x+2), float64(y+45))
-	cardType := lang.Text("cardtype-" + string(card.Type))
-	if len(cardType) > 6 {
-		cardType = cardType[:5] + "..."
-	}
-	drawing.DrawText(screen, cardType, 8, opt)
-}
-
-// drawStructureCardInfo StructureCardの詳細を描画
-func (c *CardDeckView) drawStructureCardInfo(screen *ebiten.Image, card *core.StructureCard, x, y float32) {
-	// カードID (上部、8pt)
-	opt := &ebiten.DrawImageOptions{}
-	opt.GeoM.Translate(float64(x+2), float64(y+8))
-	cardID := lang.Text("structurecard-" + string(card.CardID))
-	if len(cardID) > 6 {
-		cardID = cardID[:5] + "..."
-	}
-	drawing.DrawText(screen, cardID, 8, opt)
-
-	// 効果マーク (中央、14pt)
-	opt = &ebiten.DrawImageOptions{}
-	opt.GeoM.Translate(float64(x+15), float64(y+25))
-	if card.YieldModifier != nil {
-		drawing.DrawText(screen, "⚡", 14, opt) // 効果ありマーク
-	} else {
-		drawing.DrawText(screen, "○", 14, opt) // 効果なしマーク
-	}
-
-	// "STR" (下部、8pt)
-	opt = &ebiten.DrawImageOptions{}
-	opt.GeoM.Translate(float64(x+10), float64(y+45))
-	drawing.DrawText(screen, lang.Text("card-str-short"), 8, opt)
-}
-
-// min 最小値を返すヘルパー関数
-func min(a, b float32) float32 {
-	if a < b {
-		return a
-	}
-	return b
 }

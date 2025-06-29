@@ -269,12 +269,7 @@ func (tv *TerritoryView) drawStructureCards(screen *ebiten.Image) {
 		cardX := float64(i * 40)
 		cardY := 160.0
 
-		// カード描画
-		cardName := fmt.Sprintf("%s", card.CardID)
-		if len(cardName) > 6 {
-			cardName = cardName[:6] // 表示用に短縮
-		}
-		DrawCard(screen, cardX, cardY, cardName)
+		DrawCard(screen, cardX, cardY, string(card.CardID))
 	}
 
 	// 空きスロットを表示
