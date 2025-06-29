@@ -111,14 +111,14 @@ func TestCardDatabase_GetCards(t *testing.T) {
 	gen := core.CardGenerator{
 		BattleCards: map[core.CardID]*core.BattleCard{
 			"battle_1": {
-				CardID: "battle_1",
-				BasePower:  10.0,
-				Type:   "warrior",
+				CardID:    "battle_1",
+				BasePower: 10.0,
+				Type:      "warrior",
 			},
 			"battle_2": {
-				CardID: "battle_2",
-				BasePower:  15.0,
-				Type:   "mage",
+				CardID:    "battle_2",
+				BasePower: 15.0,
+				Type:      "mage",
 			},
 		},
 		StructureCards: map[core.CardID]*core.StructureCard{

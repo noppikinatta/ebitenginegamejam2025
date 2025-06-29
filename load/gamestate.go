@@ -533,8 +533,8 @@ func createCardGenerator() *core.CardGenerator {
 func createBattleCards() map[core.CardID]*core.BattleCard {
 	cards := []*core.BattleCard{
 		{
-			CardID: "battlecard-soldier",
-			BasePower:  3,
+			CardID:    "battlecard-soldier",
+			BasePower: 3,
 			Skill: &core.BattleCardSkill{
 				BattleCardSkillID: "battlecardskill-cooperation",
 				DescriptionKey:    "battlecardskill-cooperation-desc",
@@ -545,8 +545,8 @@ func createBattleCards() map[core.CardID]*core.BattleCard {
 			Type: "cardtype-str",
 		},
 		{
-			CardID: "battlecard-knight",
-			BasePower:  3,
+			CardID:    "battlecard-knight",
+			BasePower: 4,
 			Skill: &core.BattleCardSkill{
 				BattleCardSkillID: "battlecardskill-dragon-killer",
 				DescriptionKey:    "battlecardskill-dragon-killer-desc",
@@ -558,8 +558,8 @@ func createBattleCards() map[core.CardID]*core.BattleCard {
 			Type: "cardtype-str",
 		},
 		{
-			CardID: "battlecard-general",
-			BasePower:  3,
+			CardID:    "battlecard-general",
+			BasePower: 4,
 			Skill: &core.BattleCardSkill{
 				BattleCardSkillID: "battlecardskill-command",
 				DescriptionKey:    "battlecardskill-command-desc",
@@ -570,8 +570,8 @@ func createBattleCards() map[core.CardID]*core.BattleCard {
 			Type: "cardtype-str",
 		},
 		{
-			CardID: "battlecard-archer",
-			BasePower:  3,
+			CardID:    "battlecard-archer",
+			BasePower: 3,
 			Skill: &core.BattleCardSkill{
 				BattleCardSkillID: "battlecardskill-sniper",
 				DescriptionKey:    "battlecardskill-sniper-desc",
@@ -591,8 +591,8 @@ func createBattleCards() map[core.CardID]*core.BattleCard {
 			Type: "cardtype-agi",
 		},
 		{
-			CardID: "battlecard-fortune",
-			BasePower:  3,
+			CardID:    "battlecard-fortune",
+			BasePower: 1,
 			Skill: &core.BattleCardSkill{
 				BattleCardSkillID: "battlecardskill-forecast",
 				DescriptionKey:    "battlecardskill-forecast-desc",
@@ -603,8 +603,8 @@ func createBattleCards() map[core.CardID]*core.BattleCard {
 			Type: "cardtype-mag",
 		},
 		{
-			CardID: "battlecard-wizard",
-			BasePower:  3,
+			CardID:    "battlecard-wizard",
+			BasePower: 2,
 			Skill: &core.BattleCardSkill{
 				BattleCardSkillID: "battlecardskill-long-spell",
 				DescriptionKey:    "battlecardskill-long-spell-desc",
@@ -613,8 +613,8 @@ func createBattleCards() map[core.CardID]*core.BattleCard {
 			Type: "cardtype-mag",
 		},
 		{
-			CardID: "battlecard-mage",
-			BasePower:  3,
+			CardID:    "battlecard-mage",
+			BasePower: 2,
 			Skill: &core.BattleCardSkill{
 				BattleCardSkillID: "battlecardskill-magic-amplifier",
 				DescriptionKey:    "battlecardskill-magic-amplifier-desc",
@@ -626,8 +626,8 @@ func createBattleCards() map[core.CardID]*core.BattleCard {
 			Type: "cardtype-mag",
 		},
 		{
-			CardID: "battlecard-blacksmith",
-			BasePower:  3,
+			CardID:    "battlecard-blacksmith",
+			BasePower: 2,
 			Skill: &core.BattleCardSkill{
 				BattleCardSkillID: "battlecardskill-weapon-enhancement",
 				DescriptionKey:    "battlecardskill-weapon-enhancement-desc",
@@ -639,8 +639,8 @@ func createBattleCards() map[core.CardID]*core.BattleCard {
 			Type: "cardtype-str",
 		},
 		{
-			CardID: "battlecard-samurai",
-			BasePower:  3,
+			CardID:    "battlecard-samurai",
+			BasePower: 5,
 			Skill: &core.BattleCardSkill{
 				BattleCardSkillID: "battlecardskill-bushido",
 				DescriptionKey:    "battlecardskill-bushido-desc",
@@ -652,8 +652,8 @@ func createBattleCards() map[core.CardID]*core.BattleCard {
 			Type: "cardtype-str",
 		},
 		{
-			CardID: "battlecard-ninja",
-			BasePower:  3,
+			CardID:    "battlecard-ninja",
+			BasePower: 5,
 			Skill: &core.BattleCardSkill{
 				BattleCardSkillID: "battlecardskill-stealth",
 				DescriptionKey:    "battlecardskill-stealth-desc",
@@ -664,8 +664,8 @@ func createBattleCards() map[core.CardID]*core.BattleCard {
 			Type: "cardtype-agi",
 		},
 		{
-			CardID: "battlecard-monk",
-			BasePower:  3,
+			CardID:    "battlecard-monk",
+			BasePower: 4,
 			Skill: &core.BattleCardSkill{
 				BattleCardSkillID: "battlecardskill-ki",
 				DescriptionKey:    "battlecardskill-ki-desc",
@@ -677,8 +677,8 @@ func createBattleCards() map[core.CardID]*core.BattleCard {
 			Type: "cardtype-str",
 		},
 		{
-			CardID: "battlecard-bard",
-			BasePower:  3,
+			CardID:    "battlecard-bard",
+			BasePower: 1,
 			Skill: &core.BattleCardSkill{
 				BattleCardSkillID: "battlecardskill-support",
 				DescriptionKey:    "battlecardskill-support-desc",
@@ -691,8 +691,8 @@ func createBattleCards() map[core.CardID]*core.BattleCard {
 			Type: "cardtype-agi",
 		},
 		{
-			CardID: "battlecard-artillery",
-			BasePower:  3,
+			CardID:    "battlecard-artillery",
+			BasePower: 2,
 			Skill: &core.BattleCardSkill{
 				BattleCardSkillID: "battlecardskill-shooting-observation",
 				DescriptionKey:    "battlecardskill-shooting-observation-desc",
@@ -703,8 +703,8 @@ func createBattleCards() map[core.CardID]*core.BattleCard {
 			Type: "cardtype-str",
 		},
 		{
-			CardID: "battlecard-clown",
-			BasePower:  3,
+			CardID:    "battlecard-clown",
+			BasePower: 1,
 			Skill: &core.BattleCardSkill{
 				BattleCardSkillID: "battlecardskill-viper-master",
 				DescriptionKey:    "battlecardskill-viper-master-desc",
@@ -715,8 +715,8 @@ func createBattleCards() map[core.CardID]*core.BattleCard {
 			Type: "cardtype-agi",
 		},
 		{
-			CardID: "battlecard-wrestler",
-			BasePower:  3,
+			CardID:    "battlecard-wrestler",
+			BasePower: 7,
 			Skill: &core.BattleCardSkill{
 				BattleCardSkillID: "battlecardskill-two-platoon",
 				DescriptionKey:    "battlecardskill-two-platoon-desc",
@@ -728,10 +728,10 @@ func createBattleCards() map[core.CardID]*core.BattleCard {
 			Type: "cardtype-str",
 		},
 		{
-			CardID: "battlecard-golem",
-			BasePower:  5,
-			Skill:  nil,
-			Type:   "cardtype-str",
+			CardID:    "battlecard-golem",
+			BasePower: 9,
+			Skill:     nil,
+			Type:      "cardtype-str",
 		},
 	}
 

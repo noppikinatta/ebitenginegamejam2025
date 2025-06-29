@@ -162,6 +162,16 @@ func (m *MapGridView) Draw(screen *ebiten.Image) {
 				opt.GeoM.Translate(16, 0)
 				drawing.DrawText(screen, fmt.Sprintf("%.1f", power), 12, opt)
 			}
+
+			if p, ok := point.(*core.BossPoint); ok && interactive {
+				power := p.Boss.Power
+				opt := &ebiten.DrawImageOptions{}
+				opt.GeoM.Translate(imageX, imageY+8)
+				powerIcon := drawing.Image("ui-power")
+				screen.DrawImage(powerIcon, opt)
+				opt.GeoM.Translate(16, 0)
+				drawing.DrawText(screen, fmt.Sprintf("%.1f", power), 12, opt)
+			}
 		}
 	}
 }
