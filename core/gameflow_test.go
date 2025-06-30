@@ -7,7 +7,7 @@ import (
 )
 
 func TestGameState_AddYield(t *testing.T) {
-	// テスト用のTerritories
+	// Territories for testing
 	territory1 := &core.Territory{
 		TerritoryID: "territory_1",
 		Cards:       []*core.StructureCard{},
@@ -22,7 +22,7 @@ func TestGameState_AddYield(t *testing.T) {
 		BaseYield:   core.ResourceQuantity{Money: 8, Food: 4, Wood: 3},
 	}
 
-	// テスト用のWildernessPoint（制圧済み）
+	// WildernessPoint for testing (controlled)
 	wilderness1 := &core.WildernessPoint{
 		Controlled: true,
 		Territory:  territory1,
@@ -33,16 +33,16 @@ func TestGameState_AddYield(t *testing.T) {
 		Territory:  territory2,
 	}
 
-	// テスト用のWildernessPoint（未制圧）
+	// WildernessPoint for testing (uncontrolled)
 	uncontrolledWilderness := &core.WildernessPoint{
 		Controlled: false,
 		Territory: &core.Territory{
 			TerritoryID: "uncontrolled",
-			BaseYield:   core.ResourceQuantity{Money: 100}, // 制圧されていないので収入なし
+			BaseYield:   core.ResourceQuantity{Money: 100}, // No income as it is not controlled
 		},
 	}
 
-	// テスト用のMyNation
+	// MyNation for testing
 	myNation := &core.MyNation{
 		BaseNation: core.BaseNation{
 			NationID: "player",
@@ -51,7 +51,7 @@ func TestGameState_AddYield(t *testing.T) {
 		BasicYield: core.ResourceQuantity{Money: 5, Food: 2, Mana: 1},
 	}
 
-	// テスト用のMapGrid
+	// MapGrid for testing
 	points := []core.Point{
 		&core.MyNationPoint{MyNation: myNation},
 		wilderness1,
@@ -73,13 +73,13 @@ func TestGameState_AddYield(t *testing.T) {
 		CurrentTurn: 1,
 	}
 
-	// 初期状態の確認
+	// Check initial state
 	initialTreasury := gameState.Treasury.Resources
 
-	// Yield加算実行
+	// Execute AddYield
 	gameState.AddYield()
 
-	// 期待される結果：BasicYield + 制圧済みTerritoryのYield
+	// Expected result: BasicYield + Yield of controlled Territories
 	expectedYield := myNation.BasicYield.
 		Add(territory1.Yield()).
 		Add(territory2.Yield())
@@ -112,15 +112,15 @@ func TestGameState_NextTurn(t *testing.T) {
 	initialTurn := gameState.CurrentTurn
 	initialTreasury := gameState.Treasury.Resources
 
-	// ターン進行
+	// Advance turn
 	gameState.NextTurn()
 
-	// ターンが進んでいることを確認
+	// Check if the turn has advanced
 	if gameState.CurrentTurn != initialTurn+1 {
 		t.Errorf("NextTurn() CurrentTurn = %v, want %v", gameState.CurrentTurn, initialTurn+1)
 	}
 
-	// Yieldが加算されていることを確認
+	// Check if Yield has been added
 	expectedTreasury := initialTreasury.Add(myNation.BasicYield)
 	if gameState.Treasury.Resources != expectedTreasury {
 		t.Errorf("NextTurn() treasury = %v, want %v", gameState.Treasury.Resources, expectedTreasury)
@@ -128,7 +128,7 @@ func TestGameState_NextTurn(t *testing.T) {
 }
 
 func TestGameState_IsVictory(t *testing.T) {
-	// テスト用のBoss
+	// Boss for testing
 	boss := &core.Enemy{
 		EnemyID:        "final_boss",
 		EnemyType:      "dragon",
@@ -143,12 +143,12 @@ func TestGameState_IsVictory(t *testing.T) {
 		expected bool
 	}{
 		{
-			name:     "ボスが撃破されている場合は勝利",
+			name:     "Victory if the boss is defeated",
 			defeated: true,
 			expected: true,
 		},
 		{
-			name:     "ボスが撃破されていない場合は勝利ではない",
+			name:     "Not a victory if the boss is not defeated",
 			defeated: false,
 			expected: false,
 		},
@@ -258,7 +258,7 @@ func TestGameState_CanInteract(t *testing.T) {
 		expected bool
 	}{
 		{
-			name:     "MyNationPoint(0,0)は操作可能",
+			name:     "Own country's square is interactable",
 			x:        0,
 			y:        0,
 			expected: true,
@@ -325,13 +325,13 @@ func TestGameState_GetPoint(t *testing.T) {
 		expectedNil bool
 	}{
 		{
-			name:        "有効な座標(0,0)",
+			name:        "Valid coordinates",
 			x:           0,
 			y:           0,
 			expectedNil: false,
 		},
 		{
-			name:        "無効な座標(1,0)",
+			name:        "Invalid coordinates",
 			x:           1,
 			y:           0,
 			expectedNil: true,
