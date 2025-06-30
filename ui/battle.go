@@ -9,62 +9,62 @@ import (
 	"github.com/noppikinatta/ebitenginegamejam2025/lang"
 )
 
-// BattleView Battle表示Widget
-// 位置: MainView内で描画
+// BattleView is a Widget for displaying battles.
+// Position: Drawn within MainView.
 type BattleView struct {
-	BattlePoint core.BattlePoint  // 戦闘対象の地点
-	PointName   string            // 戦闘地点名
-	Battlefield *core.Battlefield // 戦場情報
-	GameState   *core.GameState   // ゲーム状態
+	BattlePoint core.BattlePoint  // The point to be battled.
+	PointName   string            // The name of the battle point.
+	Battlefield *core.Battlefield // Battlefield information.
+	GameState   *core.GameState   // Game state.
 	HoveredCard interface{}
 	MouseX      int
 	MouseY      int
 
-	// View切り替えのコールバック
-	OnBackClicked func() // MapGridViewに戻る
+	// Callback for view switching.
+	OnBackClicked func() // Return to MapGridView.
 }
 
-// NewBattleView BattleViewを作成する
+// NewBattleView creates a BattleView.
 func NewBattleView(onBackClicked func()) *BattleView {
 	return &BattleView{
 		OnBackClicked: onBackClicked,
 	}
 }
 
-// SetBattlePoint 表示する戦闘地点を設定
+// SetBattlePoint sets the battle point to be displayed.
 func (bv *BattleView) SetBattlePoint(point core.BattlePoint) {
 	bv.BattlePoint = point
 	bv.Battlefield = bv.createBattlefield(point)
 }
 
-// SetPointName 戦闘地点名を設定
+// SetPointName sets the name of the battle point.
 func (bv *BattleView) SetPointName(pointName string) {
 	bv.PointName = pointName
 }
 
-// SetGameState ゲーム状態を設定
+// SetGameState sets the game state.
 func (bv *BattleView) SetGameState(gameState *core.GameState) {
 	bv.GameState = gameState
 }
 
-// GetTotalPower 配置されたBattleCardの総Power値を計算
+// GetTotalPower calculates the total Power value of the placed BattleCards.
 func (bv *BattleView) GetTotalPower() float64 {
 	return bv.Battlefield.CalculateTotalPower()
 }
 
-// CanDefeatEnemy 敵を倒せるかどうかを判定
+// CanDefeatEnemy determines if the enemy can be defeated.
 func (bv *BattleView) CanDefeatEnemy() bool {
 	if bv.Battlefield != nil {
 		return bv.Battlefield.CanBeat()
 	}
-	// 後方互換性のため既存ロジックも残す
+	// Keep existing logic for backward compatibility.
 	if bv.BattlePoint == nil {
 		return false
 	}
 	return bv.GetTotalPower() >= bv.BattlePoint.GetEnemy().Power
 }
 
-// HandleInput 入力処理
+// HandleInput handles input.
 func (bv *BattleView) HandleInput(input *Input) error {
 	cursorX, cursorY := input.Mouse.CursorPosition()
 	cardIndex := bv.cardIndex(cursorX, cursorY)
@@ -82,9 +82,9 @@ func (bv *BattleView) HandleInput(input *Input) error {
 			bv.handleBattleCardClick(cursorX, cursorY)
 		}
 
-		// 戻るボタンのクリック判定 (480,20,40,40)
+		// Click detection for the back button (480,20,40,40).
 		if cursorX >= 480 && cursorX < 520 && cursorY >= 20 && cursorY < 60 {
-			// 置いたBattleCardをすべてCardDeckに戻す
+			// Return all placed BattleCards to the CardDeck.
 			bv.GameState.CardDeck.Add(&core.Cards{BattleCards: bv.Battlefield.BattleCards})
 			bv.Battlefield.BattleCards = make([]*core.BattleCard, 0)
 			if bv.OnBackClicked != nil {
@@ -93,7 +93,7 @@ func (bv *BattleView) HandleInput(input *Input) error {
 			}
 		}
 
-		// 制圧ボタンのクリック判定 (200,280,120,40)
+		// Click detection for the conquer button (200,280,120,40).
 		if cursorX >= 200 && cursorX < 320 && cursorY >= 280 && cursorY < 300 {
 			if bv.CanDefeatEnemy() {
 				bv.Conquer()
@@ -106,10 +106,10 @@ func (bv *BattleView) HandleInput(input *Input) error {
 			return nil
 		}
 
-		// 敵画像のクリック判定（勝利処理）
+		// Click detection for the enemy image (victory process).
 		if bv.CanDefeatEnemy() && cursorX >= 180 && cursorX < 340 && cursorY >= 60 && cursorY < 220 {
 			if bv.Conquer() {
-				// 制圧成功時、MapGridViewに戻る
+				// On successful conquest, return to MapGridView.
 				if bv.OnBackClicked != nil {
 					bv.OnBackClicked()
 				}
@@ -117,7 +117,7 @@ func (bv *BattleView) HandleInput(input *Input) error {
 			return nil
 		}
 
-		// BattleCardのクリック判定（CardDeckに戻す）
+		// Click detection for BattleCard (return to CardDeck).
 		bv.handleBattleCardClick(cursorX, cursorY)
 	}
 	return nil
@@ -134,9 +134,9 @@ func (bv *BattleView) cardIndex(cursorX, cursorY int) int {
 	return cardIndex
 }
 
-// handleBattleCardClick BattleCardのクリック処理
+// handleBattleCardClick handles BattleCard clicks.
 func (bv *BattleView) handleBattleCardClick(cursorX, cursorY int) {
-	// BattleCard置き場 (0,220,480,60) 内の各カード (40x60)
+	// Each card (40x60) in the BattleCard area (0,220,480,60).
 	if cursorY >= 220 && cursorY < 280 {
 		cardIndex := cursorX / 40
 
@@ -146,38 +146,38 @@ func (bv *BattleView) handleBattleCardClick(cursorX, cursorY int) {
 		}
 
 		if targetCard != nil {
-			// カードをCardDeckに戻す
+			// Return the card to the CardDeck.
 			bv.RemoveCard(targetCard)
 		}
 	}
 }
 
-// Draw 描画処理
+// Draw handles drawing.
 func (bv *BattleView) Draw(screen *ebiten.Image) {
-	// ヘッダ描画 (0,20,520,40)
+	// Draw header (0,20,520,40).
 	bv.drawHeader(screen)
 
-	// 戻るボタン描画 (480,20,40,40)
+	// Draw back button (480,20,40,40).
 	bv.drawBackButton(screen)
 
-	// 敵画像描画 (180,60,160,160)
+	// Draw enemy image (180,60,160,160).
 	bv.drawEnemy(screen)
 
-	// BattleCard置き場描画 (0,220,480,60)
+	// Draw BattleCard area (0,220,480,60).
 	bv.drawBattleCards(screen)
 
-	// Power表示 (480,220,40,60)
+	// Draw power display (480,220,40,60).
 	bv.drawPowerDisplay(screen)
 
-	// 制圧ボタン描画 (200,280,120,40)
+	// Draw conquer button (200,280,120,40).
 	bv.drawConquerButton(screen)
 
 	bv.drawHoveredCardTooltip(screen)
 }
 
-// drawHeader ヘッダを描画
+// drawHeader draws the header.
 func (bv *BattleView) drawHeader(screen *ebiten.Image) {
-	// ヘッダ背景
+	// Header background.
 	vertices := []ebiten.Vertex{
 		{DstX: 0, DstY: 20, SrcX: 0, SrcY: 0, ColorR: 0.4, ColorG: 0.2, ColorB: 0.2, ColorA: 1},
 		{DstX: 520, DstY: 20, SrcX: 0, SrcY: 0, ColorR: 0.4, ColorG: 0.2, ColorB: 0.2, ColorA: 1},
@@ -187,7 +187,7 @@ func (bv *BattleView) drawHeader(screen *ebiten.Image) {
 	indices := []uint16{0, 1, 2, 0, 2, 3}
 	screen.DrawTriangles(vertices, indices, drawing.WhitePixel, &ebiten.DrawTrianglesOptions{})
 
-	// タイトルテキスト
+	// Title text.
 	pointName := ""
 	if p, ok := bv.BattlePoint.(*core.WildernessPoint); ok {
 		pointName = p.TerrainType
@@ -202,14 +202,14 @@ func (bv *BattleView) drawHeader(screen *ebiten.Image) {
 	drawing.DrawText(screen, title, 16, opt)
 }
 
-// drawBackButton 戻るボタンを描画
+// drawBackButton draws the back button.
 func (bv *BattleView) drawBackButton(screen *ebiten.Image) {
 	DrawButton(screen, 480, 20, 40, 40, "ui-close")
 }
 
-// drawEnemy 敵画像を描画
+// drawEnemy draws the enemy image.
 func (bv *BattleView) drawEnemy(screen *ebiten.Image) {
-	// 敵画像の背景 (180,60,160,160)
+	// Enemy image background (180,60,160,160).
 	var color [4]float32
 	color = [4]float32{0.8, 0.8, 0.8, 1}
 
@@ -222,7 +222,7 @@ func (bv *BattleView) drawEnemy(screen *ebiten.Image) {
 	indices := []uint16{0, 1, 2, 0, 2, 3}
 	screen.DrawTriangles(vertices, indices, drawing.WhitePixel, &ebiten.DrawTrianglesOptions{})
 
-	// 敵の情報を描画
+	// Draw enemy information.
 	if bv.BattlePoint != nil {
 		enemy := bv.BattlePoint.GetEnemy()
 
@@ -232,13 +232,13 @@ func (bv *BattleView) drawEnemy(screen *ebiten.Image) {
 		opt.GeoM.Translate(180, 60)
 		screen.DrawImage(enemyImage, opt)
 
-		// 敵のタイプ
+		// Enemy type.
 		opt = &ebiten.DrawImageOptions{}
 		opt.GeoM.Translate(185, 70)
 		enemyType := lang.ExecuteTemplate("battle-enemy-type", map[string]any{"type": lang.Text(string(enemy.EnemyType))})
 		drawing.DrawText(screen, enemyType, 12, opt)
 
-		// 敵のPower
+		// Enemy's Power.
 		opt = &ebiten.DrawImageOptions{}
 		opt.GeoM.Translate(185, 90)
 		powerIcon := drawing.Image("ui-power")
@@ -247,7 +247,7 @@ func (bv *BattleView) drawEnemy(screen *ebiten.Image) {
 		powerText := fmt.Sprintf("%s: %.1f", lang.Text("battle-power"), enemy.Power)
 		drawing.DrawText(screen, powerText, 12, opt)
 
-		// 敵のセリフ
+		// Enemy's quote.
 		opt = &ebiten.DrawImageOptions{}
 		opt.GeoM.Translate(16, 160)
 		enemyTalk := lang.ExecuteTemplate("battle-enemy-talk", map[string]any{"name": lang.Text(string(enemy.EnemyID)), "text": lang.Text(string(enemy.Question))})
@@ -278,8 +278,9 @@ func (bv *BattleView) drawBattleCards(screen *ebiten.Image) {
 	indices := []uint16{0, 1, 2, 0, 2, 3}
 	screen.DrawTriangles(vertices, indices, drawing.WhitePixel, &ebiten.DrawTrianglesOptions{})
 
+	// Draw each card.
 	// 配置されたBattleCardを描画（40x60 × 12枚）
-	for i, card := range bv.Battlefield.BattleCards {
+		for i, card := range bv.Battlefield.BattleCards {
 		if i >= 12 { // 最大12枚まで
 			break
 		}
@@ -298,7 +299,7 @@ func (bv *BattleView) drawBattleCards(screen *ebiten.Image) {
 	}
 }
 
-// drawPowerDisplay Power表示を描画
+// drawPowerDisplay draws the power display.
 func (bv *BattleView) drawPowerDisplay(screen *ebiten.Image) {
 	// Power表示の背景 (480,220,40,60)
 	vertices := []ebiten.Vertex{
@@ -332,7 +333,7 @@ func (bv *BattleView) drawPowerDisplay(screen *ebiten.Image) {
 	}
 }
 
-// drawConquerButton 制圧ボタンを描画
+// drawConquerButton draws the conquer button.
 func (bv *BattleView) drawConquerButton(screen *ebiten.Image) {
 	canConquer := bv.CanDefeatEnemy()
 
@@ -354,7 +355,7 @@ func (bv *BattleView) drawConquerButton(screen *ebiten.Image) {
 
 	// ボタンテキスト
 	if canConquer {
-		opt := &ebiten.DrawImageOptions{}
+	opt := &ebiten.DrawImageOptions{}
 		opt.GeoM.Translate(210, 280)
 		drawing.DrawText(screen, lang.Text("ui-conquer"), 14, opt)
 	} else {
@@ -404,7 +405,7 @@ func (bv *BattleView) createBattlefield(point core.BattlePoint) *core.Battlefiel
 
 					// Territory.CardsのStructureCard.BattlefieldModifierを適用
 					for _, card := range territory.Cards {
-						if card.BattlefieldModifier != nil {
+				if card.BattlefieldModifier != nil {
 							card.BattlefieldModifier.Modify(battlefield)
 						}
 					}
@@ -427,8 +428,8 @@ func (bv *BattleView) CanPlaceCard() bool {
 // PlaceCard カードを配置する
 func (bv *BattleView) PlaceCard(card *core.BattleCard) bool {
 	if bv.Battlefield == nil {
-		return false
-	}
+	return false
+}
 
 	return bv.Battlefield.AddBattleCard(card)
 }
@@ -444,9 +445,9 @@ func (bv *BattleView) RemoveCard(card *core.BattleCard) bool {
 	for i, battleCard := range bv.Battlefield.BattleCards {
 		if battleCard == card {
 			cardIndex = i
-			break
+				break
+			}
 		}
-	}
 
 	if cardIndex == -1 {
 		return false
@@ -459,8 +460,8 @@ func (bv *BattleView) RemoveCard(card *core.BattleCard) bool {
 		if bv.GameState != nil {
 			cards := &core.Cards{BattleCards: []*core.BattleCard{removedCard}}
 			bv.GameState.CardDeck.Add(cards)
+			}
 		}
-	}
 
 	return success
 }
