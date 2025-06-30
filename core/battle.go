@@ -1,32 +1,32 @@
 package core
 
-// BattlefieldEffect は戦場の効果（将来的に使用予定）
+// BattlefieldEffect represents an effect on the battlefield.
 type BattlefieldEffect interface {
-	// 将来的に戦場効果のロジックを追加
+	// TODO: Add logic for battlefield effects.
 }
 
-// Battlefield は未制圧のWildernessで戦闘開始時に生成される戦場オブジェクトです。
+// Battlefield represents a battle instance, created when starting a battle in an unconquered Wilderness.
 type Battlefield struct {
-	Enemy            *Enemy              // 戦闘相手のEnemy。
-	Effects          []BattlefieldEffect // 戦場効果の配列
-	BaseSupportPower float64             // 周囲のTerritoryに置いたStructureCardの影響で増加したPower。
-	BattleCards      []*BattleCard       // 戦闘中に出すBattleCardの集合。
-	CardSlot         int                 // BattleCardを置くことができる枚数。
+	Enemy            *Enemy              // Enemy is the opponent in the battle.
+	Effects          []BattlefieldEffect // Effects is a slice of battlefield effects.
+	BaseSupportPower float64             // BaseSupportPower is the power gained from StructureCards in adjacent Territories.
+	BattleCards      []*BattleCard       // BattleCards is a collection of BattleCards played during the battle.
+	CardSlot         int                 // CardSlot is the maximum number of BattleCards that can be placed.
 }
 
-// CanBeat 戦闘を勝利できるかどうかを返す。
+// CanBeat returns true if the player's power is enough to defeat the enemy.
 func (b *Battlefield) CanBeat() bool {
 	totalPower := b.CalculateTotalPower()
 	return totalPower >= b.Enemy.Power
 }
 
-// Beat 戦闘を勝利する。
+// Beat handles the logic for winning a battle.
 func (b *Battlefield) Beat() {
-	// 現在は勝利処理のみ実装
-	// 将来的に戦闘結果の処理、報酬の付与等を追加するかもしれない
+	// Currently, only the victory process is implemented.
+	// In the future, this might include processing battle results, granting rewards, etc.
 }
 
-// NewBattlefield Battlefieldのインスタンスを作成する。
+// NewBattlefield creates a new Battlefield instance.
 func NewBattlefield(enemy *Enemy, supportPower float64) *Battlefield {
 	return &Battlefield{
 		Enemy:            enemy,
@@ -37,16 +37,16 @@ func NewBattlefield(enemy *Enemy, supportPower float64) *Battlefield {
 	}
 }
 
-// AddBattleCard 戦場にBattleCardを追加する。
+// AddBattleCard adds a BattleCard to the battlefield.
 func (b *Battlefield) AddBattleCard(card *BattleCard) bool {
 	if len(b.BattleCards) >= b.CardSlot {
-		return false // スロット上限に達している
+		return false // Slot limit reached
 	}
 	b.BattleCards = append(b.BattleCards, card)
 	return true
 }
 
-// RemoveBattleCard 戦場からBattleCardを除去する。
+// RemoveBattleCard removes a BattleCard from the battlefield.
 func (b *Battlefield) RemoveBattleCard(index int) (*BattleCard, bool) {
 	if index < 0 || index >= len(b.BattleCards) {
 		return nil, false

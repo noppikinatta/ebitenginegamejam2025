@@ -8,13 +8,13 @@ func (t Turn) YearMonth() (int, int) {
 	return int(t/12) + 1, int(t%12) + 1
 }
 
-// Next は次のターンを返します
+// Next returns the next turn.
 func (t Turn) Next() Turn {
 	return t + 1
 }
 
-// String はターンを「N年M月」形式の文字列で返します
+// String returns the turn as a string in the format "Year N, Month M".
 func (t Turn) String() string {
 	year, month := t.YearMonth()
-	return fmt.Sprintf("%d年%d月", year, month)
+	return fmt.Sprintf("Year %d, Month %d", year, month)
 }

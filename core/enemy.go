@@ -1,21 +1,21 @@
 package core
 
-// EnemyID は敵の一意識別子
+// EnemyID is a unique identifier for an enemy.
 type EnemyID string
 
-// EnemyType は敵のタイプ
+// EnemyType is the type of an enemy.
 type EnemyType string
 
-// EnemySkillID は敵スキルの一意識別子
+// EnemySkillID is a unique identifier for an enemy skill.
 type EnemySkillID string
 
-// Enemy は敵を表す構造体
+// Enemy represents an enemy.
 type Enemy struct {
 	EnemyID        EnemyID
 	EnemyType      EnemyType
 	Power          float64
 	Skills         []EnemySkill
-	BattleCardSlot int // このEnemyとの戦闘で、プレイヤーが出せるBattleCardの枚数。
+	BattleCardSlot int // The number of BattleCards a player can play in a battle against this Enemy.
 	Question       string
 }
 

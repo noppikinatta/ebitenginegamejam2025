@@ -1,8 +1,8 @@
 package core
 
-// ResourceQuantityは、5種類のResourceの量を表します。
+// ResourceQuantity represents the amount of 5 types of Resources.
 
-// ResourceQuantity は5種類のリソースの量を表す構造体です
+// ResourceQuantity is a struct that represents the amount of 5 types of resources.
 type ResourceQuantity struct {
 	Money int
 	Food  int
@@ -11,7 +11,7 @@ type ResourceQuantity struct {
 	Mana  int
 }
 
-// Add は単純な足し算を行います。結果がマイナスになってもよい。
+// Add performs a simple addition. The result can be negative.
 func (rq ResourceQuantity) Add(other ResourceQuantity) ResourceQuantity {
 	return ResourceQuantity{
 		Money: rq.Money + other.Money,
@@ -22,7 +22,7 @@ func (rq ResourceQuantity) Add(other ResourceQuantity) ResourceQuantity {
 	}
 }
 
-// Sub は単純な引き算を行います。結果がマイナスになってもよい。
+// Sub performs a simple subtraction. The result can be negative.
 func (rq ResourceQuantity) Sub(other ResourceQuantity) ResourceQuantity {
 	return ResourceQuantity{
 		Money: rq.Money - other.Money,
@@ -33,7 +33,7 @@ func (rq ResourceQuantity) Sub(other ResourceQuantity) ResourceQuantity {
 	}
 }
 
-// CanPurchase は引数priceを充足していればtrueを返します
+// CanPurchase returns true if the price can be afforded.
 func (rq ResourceQuantity) CanPurchase(price ResourceQuantity) bool {
 	return rq.Money >= price.Money &&
 		rq.Food >= price.Food &&

@@ -1,19 +1,19 @@
 package core
 
-// GameState ゲームの全体状態を管理する
+// GameState manages the overall state of the game.
 type GameState struct {
-	MyNation      *MyNation      // プレイヤー国家
-	CardDeck      *CardDeck      // プレイヤーの所持カード
-	MapGrid       *MapGrid       // マップグリッド
-	Treasury      *Treasury      // プレイヤーの国庫
-	CurrentTurn   int            // 現在のターン数
-	CardGenerator *CardGenerator // カード生成器
+	MyNation      *MyNation      // Player's nation
+	CardDeck      *CardDeck      // Player's card deck
+	MapGrid       *MapGrid       // Map grid
+	Treasury      *Treasury      // Player's treasury
+	CurrentTurn   int            // Current turn number
+	CardGenerator *CardGenerator // Card generator
 }
 
 func (g *GameState) GetYield() ResourceQuantity {
 	totalYield := g.MyNation.BasicYield
 
-	// 制圧済みWildernessPointのTerritoryのYieldを加算
+	// Add the Yield of the Territory of the controlled WildernessPoint
 	for _, point := range g.MapGrid.Points {
 		if wilderness, ok := point.(*WildernessPoint); ok && wilderness.Controlled {
 			totalYield = totalYield.Add(wilderness.Territory.Yield())
@@ -23,35 +23,35 @@ func (g *GameState) GetYield() ResourceQuantity {
 	return totalYield
 }
 
-// AddYield 制圧済みのTerritoryとMyNationのBasicYieldをTreasuryに加算する
+// AddYield adds the BasicYield of the controlled Territory and MyNation to the Treasury.
 func (g *GameState) AddYield() {
 	g.Treasury.Add(g.GetYield())
 }
 
-// NextTurn ターンを進行し、Yieldを加算する
+// NextTurn advances the turn and adds Yield.
 func (g *GameState) NextTurn() {
 	g.CurrentTurn++
 	g.AddYield()
 }
 
-// IsVictory 勝利条件を判定する（全てのBossPointが撃破されているか）
+// IsVictory determines the victory condition (whether all BossPoints have been defeated).
 func (g *GameState) IsVictory() bool {
 	for _, point := range g.MapGrid.Points {
 		if bossPoint, ok := point.(*BossPoint); ok {
 			if !bossPoint.Defeated {
-				return false // 撃破されていないBossが存在する
+				return false // A non-defeated Boss exists
 			}
 		}
 	}
-	return true // 全てのBossが撃破されている（またはBossが存在しない）
+	return true // All Bosses have been defeated (or no Bosses exist)
 }
 
-// CanInteract 指定座標のPointが操作可能かどうかを判定する
+// CanInteract determines whether the Point at the specified coordinates can be interacted with.
 func (g *GameState) CanInteract(x, y int) bool {
 	return g.MapGrid.CanInteract(x, y)
 }
 
-// GetPoint 指定座標のPointを取得する
+// GetPoint gets the Point at the specified coordinates.
 func (g *GameState) GetPoint(x, y int) Point {
 	return g.MapGrid.GetPoint(x, y)
 }

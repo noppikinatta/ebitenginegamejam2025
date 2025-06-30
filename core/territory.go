@@ -1,11 +1,11 @@
 package core
 
-// TerritoryID は領土の一意識別子
+// TerritoryID is a unique identifier for a territory.
 type TerritoryID string
 
-// Territory は、制圧したWildernessPointです。
-// Territory は、ターンごとにYield分のResourceを獲得します。
-// Territory には、StructureCardを配置できます。
+// Territory is a conquered WildernessPoint.
+// A Territory acquires Resources equal to its Yield each turn.
+// StructureCards can be placed in a Territory.
 type Territory struct {
 	TerritoryID TerritoryID
 	Cards       []*StructureCard
@@ -13,16 +13,16 @@ type Territory struct {
 	BaseYield   ResourceQuantity
 }
 
-// AppendCard StructureCardを領土に配置します
+// AppendCard places a StructureCard in the territory.
 func (t *Territory) AppendCard(card *StructureCard) bool {
 	if len(t.Cards) >= t.CardSlot {
-		return false // スロット上限に達している
+		return false // Slot limit reached
 	}
 	t.Cards = append(t.Cards, card)
 	return true
 }
 
-// RemoveCard 指定インデックスのStructureCardを領土から除去します
+// RemoveCard removes the StructureCard at the specified index from the territory.
 func (t *Territory) RemoveCard(index int) (*StructureCard, bool) {
 	if index < 0 || index >= len(t.Cards) {
 		return nil, false
@@ -33,11 +33,11 @@ func (t *Territory) RemoveCard(index int) (*StructureCard, bool) {
 	return card, true
 }
 
-// Yield BaseYieldを置かれているStructureCardのYieldModifierに通して結果を返す。
+// Yield returns the result of passing the BaseYield through the YieldModifiers of the placed StructureCards.
 func (t *Territory) Yield() ResourceQuantity {
 	yield := t.BaseYield
 
-	// 配置されているStructureCardのYieldModifierを順次適用
+	// Apply the YieldModifiers of the placed StructureCards in order.
 	for _, card := range t.Cards {
 		if card.YieldModifier != nil {
 			yield = card.YieldModifier.Modify(yield)

@@ -19,10 +19,10 @@ type InGame struct {
 }
 
 func NewInGame(input *ui.Input) *InGame {
-	// ダミーGameStateを作成（Game Jam向け簡易実装）
+	// Create a dummy GameState (simplified implementation for Game Jam)
 	gameState := load.LoadGameState()
 
-	// GameUIを初期化
+	// Initialize GameUI
 	gameUI := ui.NewGameUI(gameState)
 
 	return &InGame{
@@ -52,21 +52,21 @@ func (g *InGame) Update() error {
 		return nil
 	}
 
-	// マウス位置をGameUIに設定
+	// Set mouse position in GameUI
 	mouseX, mouseY := ebiten.CursorPosition()
 	g.gameUI.SetMousePosition(mouseX, mouseY)
 
-	// GameUIの入力処理
+	// Handle input for GameUI
 	if err := g.gameUI.HandleInput(g.input); err != nil {
 		return err
 	}
 
-	// GameUIの更新処理
+	// Update GameUI
 	if err := g.gameUI.Update(); err != nil {
 		return err
 	}
 
-	// デバッグ用：スペースキーでテストイベント追加
+	// For debugging: add a test event with the space key
 	if ebiten.IsKeyPressed(ebiten.KeySpace) {
 		g.gameUI.AddHistoryEvent("Test event triggered")
 	}
@@ -75,7 +75,7 @@ func (g *InGame) Update() error {
 }
 
 func (g *InGame) Draw(screen *ebiten.Image) {
-	// GameUIで全ての描画を行う
+	// All drawing is done in GameUI
 	g.gameUI.Draw(screen)
 }
 

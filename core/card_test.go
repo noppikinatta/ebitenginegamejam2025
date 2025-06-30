@@ -6,7 +6,7 @@ import (
 	"github.com/noppikinatta/ebitenginegamejam2025/core"
 )
 
-// MockIntner はテスト用の乱数生成器のモック
+// MockIntner is a mock random number generator for testing.
 type MockIntner struct {
 	values []int
 	count  int
@@ -14,7 +14,7 @@ type MockIntner struct {
 
 func (m *MockIntner) Intn(n int) int {
 	if m.count >= len(m.values) {
-		return 0 // デフォルト値
+		return 0 // Default value
 	}
 	result := m.values[m.count] % n
 	m.count++
@@ -30,7 +30,7 @@ func TestCardPack_Open(t *testing.T) {
 		containsAll  []core.CardID
 	}{
 		{
-			name: "基本的なカードパック開封",
+			name: "Basic card pack opening",
 			cardPack: core.CardPack{
 				CardPackID: "basic_pack",
 				Ratios: map[core.CardID]int{
@@ -45,7 +45,7 @@ func TestCardPack_Open(t *testing.T) {
 			containsAll:  []core.CardID{"card_a", "card_b", "card_c"},
 		},
 		{
-			name: "同じカードが複数出る場合",
+			name: "When multiple of the same card are drawn",
 			cardPack: core.CardPack{
 				CardPackID: "duplicate_pack",
 				Ratios: map[core.CardID]int{
@@ -56,10 +56,10 @@ func TestCardPack_Open(t *testing.T) {
 			},
 			intner:       &MockIntner{values: []int{25, 75, 25}},
 			expectLength: 3,
-			containsAll:  []core.CardID{"card_a", "card_b"}, // この中から出現することを確認
+			containsAll:  []core.CardID{"card_a", "card_b"}, // Check that the drawn cards are from this set
 		},
 		{
-			name: "単一カード",
+			name: "Single card",
 			cardPack: core.CardPack{
 				CardPackID: "single_pack",
 				Ratios: map[core.CardID]int{
@@ -81,15 +81,15 @@ func TestCardPack_Open(t *testing.T) {
 				return
 			}
 
-			// 単一カードの場合は厳密にチェック
-			if tt.name == "単一カード" {
+			// For a single card, check strictly
+			if tt.name == "Single card" {
 				if result[0] != tt.containsAll[0] {
 					t.Errorf("Open() = %v, want %v", result[0], tt.containsAll[0])
 				}
 				return
 			}
 
-			// 複数カードの場合は、期待されるカードのみが含まれることを確認
+			// For multiple cards, ensure only expected cards are included
 			for _, card := range result {
 				found := false
 				for _, expected := range tt.containsAll {
@@ -107,7 +107,7 @@ func TestCardPack_Open(t *testing.T) {
 }
 
 func TestCardDatabase_GetCards(t *testing.T) {
-	// テスト用のカードデータベース
+	// Test card database
 	gen := core.CardGenerator{
 		BattleCards: map[core.CardID]*core.BattleCard{
 			"battle_1": {
@@ -135,7 +135,7 @@ func TestCardDatabase_GetCards(t *testing.T) {
 		expectCards func(*core.Cards) bool
 	}{
 		{
-			name:     "存在するカードのみ",
+			name:     "Only existing cards",
 			cardIDs:  []core.CardID{"battle_1", "structure_1"},
 			expectOk: true,
 			expectCards: func(cards *core.Cards) bool {
@@ -146,7 +146,7 @@ func TestCardDatabase_GetCards(t *testing.T) {
 			},
 		},
 		{
-			name:     "存在しないカードが含まれる",
+			name:     "Contains non-existent cards",
 			cardIDs:  []core.CardID{"battle_1", "nonexistent"},
 			expectOk: false,
 			expectCards: func(cards *core.Cards) bool {
@@ -154,7 +154,7 @@ func TestCardDatabase_GetCards(t *testing.T) {
 			},
 		},
 		{
-			name:     "空のリスト",
+			name:     "Empty list",
 			cardIDs:  []core.CardID{},
 			expectOk: true,
 			expectCards: func(cards *core.Cards) bool {
@@ -163,7 +163,7 @@ func TestCardDatabase_GetCards(t *testing.T) {
 			},
 		},
 		{
-			name:     "同じタイプのカード複数",
+			name:     "Multiple cards of the same type",
 			cardIDs:  []core.CardID{"battle_1", "battle_2"},
 			expectOk: true,
 			expectCards: func(cards *core.Cards) bool {
@@ -187,7 +187,7 @@ func TestCardDatabase_GetCards(t *testing.T) {
 	}
 }
 
-// テスト用のモック実装
+// Mock implementation for testing
 type mockBattleCardPowerModifier struct {
 	canAffectFunc func(*core.BattleCard) bool
 	modifyFunc    func(*core.BattleCard) float64

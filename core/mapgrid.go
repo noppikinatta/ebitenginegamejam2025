@@ -1,8 +1,8 @@
 package core
 
-// MapGrid関連の実装（旧仕様コメントを削除し、実装に置き換え済み）
+// Implementation related to MapGrid (old specification comments have been deleted and replaced with implementation)
 
-// Point は、MapGrid上のPointを表すインターフェース
+// Point is an interface representing a point on the MapGrid.
 type Point interface {
 	Passable() bool
 	IsMyNation() bool
@@ -14,7 +14,7 @@ type BattlePoint interface {
 	SetControlled(bool)
 }
 
-// MyNationPoint プレイヤー国家のPoint
+// MyNationPoint is a point of the player's nation.
 type MyNationPoint struct {
 	MyNation *MyNation
 }
@@ -27,7 +27,7 @@ func (p *MyNationPoint) IsMyNation() bool {
 	return true
 }
 
-// OtherNationPoint NPC国家のPoint
+// OtherNationPoint is a point of an NPC nation.
 type OtherNationPoint struct {
 	OtherNation *OtherNation
 }
@@ -40,12 +40,12 @@ func (p *OtherNationPoint) IsMyNation() bool {
 	return false
 }
 
-// WildernessPoint 制圧可能な野生のPoint
+// WildernessPoint is a conquerable wild point.
 type WildernessPoint struct {
 	TerrainType string
-	Controlled  bool       // 制圧済みかどうか
-	Enemy       *Enemy     // 守っているEnemy
-	Territory   *Territory // 制圧後のTerritory
+	Controlled  bool       // Whether it is controlled
+	Enemy       *Enemy     // The Enemy guarding it
+	Territory   *Territory // The Territory after conquest
 }
 
 func (p *WildernessPoint) Passable() bool {
@@ -64,10 +64,10 @@ func (p *WildernessPoint) SetControlled(controlled bool) {
 	p.Controlled = controlled
 }
 
-// BossPoint ボスのPoint
+// BossPoint is a point of a boss.
 type BossPoint struct {
 	Boss     *Enemy
-	Defeated bool // ボスが撃破されているかどうか
+	Defeated bool // Whether the boss has been defeated
 }
 
 func (p *BossPoint) Passable() bool {
@@ -86,14 +86,14 @@ func (p *BossPoint) SetControlled(controlled bool) {
 	p.Defeated = controlled
 }
 
-// MapGrid ゲームのマップグリッド
+// MapGrid is the game's map grid.
 type MapGrid struct {
 	Size       MapGridSize
-	Points     []Point // Pointの一覧。インデックスは y*SizeX + x で計算
+	Points     []Point // List of Points. The index is calculated by y*SizeX + x.
 	accesibles []bool
 }
 
-// GetPoint 指定座標のPointを取得する
+// GetPoint gets the Point at the specified coordinates.
 func (m *MapGrid) GetPoint(x, y int) Point {
 	index, ok := m.IndexFromXY(x, y)
 	if !ok {
@@ -174,9 +174,9 @@ func (m *MapGrid) UpdateAccesibles() {
 	}
 }
 
-// CanInteract 指定座標のPointが操作可能かどうかを判定する
-// MyNationPointから制圧済みのWildernessPointやOtherNationPoint、BossPointへの
-// 連続した制圧済みのルートが存在する場合のみ操作可能
+// CanInteract determines whether the Point at the specified coordinates can be interacted with.
+// From MyNationPoint to a controlled WildernessPoint, OtherNationPoint, or BossPoint
+// It can be interacted with only if a continuous controlled route exists.
 func (m *MapGrid) CanInteract(x, y int) bool {
 	if m.accesibles == nil {
 		m.UpdateAccesibles()

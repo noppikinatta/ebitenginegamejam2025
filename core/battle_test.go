@@ -7,7 +7,7 @@ import (
 )
 
 func TestBattlefield_CanBeat(t *testing.T) {
-	// テスト用の敵
+	// Test enemy
 	weakEnemy := &core.Enemy{
 		EnemyID:        "weak_orc",
 		EnemyType:      "orc",
@@ -24,7 +24,7 @@ func TestBattlefield_CanBeat(t *testing.T) {
 		Skills:         []core.EnemySkill{},
 	}
 
-	// テスト用のバトルカード
+	// Test battle card
 	weakCard := &core.BattleCard{
 		CardID:    "weak_warrior",
 		BasePower: 5.0,
@@ -43,7 +43,7 @@ func TestBattlefield_CanBeat(t *testing.T) {
 		expected    bool
 	}{
 		{
-			name: "戦闘力が足りない場合",
+			name: "When power is insufficient",
 			battlefield: &core.Battlefield{
 				Enemy:            weakEnemy,
 				BattleCards:      []*core.BattleCard{weakCard},
@@ -52,7 +52,7 @@ func TestBattlefield_CanBeat(t *testing.T) {
 			expected: false,
 		},
 		{
-			name: "戦闘力がちょうど等しい場合",
+			name: "When power is exactly equal",
 			battlefield: &core.Battlefield{
 				Enemy:            weakEnemy,
 				BattleCards:      []*core.BattleCard{weakCard, weakCard}, // 5 + 5 = 10
@@ -61,7 +61,7 @@ func TestBattlefield_CanBeat(t *testing.T) {
 			expected: true,
 		},
 		{
-			name: "戦闘力が十分な場合",
+			name: "When power is sufficient",
 			battlefield: &core.Battlefield{
 				Enemy:            weakEnemy,
 				BattleCards:      []*core.BattleCard{strongCard},
@@ -70,7 +70,7 @@ func TestBattlefield_CanBeat(t *testing.T) {
 			expected: true,
 		},
 		{
-			name: "サポートパワーで勝利",
+			name: "Win with support power",
 			battlefield: &core.Battlefield{
 				Enemy:            weakEnemy,
 				BattleCards:      []*core.BattleCard{weakCard}, // 5 + 6 = 11 > 10
@@ -79,7 +79,7 @@ func TestBattlefield_CanBeat(t *testing.T) {
 			expected: true,
 		},
 		{
-			name: "強敵に対して戦闘力不足",
+			name: "Insufficient power against strong enemy",
 			battlefield: &core.Battlefield{
 				Enemy:            strongEnemy,
 				BattleCards:      []*core.BattleCard{strongCard}, // 30 < 50
@@ -88,7 +88,7 @@ func TestBattlefield_CanBeat(t *testing.T) {
 			expected: false,
 		},
 		{
-			name: "複数カードとサポートパワーで強敵に勝利",
+			name: "Defeat strong enemy with multiple cards and support power",
 			battlefield: &core.Battlefield{
 				Enemy:            strongEnemy,
 				BattleCards:      []*core.BattleCard{strongCard, strongCard}, // 30 + 30 + 5 = 65 > 50
@@ -129,16 +129,16 @@ func TestBattlefield_Beat(t *testing.T) {
 		BaseSupportPower: 0.0,
 	}
 
-	// 勝利可能かチェック
+	// Check if it's possible to win
 	if !battlefield.CanBeat() {
 		t.Fatal("Expected to be able to beat enemy")
 	}
 
-	// Beat()メソッドを呼び出す
+	// Call Beat() method
 	battlefield.Beat()
 
-	// Beat()は成功時に何も返さないので、エラーが発生しないことを確認
-	// 将来的に戦闘結果やログを返すようになるかもしれない
+	// Beat() returns nothing on success, so check that no error occurs
+	// It may return battle results or logs in the future
 }
 
 func TestBattlefield_PowerCalculation(t *testing.T) {
@@ -175,25 +175,25 @@ func TestBattlefield_PowerCalculation(t *testing.T) {
 		canBeat      bool
 	}{
 		{
-			name:         "単体カードで不足",
+			name:         "Insufficient with a single card",
 			cards:        []*core.BattleCard{card1}, // 10 < 25
 			supportPower: 0.0,
 			canBeat:      false,
 		},
 		{
-			name:         "2枚で不足",
+			name:         "Insufficient with two cards",
 			cards:        []*core.BattleCard{card1, card2}, // 10 + 8 = 18 < 25
 			supportPower: 0.0,
 			canBeat:      false,
 		},
 		{
-			name:         "3枚で勝利",
+			name:         "Win with three cards",
 			cards:        []*core.BattleCard{card1, card2, card3}, // 10 + 8 + 7.5 = 25.5 >= 25
 			supportPower: 0.0,
 			canBeat:      true,
 		},
 		{
-			name:         "サポートパワーで勝利",
+			name:         "Win with support power",
 			cards:        []*core.BattleCard{card1, card2}, // 10 + 8 + 10 = 28 >= 25
 			supportPower: 10.0,
 			canBeat:      true,

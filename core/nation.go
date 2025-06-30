@@ -2,8 +2,8 @@ package core
 
 import "fmt"
 
-// Nation は国家を表すインターフェース。
-// MarketViewで表示するために必要なメソッドを持つ。
+// Nation is an interface representing a nation.
+// It has the necessary methods for display in MarketView.
 type Nation interface {
 	Name() string
 	ID() NationID
@@ -13,74 +13,74 @@ type Nation interface {
 	Purchase(index int, treasury *Treasury) (*CardPack, bool)
 }
 
-// 旧仕様コメントを削除し、実装に置き換え済み
+// Old specification comments have been deleted and replaced with implementation.
 
-// NationID は国家の一意識別子
+// NationID is a unique identifier for a nation.
 type NationID string
 
-// BaseNation 国家を表す。
+// BaseNation represents a nation.
 type BaseNation struct {
 	NationID NationID
-	Market   *Market // カードパックを購入するためのMarket。
+	Market   *Market // A Market for purchasing card packs.
 }
 
-// ID は NationID を返す。
+// ID returns the NationID.
 func (n *BaseNation) ID() NationID {
 	return n.NationID
 }
 
-// Name は国家名を返す。
+// Name returns the nation's name.
 func (n *BaseNation) Name() string {
 	return fmt.Sprintf("Nation %s", n.NationID)
 }
 
-// GetMarket は Market を返す。
+// GetMarket returns the Market.
 func (n *BaseNation) GetMarket() *Market {
 	return n.Market
 }
 
-// VisibleMarketItems Marketで可視化されているカードパックの一覧を返す。
+// VisibleMarketItems returns a list of card packs visible in the Market.
 func (n *BaseNation) VisibleMarketItems() []*MarketItem {
 	return n.Market.VisibleMarketItems()
 }
 
-// CanPurchase 引数indexのカードパックを購入できるかどうかを返す。
+// CanPurchase returns whether the card pack at the given index can be purchased.
 func (n *BaseNation) CanPurchase(index int, treasury *Treasury) bool {
 	return n.Market.CanPurchase(index, treasury)
 }
 
-// Purchase 引数indexのカードパックを購入する。国庫が不足していればfalseを返す。
+// Purchase buys the card pack at the given index. Returns false if the treasury is insufficient.
 func (n *BaseNation) Purchase(index int, treasury *Treasury) (*CardPack, bool) {
 	return n.Market.Purchase(index, treasury)
 }
 
-// MyNation プレイヤー国家を表す。
+// MyNation represents the player's nation.
 type MyNation struct {
-	BaseNation                  // 埋め込み構造体
-	BasicYield ResourceQuantity // 基本Yield。
+	BaseNation                  // Embedded struct
+	BasicYield ResourceQuantity // Basic Yield.
 }
 
-// Name はプレイヤー国家の名前を返す。
+// Name returns the name of the player's nation.
 func (mn *MyNation) Name() string {
 	return "My Nation"
 }
 
-// AppendMarketItem 引数itemをMarket.Itemsに追加する。これは、Enemy撃破時の報酬として自国で買えるカードパックを増やす機能。
+// AppendMarketItem adds the given item to Market.Items. This is a feature to increase the card packs that can be bought in one's own country as a reward for defeating an Enemy.
 func (mn *MyNation) AppendMarketItem(item *MarketItem) {
 	mn.Market.Items = append(mn.Market.Items, item)
 }
 
-// AppendLevel 引数marketLevelをMarket.Levelに加算する。これは、Enemy撃破時の報酬として自国で買えるカードパックを増やす機能。
+// AppendLevel adds the given marketLevel to Market.Level. This is a feature to increase the card packs that can be bought in one's own country as a reward for defeating an Enemy.
 func (mn *MyNation) AppendLevel(marketLevel MarketLevel) {
 	mn.Market.Level += marketLevel
 }
 
-// OtherNation NPC(カードの取引相手)の国家を表す。
+// OtherNation represents an NPC (card trading partner) nation.
 type OtherNation struct {
-	BaseNation // 埋め込み構造体
+	BaseNation // Embedded struct
 }
 
-// Purchase Nation.Purchaseを呼び出し、Market.Levelに0.2を加算する。
+// Purchase calls Nation.Purchase and adds 0.5 to Market.Level.
 func (on *OtherNation) Purchase(index int, treasury *Treasury) (*CardPack, bool) {
 	cardPack, ok := on.BaseNation.Purchase(index, treasury)
 	if ok {

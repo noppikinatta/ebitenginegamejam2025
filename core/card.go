@@ -1,28 +1,29 @@
 package core
 
-// CardID はカードの一意識別子
+// CardID is a unique identifier for a card.
 type CardID string
 
-// CardPackID はカードパックの一意識別子
+// CardPackID is a unique identifier for a card pack.
 type CardPackID string
 
-// Intner は乱数生成のインターフェース。テスタビリティを考慮
+// Intner is an interface for random number generation, for testability.
 type Intner interface {
 	Intn(n int) int
 }
 
-// EnemySkill はenemy.goで定義されます
+// EnemySkill is defined in enemy.go
 
-// Battlefield はbattle.goで定義されます
+// Battlefield is defined in battle.go
 
-// CardPack カードパックは、Marketで購入できます。
+// CardPack can be purchased at the Market.
 type CardPack struct {
 	CardPackID CardPackID
-	Ratios     map[CardID]int // カードIDとそのカードが出現する確率。合計は幾つでもいい。
-	NumPerOpen int            // 一度のOpenで返すCardIDの数
+	Ratios     map[CardID]int // Card ID and the probability of that card appearing. The sum can be anything.
+	NumPerOpen int            // The number of CardIDs returned in a single Open.
 }
 
-// Open カードパックを開きます。Ratiosの値を足してIntnでそれ未満の乱数を取得し、割合に応じたカードを得る抽選を行います。抽選はNumPerOpen回行います。
+// Open opens a card pack. It sums the values in Ratios, gets a random number less than the sum using Intn,
+// and draws cards according to the ratio. The draw is performed NumPerOpen times.
 func (c *CardPack) Open(intner Intner) []CardID {
 	if len(c.Ratios) == 0 {
 		return []CardID{}
@@ -30,16 +31,16 @@ func (c *CardPack) Open(intner Intner) []CardID {
 
 	result := make([]CardID, 0, c.NumPerOpen)
 	for i := 0; i < c.NumPerOpen; i++ {
-		// 合計重みを計算
+		// Calculate total weight
 		totalWeight := 0
 		for _, weight := range c.Ratios {
 			totalWeight += weight
 		}
 
-		// 乱数を生成
+		// Generate random number
 		rand := intner.Intn(totalWeight)
 
-		// 累積確率からカードを選択
+		// Select a card from the cumulative probability
 		current := 0
 		for cardID, weight := range c.Ratios {
 			current += weight
@@ -53,25 +54,25 @@ func (c *CardPack) Open(intner Intner) []CardID {
 	return result
 }
 
-// Cards Cardsは各種類のカードの集合。これは単純なデータコンテナとして使います。
+// Cards is a collection of cards of each type. This is used as a simple data container.
 type Cards struct {
 	BattleCards    []*BattleCard
 	StructureCards []*StructureCard
 }
 
-// BattleCardPower 本来intにしたいが、計算上float64の方が都合が良い。表示時には小数点以下第一位までにするかもしれない。
+// BattleCardPower should ideally be an int, but float64 is more convenient for calculations. It may be displayed to one decimal place.
 type BattleCardPower float64
 
-// BattleCardType これは単純な文字列
+// BattleCardType is a simple string.
 type BattleCardType string
 
-// BattleCard は、戦闘でBattlefieldに出すカードです。この構造体はimmutableです。
+// BattleCard is a card played on the Battlefield during combat. This struct is immutable.
 type BattleCard struct {
 	CardID     CardID
 	Experience int
-	BasePower  BattleCardPower  // はカードの戦闘力です。
-	Skill      *BattleCardSkill // はカードが持っているスキルです。
-	Type       BattleCardType   // は戦士、魔法使い、動物などのカードタイプです。スキルの効果対象の判定に使います。
+	BasePower  BattleCardPower  // BasePower is the combat power of the card.
+	Skill      *BattleCardSkill // Skill is the skill the card possesses.
+	Type       BattleCardType   // Type is the card type, such as warrior, mage, or animal. Used to determine the target of a skill's effect.
 }
 
 func (c *BattleCard) Level() int {
@@ -86,23 +87,23 @@ func (c *BattleCard) Power() BattleCardPower {
 	return c.BasePower * (1 + 0.1*BattleCardPower(c.Level()-1))
 }
 
-// StructureCard は、Territoryに配置するカードです。この構造体はimmutableです。
+// StructureCard is a card placed in a Territory. This struct is immutable.
 type StructureCard struct {
 	CardID              CardID
 	DescriptionKey      string
-	YieldModifier       YieldModifier       // はTerritoryのYieldを変更するスキルです。
-	BattlefieldModifier BattlefieldModifier // はBattlefieldの状態を変更するスキルです。
+	YieldModifier       YieldModifier       // YieldModifier is a skill that modifies the Yield of a Territory.
+	BattlefieldModifier BattlefieldModifier // BattlefieldModifier is a skill that modifies the state of the Battlefield.
 }
 
-// CardGenerator はカードを生成するための構造体です。
+// CardGenerator is a struct for generating cards.
 type CardGenerator struct {
 	BattleCards    map[CardID]*BattleCard
 	StructureCards map[CardID]*StructureCard
 }
 
-// Generate は引数のCardIDの配列に対応するカードを生成します。
-// 1枚でも対応するカードがなければfalseを返します。
-// 正しくデータを作っていれば、Generateは常にtrueを返します。
+// Generate generates cards corresponding to the array of CardIDs given as an argument.
+// Returns false if even one corresponding card does not exist.
+// If the data is created correctly, Generate will always return true.
 func (g *CardGenerator) Generate(cardIDs []CardID) (*Cards, bool) {
 	cards := &Cards{
 		BattleCards:    make([]*BattleCard, 0),
@@ -110,33 +111,33 @@ func (g *CardGenerator) Generate(cardIDs []CardID) (*Cards, bool) {
 	}
 
 	for _, cardID := range cardIDs {
-		// BattleCardとして存在するかチェック
+		// Check if it exists as a BattleCard
 		if battleCard, exists := g.BattleCards[cardID]; exists {
 			newBattleCard := *battleCard
 			cards.BattleCards = append(cards.BattleCards, &newBattleCard)
 			continue
 		}
 
-		// StructureCardとして存在するかチェック
+		// Check if it exists as a StructureCard
 		if structureCard, exists := g.StructureCards[cardID]; exists {
 			newStructureCard := *structureCard
 			cards.StructureCards = append(cards.StructureCards, &newStructureCard)
 			continue
 		}
 
-		// どのタイプにも存在しない場合はfalseを返す
+		// Return false if it does not exist in any type
 		return nil, false
 	}
 
 	return cards, true
 }
 
-// CardDeck はプレイヤーが持つカードデッキ
+// CardDeck is the player's card deck.
 type CardDeck struct {
-	Cards // 埋め込み構造体
+	Cards // Embedded struct
 }
 
-// Add は引数のCardsをCardDeckに追加します
+// Add adds the given Cards to the CardDeck.
 func (cd *CardDeck) Add(cards *Cards) {
 	if cards == nil {
 		return
@@ -159,10 +160,10 @@ func (cd *CardDeck) Add(cards *Cards) {
 	cd.StructureCards = append(cd.StructureCards, cards.StructureCards...)
 }
 
-// BattleCardSkillID はバトルカードスキルの識別子
+// BattleCardSkillID is the identifier for a battle card skill.
 type BattleCardSkillID string
 
-// BattleCardSkill はバトルカードのスキル
+// BattleCardSkill is a skill for a battle card.
 type BattleCardSkill struct {
 	BattleCardSkillID BattleCardSkillID
 	DescriptionKey    string
@@ -328,11 +329,12 @@ func (c *BattleCardSkillCalculatorTwoPlatoon) Calculate(options *BattleCardSkill
 	}
 }
 
-// YieldModifier はTerritoryの収益を変更するスキル
+// YieldModifier is a skill that modifies the Yield of a Territory.
 type YieldModifier interface {
-	Modify(quantity ResourceQuantity) ResourceQuantity // 引数quantityを変更する。
+	Modify(quantity ResourceQuantity) ResourceQuantity // Modifies the argument quantity.
 }
 
+// AddYieldModifier adds to the resource quantity.
 type AddYieldModifier struct {
 	ResourceQuantity ResourceQuantity
 }
@@ -341,6 +343,7 @@ func (m *AddYieldModifier) Modify(quantity ResourceQuantity) ResourceQuantity {
 	return quantity.Add(m.ResourceQuantity)
 }
 
+// MultiplyYieldModifier multiplies the resource quantity.
 type MultiplyYieldModifier struct {
 	FoodMultiply  float64
 	MoneyMultiply float64
@@ -359,11 +362,12 @@ func (m *MultiplyYieldModifier) Modify(quantity ResourceQuantity) ResourceQuanti
 	}
 }
 
-// BattlefieldModifier はBattlefieldの状態を変更するスキル
+// BattlefieldModifier is a skill that modifies the state of the Battlefield.
 type BattlefieldModifier interface {
-	Modify(battlefield *Battlefield) *Battlefield // 引数battlefieldを変更する。
+	Modify(battlefield *Battlefield) *Battlefield // Modifies the argument battlefield.
 }
 
+// CardSlotBattlefieldModifier modifies the number of card slots.
 type CardSlotBattlefieldModifier struct {
 	Value int
 }
@@ -373,6 +377,7 @@ func (m *CardSlotBattlefieldModifier) Modify(battlefield *Battlefield) *Battlefi
 	return battlefield
 }
 
+// SupportPowerBattlefieldModifier modifies the support power.
 type SupportPowerBattlefieldModifier struct {
 	Value float64
 }
