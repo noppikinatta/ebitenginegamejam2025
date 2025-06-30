@@ -42,9 +42,6 @@ func (r *Result) Init(nextScene ebiten.Game, sequence *bamenn.Sequence, transiti
 }
 
 func (r *Result) Update() error {
-	if r.input.Mouse.IsJustPressed(ebiten.MouseButtonLeft) {
-		r.sequence.SwitchWithTransition(r.nextScene, r.transition)
-	}
 
 	return nil
 }
@@ -56,10 +53,6 @@ func (r *Result) Draw(screen *ebiten.Image) {
 	opt := &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(20, 180)
 	drawing.DrawText(screen, lang.Text("story-2"), 12, opt)
-
-	opt = &ebiten.DrawImageOptions{}
-	opt.GeoM.Translate(220, 320)
-	drawing.DrawText(screen, "Click to Back", 14, opt)
 }
 
 func (r *Result) Layout(outsideWidth, outsideHeight int) (int, int) {

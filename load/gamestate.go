@@ -49,6 +49,7 @@ func createCardDeck(cardGenerator *core.CardGenerator) *core.CardDeck {
 	firstCards, _ := cardGenerator.Generate([]core.CardID{
 		"battlecard-soldier",
 		"battlecard-archer",
+		//"battlecard-debug",
 	})
 
 	deck := core.CardDeck{}

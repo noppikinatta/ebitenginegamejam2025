@@ -38,10 +38,6 @@ func (g *InGame) Init(nextScene ebiten.Game, sequence *bamenn.Sequence, transiti
 	g.transition = transition
 }
 
-func (g *InGame) OnStart() {
-	g.gameState = load.LoadGameState()
-}
-
 func (g *InGame) OnArrival() {
 	g.canInput = true
 }
