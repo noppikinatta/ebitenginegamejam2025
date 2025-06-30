@@ -9,7 +9,7 @@ import (
 	"github.com/noppikinatta/ebitenginegamejam2025/lang"
 )
 
-// TerritoryView Territory display Widget
+// TerritoryView is a widget for displaying a Territory.
 // Position: Drawn within MainView
 type TerritoryView struct {
 	Territory   *core.Territory       // Territory to display
@@ -22,7 +22,7 @@ type TerritoryView struct {
 
 	// View switching callbacks
 	OnBackClicked func()                         // Return to MapGridView
-	OnCardClicked func(card *core.StructureCard) // When card is clicked (return to CardDeck)
+	OnCardClicked func(card *core.StructureCard) // When a card is clicked (return to CardDeck)
 }
 
 // NewTerritoryView creates a TerritoryView
@@ -129,7 +129,7 @@ func (tv *TerritoryView) cardIndex(cursorX, cursorY int) int {
 	return cardIndex
 }
 
-// Draw drawing process
+// Draw handles the drawing process
 func (tv *TerritoryView) Draw(screen *ebiten.Image) {
 	// Draw header (0,20,520,40)
 	tv.drawHeader(screen)
@@ -195,7 +195,7 @@ func (tv *TerritoryView) drawYield(screen *ebiten.Image) {
 	// Get current yield
 	currentYield := tv.GetCurrentYield()
 
-	// Display 5 resource types at 60x20 each
+	// Display 5 resource types in 60x20
 	resourceTypes := []struct {
 		name  string
 		value int
@@ -276,9 +276,9 @@ func (tv *TerritoryView) drawEffectDescription(screen *ebiten.Image) {
 	}
 }
 
-// drawStructureCards StructureCard置き場を描画
+// drawStructureCards draws the StructureCard slots
 func (tv *TerritoryView) drawStructureCards(screen *ebiten.Image) {
-	// StructureCard置き場の背景 (0,160,520,60)
+	// Slot background
 	vertices := []ebiten.Vertex{
 		{DstX: 0, DstY: 160, SrcX: 0, SrcY: 0, ColorR: 0.2, ColorG: 0.3, ColorB: 0.2, ColorA: 1},
 		{DstX: 520, DstY: 160, SrcX: 0, SrcY: 0, ColorR: 0.2, ColorG: 0.3, ColorB: 0.2, ColorA: 1},
@@ -324,9 +324,9 @@ func (tv *TerritoryView) drawHoveredCardTooltip(screen *ebiten.Image) {
 	DrawCardDescriptionTooltip(screen, tv.HoveredCard, tv.MouseX, tv.MouseY)
 }
 
-// handleStructureCardClick StructureCardのクリック処理
+// handleStructureCardClick handles StructureCard clicks
 func (tv *TerritoryView) handleStructureCardClick(cursorX, cursorY int) {
-	// StructureCard置き場 (0,160,520,60) 内の各カード (40x60)
+	// Each card (40x60) in the StructureCard area (0,160,520,60)
 	if cursorY >= 160 && cursorY < 220 {
 		cardIndex := cursorX / 40
 
@@ -342,7 +342,7 @@ func (tv *TerritoryView) handleStructureCardClick(cursorX, cursorY int) {
 	}
 }
 
-// drawChangeIndicator 変更状態表示を描画
+// drawChangeIndicator draws the change indicator
 func (tv *TerritoryView) drawChangeIndicator(screen *ebiten.Image) {
 	if !tv.IsChanged() {
 		return // 変更がなければ何も表示しない
@@ -359,12 +359,12 @@ func (tv *TerritoryView) drawChangeIndicator(screen *ebiten.Image) {
 	screen.DrawTriangles(vertices, indices, drawing.WhitePixel, &ebiten.DrawTrianglesOptions{})
 
 	// "*"マークを表示
-	opt := &ebiten.DrawImageOptions{}
+		opt := &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(455, 35)
 	drawing.DrawText(screen, "*", 20, opt)
 }
 
-// drawConstructionButton 建設決定ボタンを描画
+// drawConstructionButton draws the construction confirmation button
 func (tv *TerritoryView) drawConstructionButton(screen *ebiten.Image) {
 	isChanged := tv.IsChanged()
 
@@ -393,13 +393,13 @@ func (tv *TerritoryView) drawConstructionButton(screen *ebiten.Image) {
 	drawing.DrawText(screen, buttonText, 12, opt)
 }
 
-// IsChanged 構成が変わっているかどうかを判定
+// IsChanged determines if there have been any changes
 func (tv *TerritoryView) IsChanged() bool {
 	if tv.Territory == nil {
 		return false
 	}
 
-	// 長さが異なれば変更有り
+	// The number of cards is different
 	if len(tv.Territory.Cards) != len(tv.OldCards) {
 		return true
 	}
@@ -428,7 +428,7 @@ func (tv *TerritoryView) ConfirmConstruction() {
 	}
 }
 
-// CanPlaceCard カードを配置できるかどうかを判定
+// CanPlaceCard determines if a card can be placed
 func (tv *TerritoryView) CanPlaceCard() bool {
 	if tv.Territory == nil {
 		return false
@@ -436,7 +436,7 @@ func (tv *TerritoryView) CanPlaceCard() bool {
 	return len(tv.Territory.Cards) < tv.Territory.CardSlot
 }
 
-// PlaceCard カードを配置する
+// PlaceCard places a card
 func (tv *TerritoryView) PlaceCard(card *core.StructureCard) bool {
 	if !tv.CanPlaceCard() {
 		return false
@@ -446,7 +446,7 @@ func (tv *TerritoryView) PlaceCard(card *core.StructureCard) bool {
 	return true
 }
 
-// RemoveCard カードを除去する
+// RemoveCard removes a card
 func (tv *TerritoryView) RemoveCard(card *core.StructureCard) bool {
 	// カードのインデックスを見つける
 	cardIndex := -1
