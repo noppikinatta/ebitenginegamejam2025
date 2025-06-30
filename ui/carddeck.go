@@ -9,33 +9,33 @@ import (
 	"github.com/noppikinatta/ebitenginegamejam2025/lang"
 )
 
-// CardDeckView カードデッキWidget
-// 位置: (0,300,640,60)
-// カードを40x60で最大16枚表示
+// CardDeckView is a Widget for the card deck.
+// Position: (0,300,640,60).
+// Displays up to 16 cards at 40x60.
 type CardDeckView struct {
-	CardDeck       *core.CardDeck    // 表示するカードデッキ
-	SelectedIndex  int               // 選択中のカードインデックス (-1は未選択)
-	OnCardSelected func(interface{}) // カード選択時のコールバック
+	CardDeck       *core.CardDeck    // The card deck to display.
+	SelectedIndex  int               // The index of the selected card (-1 for none).
+	OnCardSelected func(interface{}) // Callback when a card is selected.
 
-	// 新しいコールバック
-	OnBattleCardClicked    func(*core.BattleCard) bool    // BattleCardクリック時のコールバック
-	OnStructureCardClicked func(*core.StructureCard) bool // StructureCardクリック時のコールバック
+	// New callbacks.
+	OnBattleCardClicked    func(*core.BattleCard) bool    // Callback when a BattleCard is clicked.
+	OnStructureCardClicked func(*core.StructureCard) bool // Callback when a StructureCard is clicked.
 
-	// マウスカーソル位置（外部から設定）
+	// Mouse cursor position (set externally).
 	MouseX, MouseY int
 
 	HoveredCard interface{}
 }
 
-// NewCardDeckView CardDeckViewを作成する
+// NewCardDeckView creates a CardDeckView.
 func NewCardDeckView(cardDeck *core.CardDeck) *CardDeckView {
 	return &CardDeckView{
 		CardDeck:      cardDeck,
-		SelectedIndex: -1, // 初期は未選択
+		SelectedIndex: -1, // Nothing is selected initially.
 	}
 }
 
-// GetSelectedCard 選択中のカードを取得
+// GetSelectedCard gets the selected card.
 func (c *CardDeckView) GetSelectedCard() interface{} {
 	if c.CardDeck == nil || c.SelectedIndex < 0 {
 		return nil
@@ -49,7 +49,7 @@ func (c *CardDeckView) GetSelectedCard() interface{} {
 	return allCards[c.SelectedIndex]
 }
 
-// getAllCards 全てのカードを1つのスライスで取得
+// getAllCards gets all cards in a single slice.
 func (c *CardDeckView) getAllCards() []interface{} {
 	if c.CardDeck == nil {
 		return []interface{}{}
@@ -57,12 +57,12 @@ func (c *CardDeckView) getAllCards() []interface{} {
 
 	allCards := make([]interface{}, 0)
 
-	// BattleCardsを追加
+	// Add BattleCards.
 	for _, card := range c.CardDeck.BattleCards {
 		allCards = append(allCards, card)
 	}
 
-	// StructureCardsを追加
+	// Add StructureCards.
 	for _, card := range c.CardDeck.StructureCards {
 		allCards = append(allCards, card)
 	}
@@ -70,7 +70,7 @@ func (c *CardDeckView) getAllCards() []interface{} {
 	return allCards
 }
 
-// SelectCard カードを選択
+// SelectCard selects a card.
 func (c *CardDeckView) SelectCard(index int) {
 	if c.CardDeck == nil {
 		return
@@ -91,7 +91,7 @@ func (c *CardDeckView) SelectCard(index int) {
 	}
 }
 
-// ClearSelection 選択をクリア
+// ClearSelection clears the selection.
 func (c *CardDeckView) ClearSelection() {
 	c.SelectedIndex = -1
 	if c.OnCardSelected != nil {
@@ -99,7 +99,7 @@ func (c *CardDeckView) ClearSelection() {
 	}
 }
 
-// RemoveSelectedCard 選択中のカードをデッキから除去
+// RemoveSelectedCard removes the selected card from the deck.
 func (c *CardDeckView) RemoveSelectedCard() interface{} {
 	if c.CardDeck == nil || c.SelectedIndex < 0 {
 		return nil
@@ -110,10 +110,10 @@ func (c *CardDeckView) RemoveSelectedCard() interface{} {
 		return nil
 	}
 
-	// 選択中のカードを取得
+	// Get the selected card.
 	selectedCard := allCards[c.SelectedIndex]
 
-	// カードをデッキから除去
+	// Remove the card from the deck.
 	switch card := selectedCard.(type) {
 	case *core.BattleCard:
 		c.removeBattleCard(card)
@@ -121,13 +121,13 @@ func (c *CardDeckView) RemoveSelectedCard() interface{} {
 		c.removeStructureCard(card)
 	}
 
-	// 選択をクリア
+	// Clear the selection.
 	c.ClearSelection()
 
 	return selectedCard
 }
 
-// removeBattleCard BattleCardをデッキから削除
+// removeBattleCard removes a BattleCard from the deck.
 func (c *CardDeckView) removeBattleCard(card *core.BattleCard) {
 	for i, cardToRemove := range c.CardDeck.BattleCards {
 		if cardToRemove == card {
@@ -137,7 +137,7 @@ func (c *CardDeckView) removeBattleCard(card *core.BattleCard) {
 	}
 }
 
-// removeStructureCard StructureCardをデッキから削除
+// removeStructureCard removes a StructureCard from the deck.
 func (c *CardDeckView) removeStructureCard(card *core.StructureCard) {
 	for i, cardToRemove := range c.CardDeck.StructureCards {
 		if cardToRemove == card {
@@ -147,7 +147,7 @@ func (c *CardDeckView) removeStructureCard(card *core.StructureCard) {
 	}
 }
 
-// AddCard カードをデッキに追加
+// AddCard adds a card to the deck.
 func (c *CardDeckView) AddCard(card interface{}) {
 	if c.CardDeck == nil {
 		return
@@ -161,7 +161,7 @@ func (c *CardDeckView) AddCard(card interface{}) {
 	}
 }
 
-// HandleInput 入力処理
+// HandleInput handles input.
 func (c *CardDeckView) HandleInput(input *Input) error {
 	cursorX, cursorY := input.Mouse.CursorPosition()
 	c.MouseX = cursorX
@@ -176,7 +176,7 @@ func (c *CardDeckView) HandleInput(input *Input) error {
 	}
 
 	if input.Mouse.IsJustReleased(ebiten.MouseButtonLeft) {
-		// CardDeckView領域内かチェック (0,300,640,60)
+		// Check if within the CardDeckView area (0,300,640,60).
 		if cursorY >= 300 && cursorY < 360 && cursorX >= 0 && cursorX < 640 {
 			c.handleCardClick(cursorX, cursorY)
 		}
@@ -199,7 +199,7 @@ func (c *CardDeckView) CardIndex(cursorX, cursorY int) int {
 	return cardIndex
 }
 
-// handleCardClick カードクリック処理
+// handleCardClick handles card clicks.
 func (c *CardDeckView) handleCardClick(cursorX, cursorY int) {
 	if c.CardDeck == nil {
 		return
@@ -213,39 +213,39 @@ func (c *CardDeckView) handleCardClick(cursorX, cursorY int) {
 
 	card := allCards[cardIndex]
 
-	// カードタイプに応じてコールバックを呼び出し
+	// Call the callback according to the card type.
 	switch cardData := card.(type) {
 	case *core.BattleCard:
 		if c.OnBattleCardClicked != nil {
 			if c.OnBattleCardClicked(cardData) {
-				// trueが返された場合、カードをデッキから削除
+				// If true is returned, remove the card from the deck.
 				c.removeBattleCard(cardData)
 			}
 		}
 	case *core.StructureCard:
 		if c.OnStructureCardClicked != nil {
 			if c.OnStructureCardClicked(cardData) {
-				// trueが返された場合、カードをデッキから削除
+				// If true is returned, remove the card from the deck.
 				c.removeStructureCard(cardData)
 			}
 		}
 	}
 }
 
-// Draw 描画処理
+// Draw handles drawing.
 func (c *CardDeckView) Draw(screen *ebiten.Image) {
-	// 背景描画
+	// Draw background.
 	c.drawBackground(screen)
 
-	// カード描画
+	// Draw cards.
 	c.drawCards(screen)
 
 	c.drawHoveredCardTooltip(screen)
 }
 
-// drawBackground 背景を描画
+// drawBackground draws the background.
 func (c *CardDeckView) drawBackground(screen *ebiten.Image) {
-	// CardDeckView背景 (0,300,640,60)
+	// CardDeckView background (0,300,640,60).
 	vertices := []ebiten.Vertex{
 		{DstX: 0, DstY: 300, SrcX: 0, SrcY: 0, ColorR: 0.1, ColorG: 0.1, ColorB: 0.15, ColorA: 1},
 		{DstX: 640, DstY: 300, SrcX: 0, SrcY: 0, ColorR: 0.1, ColorG: 0.1, ColorB: 0.15, ColorA: 1},
@@ -256,7 +256,7 @@ func (c *CardDeckView) drawBackground(screen *ebiten.Image) {
 	screen.DrawTriangles(vertices, indices, drawing.WhitePixel, &ebiten.DrawTrianglesOptions{})
 }
 
-// drawCards カードを描画
+// drawCards draws the cards.
 func (c *CardDeckView) drawCards(screen *ebiten.Image) {
 	if c.CardDeck == nil {
 		// カードデッキがない場合のメッセージ
@@ -296,7 +296,7 @@ func (c *CardDeckView) drawCards(screen *ebiten.Image) {
 	}
 }
 
-// drawCard 個別のカードを描画
+// drawCard draws an individual card.
 func (c *CardDeckView) drawCard(screen *ebiten.Image, card interface{}, x, y float64, selected bool) {
 	switch typedCard := card.(type) {
 	case *core.BattleCard:

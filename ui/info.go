@@ -9,7 +9,7 @@ import (
 	"github.com/noppikinatta/ebitenginegamejam2025/lang"
 )
 
-// InfoViewMode InfoViewの表示モード
+// InfoViewMode is the display mode of InfoView.
 type InfoViewMode int
 
 const (
@@ -20,46 +20,46 @@ const (
 	InfoModeEnemySkill
 )
 
-// InfoView 情報表示Widget
-// 位置: (520,20,120,280)
-// 状況に応じて表示する情報の内容を変える
+// InfoView is a widget for displaying information.
+// Position: (520,20,120,280).
+// Changes the content of the information displayed according to the situation.
 type InfoView struct {
 	CurrentMode InfoViewMode
 
-	// 表示データ
-	SelectedCard  interface{}     // 選択中のカード (BattleCard or StructureCard)
-	SelectedPoint core.Point      // 選択中のPoint
-	SelectedEnemy *core.Enemy     // 選択中のEnemy
-	History       []string        // イベント履歴
-	GameState     *core.GameState // ゲーム状態
+	// Display data.
+	SelectedCard  interface{}     // Selected card (BattleCard or StructureCard).
+	SelectedPoint core.Point      // Selected Point.
+	SelectedEnemy *core.Enemy     // Selected Enemy.
+	History       []string        // Event history.
+	GameState     *core.GameState // Game state.
 
-	// マウスカーソル位置（外部から設定）
+	// Mouse cursor position (set externally).
 	MouseX, MouseY int
 }
 
-// NewInfoView InfoViewを作成する
+// NewInfoView creates an InfoView.
 func NewInfoView() *InfoView {
 	return &InfoView{
-		CurrentMode: InfoModeHistory, // デフォルトはHistoryView
+		CurrentMode: InfoModeHistory, // The default is HistoryView.
 		History:     make([]string, 0),
 	}
 }
 
-// SetGameState ゲーム状態を設定
+// SetGameState sets the game state.
 func (iv *InfoView) SetGameState(gameState *core.GameState) {
 	iv.GameState = gameState
 }
 
-// AddHistoryEvent 履歴にイベントを追加
+// AddHistoryEvent adds an event to the history.
 func (iv *InfoView) AddHistoryEvent(event string) {
 	iv.History = append(iv.History, event)
-	// 最大14行まで保持
+	// Holds up to 14 lines.
 	if len(iv.History) > 14 {
 		iv.History = iv.History[1:]
 	}
 }
 
-// SetSelectedCard 選択中のカードを設定
+// SetSelectedCard sets the selected card.
 func (iv *InfoView) SetSelectedCard(card interface{}) {
 	iv.SelectedCard = card
 	if card != nil {
@@ -69,7 +69,7 @@ func (iv *InfoView) SetSelectedCard(card interface{}) {
 	}
 }
 
-// SetSelectedPoint 選択中のPointを設定
+// SetSelectedPoint sets the selected Point.
 func (iv *InfoView) SetSelectedPoint(point core.Point) {
 	iv.SelectedPoint = point
 	if point != nil {
@@ -84,24 +84,24 @@ func (iv *InfoView) SetSelectedPoint(point core.Point) {
 	}
 }
 
-// SetEnemySkillMode EnemySkillViewモードに設定
+// SetEnemySkillMode sets the mode to EnemySkillView.
 func (iv *InfoView) SetEnemySkillMode(enemy *core.Enemy) {
 	iv.SelectedEnemy = enemy
 	iv.CurrentMode = InfoModeEnemySkill
 }
 
-// HandleInput 入力処理
+// HandleInput handles input.
 func (iv *InfoView) HandleInput(input *Input) error {
-	// InfoViewは基本的に入力を受け付けない（表示専用）
+	// InfoView basically does not accept input (display only).
 	return nil
 }
 
-// Draw 描画処理
+// Draw handles drawing.
 func (iv *InfoView) Draw(screen *ebiten.Image) {
-	// 背景描画
+	// Draw background.
 	iv.drawBackground(screen)
 
-	// 現在のモードに応じて内容を描画
+	// Draw the content according to the current mode.
 	switch iv.CurrentMode {
 	case InfoModeHistory:
 		iv.drawHistoryView(screen)
@@ -116,9 +116,9 @@ func (iv *InfoView) Draw(screen *ebiten.Image) {
 	}
 }
 
-// drawBackground 背景を描画
+// drawBackground draws the background.
 func (iv *InfoView) drawBackground(screen *ebiten.Image) {
-	// InfoView背景 (520,20,120,280)
+	// InfoView background (520,20,120,280).
 	vertices := []ebiten.Vertex{
 		{DstX: 520, DstY: 20, SrcX: 0, SrcY: 0, ColorR: 0.15, ColorG: 0.15, ColorB: 0.2, ColorA: 1},
 		{DstX: 640, DstY: 20, SrcX: 0, SrcY: 0, ColorR: 0.15, ColorG: 0.15, ColorB: 0.2, ColorA: 1},
@@ -129,16 +129,16 @@ func (iv *InfoView) drawBackground(screen *ebiten.Image) {
 	screen.DrawTriangles(vertices, indices, drawing.WhitePixel, &ebiten.DrawTrianglesOptions{})
 }
 
-// drawHistoryView HistoryViewを描画
+// drawHistoryView draws the HistoryView.
 func (iv *InfoView) drawHistoryView(screen *ebiten.Image) {
-	// タイトル
+	// Title.
 	opt := &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(525, 25)
 	drawing.DrawText(screen, lang.Text("ui-history"), 12, opt)
 
-	// イベント履歴表示（120x20 × 14行）
+	// Event history display (120x20 x 14 lines).
 	for i, event := range iv.History {
-		if i >= 14 { // 最大14行
+		if i >= 14 { // Maximum 14 lines.
 			break
 		}
 
@@ -146,7 +146,7 @@ func (iv *InfoView) drawHistoryView(screen *ebiten.Image) {
 		opt = &ebiten.DrawImageOptions{}
 		opt.GeoM.Translate(525, y)
 
-		// テキストが長い場合は省略
+		// Omit if the text is long.
 		displayText := event
 		if len(displayText) > 15 {
 			displayText = displayText[:12] + "..."
@@ -155,7 +155,7 @@ func (iv *InfoView) drawHistoryView(screen *ebiten.Image) {
 		drawing.DrawText(screen, displayText, 9, opt)
 	}
 
-	// 履歴がない場合の表示
+	// Display when there is no history.
 	if len(iv.History) == 0 {
 		opt = &ebiten.DrawImageOptions{}
 		opt.GeoM.Translate(525, 50)
@@ -163,7 +163,7 @@ func (iv *InfoView) drawHistoryView(screen *ebiten.Image) {
 	}
 }
 
-// drawCardInfoView CardInfoViewを描画
+// drawCardInfoView draws the CardInfoView.
 func (iv *InfoView) drawCardInfoView(screen *ebiten.Image) {
 	if iv.SelectedCard == nil {
 		iv.drawHistoryView(screen)
@@ -182,15 +182,15 @@ func (iv *InfoView) drawCardInfoView(screen *ebiten.Image) {
 	}
 }
 
-// drawBattleCardInfo BattleCardの詳細情報を描画
+// drawBattleCardInfo draws the detailed information of a BattleCard.
 func (iv *InfoView) drawBattleCardInfo(screen *ebiten.Image, card *core.BattleCard, y float64) {
-	// カード名 (20)
+	// Card name (20).
 	opt := &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(525, y)
 	drawing.DrawText(screen, fmt.Sprintf("Card: %s", card.CardID), 10, opt)
 	y += 20
 
-	// イラスト (60) - ダミー矩形
+	// Illustration (60) - dummy rectangle.
 	vertices := []ebiten.Vertex{
 		{DstX: 525, DstY: float32(y), SrcX: 0, SrcY: 0, ColorR: 0.6, ColorG: 0.4, ColorB: 0.2, ColorA: 1},
 		{DstX: 585, DstY: float32(y), SrcX: 0, SrcY: 0, ColorR: 0.6, ColorG: 0.4, ColorB: 0.2, ColorA: 1},
@@ -201,35 +201,35 @@ func (iv *InfoView) drawBattleCardInfo(screen *ebiten.Image, card *core.BattleCa
 	screen.DrawTriangles(vertices, indices, drawing.WhitePixel, &ebiten.DrawTrianglesOptions{})
 	y += 60
 
-	// カードの種類 (20)
+	// Card type (20).
 	opt = &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(525, y)
 	drawing.DrawText(screen, "Type: Battle", 9, opt)
 	y += 20
 
-	// カードタイプ (20)
+	// Card class (20).
 	opt = &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(525, y)
 	drawing.DrawText(screen, fmt.Sprintf("Class: %s", card.Type), 9, opt)
 	y += 20
 
-	// Power (20)
+	// Power (20).
 	opt = &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(525, y)
 	drawing.DrawText(screen, fmt.Sprintf("Power: %.1f", card.BasePower), 9, opt)
 	y += 20
 
-	// Skill名 (20)
+	// Skill name (20).
 	opt = &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(525, y)
 	if card.Skill != nil {
-		drawing.DrawText(screen, "Skill: Active", 9, opt) // ダミーテキスト
+		drawing.DrawText(screen, "Skill: Active", 9, opt) // Dummy text.
 	} else {
 		drawing.DrawText(screen, "Skill: None", 9, opt)
 	}
 	y += 20
 
-	// Skill説明 (40)
+	// Skill description (40).
 	opt = &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(525, y)
 	if card.Skill != nil {
@@ -242,15 +242,15 @@ func (iv *InfoView) drawBattleCardInfo(screen *ebiten.Image, card *core.BattleCa
 	}
 }
 
-// drawStructureCardInfo StructureCardの詳細情報を描画
+// drawStructureCardInfo draws the detailed information of a StructureCard.
 func (iv *InfoView) drawStructureCardInfo(screen *ebiten.Image, card *core.StructureCard, y float64) {
-	// カード名 (20)
+	// Card name (20).
 	opt := &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(525, y)
 	drawing.DrawText(screen, fmt.Sprintf("Card: %s", card.CardID), 10, opt)
 	y += 20
 
-	// イラスト (60) - ダミー矩形
+	// Illustration (60).
 	vertices := []ebiten.Vertex{
 		{DstX: 525, DstY: float32(y), SrcX: 0, SrcY: 0, ColorR: 0.2, ColorG: 0.6, ColorB: 0.4, ColorA: 1},
 		{DstX: 585, DstY: float32(y), SrcX: 0, SrcY: 0, ColorR: 0.2, ColorG: 0.6, ColorB: 0.4, ColorA: 1},
@@ -261,7 +261,7 @@ func (iv *InfoView) drawStructureCardInfo(screen *ebiten.Image, card *core.Struc
 	screen.DrawTriangles(vertices, indices, drawing.WhitePixel, &ebiten.DrawTrianglesOptions{})
 	y += 60
 
-	// カードの種類 (20)
+	// Card type.
 	opt = &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(525, y)
 	drawing.DrawText(screen, "Type: Structure", 9, opt)
@@ -269,12 +269,12 @@ func (iv *InfoView) drawStructureCardInfo(screen *ebiten.Image, card *core.Struc
 
 	// YieldModifier効果 (20×9)
 	if card.YieldModifier != nil {
-		opt = &ebiten.DrawImageOptions{}
-		opt.GeoM.Translate(525, y)
+	opt = &ebiten.DrawImageOptions{}
+	opt.GeoM.Translate(525, y)
 		drawing.DrawText(screen, "Yield Effect:", 9, opt)
 		y += 15
 
-		opt = &ebiten.DrawImageOptions{}
+	opt = &ebiten.DrawImageOptions{}
 		opt.GeoM.Translate(525, y)
 		drawing.DrawText(screen, "Boosts resource", 8, opt)
 		y += 12
@@ -289,7 +289,7 @@ func (iv *InfoView) drawStructureCardInfo(screen *ebiten.Image, card *core.Struc
 	}
 }
 
-// drawNationPointView NationPointViewを描画
+// drawNationPointView draws the NationPointView.
 func (iv *InfoView) drawNationPointView(screen *ebiten.Image) {
 	if iv.SelectedPoint == nil {
 		iv.drawHistoryView(screen)
@@ -298,7 +298,7 @@ func (iv *InfoView) drawNationPointView(screen *ebiten.Image) {
 
 	y := 25.0
 
-	// Point名 (20)
+	// Nation name.
 	opt := &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(525, y)
 
@@ -359,7 +359,7 @@ func (iv *InfoView) drawNationPointView(screen *ebiten.Image) {
 	}
 }
 
-// drawWildernessPointView WildernessPointViewを描画
+// drawWildernessPointView draws the WildernessPointView.
 func (iv *InfoView) drawWildernessPointView(screen *ebiten.Image) {
 	if iv.SelectedPoint == nil {
 		iv.drawHistoryView(screen)
@@ -493,7 +493,7 @@ func (iv *InfoView) drawWildernessPointView(screen *ebiten.Image) {
 	}
 }
 
-// drawEnemySkillView EnemySkillViewを描画
+// drawEnemySkillView draws the EnemySkillView.
 func (iv *InfoView) drawEnemySkillView(screen *ebiten.Image) {
 	if iv.SelectedEnemy == nil {
 		iv.drawHistoryView(screen)
@@ -502,7 +502,7 @@ func (iv *InfoView) drawEnemySkillView(screen *ebiten.Image) {
 
 	y := 25.0
 
-	// タイトル
+	// Enemy name.
 	opt := &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(525, y)
 	drawing.DrawText(screen, "Enemy Skills", 12, opt)
@@ -522,7 +522,7 @@ func (iv *InfoView) drawEnemySkillView(screen *ebiten.Image) {
 		}
 
 		// スキル名 (20)
-		opt = &ebiten.DrawImageOptions{}
+			opt = &ebiten.DrawImageOptions{}
 		opt.GeoM.Translate(525, y)
 		drawing.DrawText(screen, fmt.Sprintf("Skill %d", i+1), 10, opt) // ダミーテキスト
 		y += 20

@@ -5,7 +5,7 @@ import (
 	"github.com/noppikinatta/ebitenginegamejam2025/core"
 )
 
-// ViewType MainViewで表示するViewの種類
+// ViewType is the type of View to be displayed in MainView.
 type ViewType int
 
 const (
@@ -15,9 +15,9 @@ const (
 	ViewTypeTerritory
 )
 
-// MainView メインビューコンテナWidget
-// 位置: (0,20,520,280)
-// MapGridView, MarketView, BattleView, TerritoryViewを切り替える
+// MainView is the main view container Widget.
+// Position: (0,20,520,280).
+// Switches between MapGridView, MarketView, BattleView, and TerritoryView.
 type MainView struct {
 	CurrentView ViewType
 	MapGrid     *MapGridView
@@ -25,14 +25,14 @@ type MainView struct {
 	Battle      *BattleView
 	Territory   *TerritoryView
 
-	// ゲーム状態
+	// Game state
 	GameState *core.GameState
 }
 
-// NewMainView MainViewを作成する
+// NewMainView creates a MainView.
 func NewMainView(gameState *core.GameState) *MainView {
 	m := &MainView{
-		CurrentView: ViewTypeMapGrid, // 初期表示はMapGridView
+		CurrentView: ViewTypeMapGrid, // The initial display is MapGridView.
 		GameState:   gameState,
 	}
 
@@ -44,7 +44,7 @@ func NewMainView(gameState *core.GameState) *MainView {
 	m.Battle = NewBattleView(onBack)
 	m.Territory = NewTerritoryView(onBack)
 
-	// 各ViewにGameStateを設定
+	// Set GameState for each View.
 	m.Market.SetGameState(gameState)
 	m.Battle.SetGameState(gameState)
 	m.Territory.SetGameState(gameState)
@@ -72,14 +72,14 @@ func NewMainView(gameState *core.GameState) *MainView {
 	return m
 }
 
-// SwitchView 表示するViewを切り替える
+// SwitchView switches the View to be displayed.
 func (m *MainView) SwitchView(viewType ViewType) {
 	m.CurrentView = viewType
 }
 
-// HandleInput 入力処理
+// HandleInput handles input.
 func (m *MainView) HandleInput(input *Input) error {
-	// 現在のViewに入力を転送
+	// Forward input to the current View.
 	switch m.CurrentView {
 	case ViewTypeMapGrid:
 		if m.MapGrid != nil {
@@ -101,9 +101,9 @@ func (m *MainView) HandleInput(input *Input) error {
 	return nil
 }
 
-// Draw 描画処理
+// Draw handles drawing.
 func (m *MainView) Draw(screen *ebiten.Image) {
-	// 現在のViewを描画
+	// Draw the current View.
 	switch m.CurrentView {
 	case ViewTypeMapGrid:
 		if m.MapGrid != nil {
@@ -124,19 +124,19 @@ func (m *MainView) Draw(screen *ebiten.Image) {
 	}
 }
 
-// GetCurrentView 現在表示中のViewタイプを取得
+// GetCurrentView gets the currently displayed View type.
 func (m *MainView) GetCurrentView() ViewType {
 	return m.CurrentView
 }
 
-// SetSelectedNation MarketViewで表示する国家を設定
+// SetSelectedNation sets the nation to be displayed in MarketView.
 func (m *MainView) SetSelectedNation(nation core.Nation) {
 	if m.Market != nil {
 		m.Market.SetNation(nation)
 	}
 }
 
-// SetSelectedPoint BattleViewやTerritoryViewで表示するPointを設定
+// SetSelectedPoint sets the Point to be displayed in BattleView or TerritoryView.
 func (m *MainView) SetSelectedPoint(point core.Point) {
 	switch p := point.(type) {
 	case *core.WildernessPoint:
