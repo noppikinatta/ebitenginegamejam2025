@@ -452,7 +452,7 @@ func TestOtherNation_Purchase(t *testing.T) {
 		t.Errorf("Purchase() returned nil cardPack")
 	}
 
-	// 国庫が正しく減っていることを確認
+	// Confirm that treasury has been properly reduced
 	expectedTreasury := core.ResourceQuantity{Money: 50}
 	if treasury.Resources != expectedTreasury {
 		t.Errorf("Treasury after purchase = %v, want %v", treasury.Resources, expectedTreasury)

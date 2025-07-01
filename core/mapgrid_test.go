@@ -286,7 +286,7 @@ func TestBossPoint_Basic(t *testing.T) {
 }
 
 func TestMapGrid_GetPoint(t *testing.T) {
-	// テスト用のポイント
+	// Points for testing
 	myNation := &core.MyNation{
 		BaseNation: core.BaseNation{
 			NationID: "player",
@@ -297,7 +297,7 @@ func TestMapGrid_GetPoint(t *testing.T) {
 
 	myNationPoint := &core.MyNationPoint{MyNation: myNation}
 
-	// 2x2のマップグリッドを作成
+	// Create 2x2 map grid
 	points := []core.Point{
 		myNationPoint, nil,
 		nil, nil,
@@ -314,37 +314,37 @@ func TestMapGrid_GetPoint(t *testing.T) {
 		expectedNil bool
 	}{
 		{
-			name:        "有効な座標(0,0)",
+			name:        "Valid coordinate (0,0)",
 			x:           0,
 			y:           0,
 			expectedNil: false,
 		},
 		{
-			name:        "有効な座標(1,0) - nil",
+			name:        "Valid coordinate (1,0) - nil",
 			x:           1,
 			y:           0,
 			expectedNil: true,
 		},
 		{
-			name:        "無効な座標(-1,0)",
+			name:        "Invalid coordinate (-1,0)",
 			x:           -1,
 			y:           0,
 			expectedNil: true,
 		},
 		{
-			name:        "無効な座標(2,0)",
+			name:        "Invalid coordinate (2,0)",
 			x:           2,
 			y:           0,
 			expectedNil: true,
 		},
 		{
-			name:        "無効な座標(0,-1)",
+			name:        "Invalid coordinate (0,-1)",
 			x:           0,
 			y:           -1,
 			expectedNil: true,
 		},
 		{
-			name:        "無効な座標(0,2)",
+			name:        "Invalid coordinate (0,2)",
 			x:           0,
 			y:           2,
 			expectedNil: true,

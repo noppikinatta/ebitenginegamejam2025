@@ -267,14 +267,14 @@ func (iv *InfoView) drawStructureCardInfo(screen *ebiten.Image, card *core.Struc
 	drawing.DrawText(screen, "Type: Structure", 9, opt)
 	y += 20
 
-	// YieldModifier効果 (20×9)
+	// YieldModifier effect (20×9)
 	if card.YieldModifier != nil {
-	opt = &ebiten.DrawImageOptions{}
-	opt.GeoM.Translate(525, y)
+		opt = &ebiten.DrawImageOptions{}
+		opt.GeoM.Translate(525, y)
 		drawing.DrawText(screen, "Yield Effect:", 9, opt)
 		y += 15
 
-	opt = &ebiten.DrawImageOptions{}
+		opt = &ebiten.DrawImageOptions{}
 		opt.GeoM.Translate(525, y)
 		drawing.DrawText(screen, "Boosts resource", 8, opt)
 		y += 12
@@ -313,7 +313,7 @@ func (iv *InfoView) drawNationPointView(screen *ebiten.Image) {
 		drawing.DrawText(screen, "Card Packs:", 10, opt)
 		y += 20
 
-		// CardPack一覧 (20×12)
+		// CardPack list (20×12)
 		marketItems := point.MyNation.VisibleMarketItems()
 		for i, item := range marketItems {
 			if i >= 12 {
@@ -340,7 +340,7 @@ func (iv *InfoView) drawNationPointView(screen *ebiten.Image) {
 		drawing.DrawText(screen, "Card Packs:", 10, opt)
 		y += 20
 
-		// CardPack一覧 (20×12)
+		// CardPack list (20×12)
 		marketItems := point.OtherNation.VisibleMarketItems()
 		for i, item := range marketItems {
 			if i >= 12 {
@@ -370,11 +370,11 @@ func (iv *InfoView) drawWildernessPointView(screen *ebiten.Image) {
 
 	switch point := iv.SelectedPoint.(type) {
 	case *core.WildernessPoint:
-		// Point名 (20)
-	opt := &ebiten.DrawImageOptions{}
-	opt.GeoM.Translate(525, y)
+		// Point name (20)
+		opt := &ebiten.DrawImageOptions{}
+		opt.GeoM.Translate(525, y)
 		drawing.DrawText(screen, "Wilderness", 12, opt)
-	y += 20
+		y += 20
 
 		// Enemy (20)
 		opt = &ebiten.DrawImageOptions{}
@@ -382,21 +382,21 @@ func (iv *InfoView) drawWildernessPointView(screen *ebiten.Image) {
 		drawing.DrawText(screen, "Enemy:", 10, opt)
 		y += 20
 
-		// Enemy情報 (40)
+		// Enemy information (40)
 		if point.Enemy != nil {
-		opt = &ebiten.DrawImageOptions{}
-		opt.GeoM.Translate(525, y)
+			opt = &ebiten.DrawImageOptions{}
+			opt.GeoM.Translate(525, y)
 			enemyName := string(point.Enemy.EnemyID)
 			if len(enemyName) > 12 {
 				enemyName = enemyName[:9] + "..."
 			}
 			if point.Controlled {
-				enemyName += " (X)" // 制圧済み
+				enemyName += " (X)" // Controlled
 			}
 			drawing.DrawText(screen, enemyName, 9, opt)
-		y += 20
+			y += 20
 
-			// EnemyのPower (20)
+			// Enemy Power (20)
 			opt = &ebiten.DrawImageOptions{}
 			opt.GeoM.Translate(525, y)
 			drawing.DrawText(screen, fmt.Sprintf("Power: %.1f", point.Enemy.Power), 9, opt)
@@ -410,30 +410,30 @@ func (iv *InfoView) drawWildernessPointView(screen *ebiten.Image) {
 			drawing.DrawText(screen, "Yields:", 10, opt)
 			y += 20
 
-			// Resource種類ごとのYield (20×3 - 1行に2種類表示)
+			// Yield by resource type (20×3 - 2 types per line)
 			yield := point.Territory.BaseYield
-		resources := []struct {
-			name  string
-			value int
-		}{
+			resources := []struct {
+				name  string
+				value int
+			}{
 				{"Money", yield.Money},
 				{"Food", yield.Food},
 				{"Wood", yield.Wood},
 				{"Iron", yield.Iron},
 				{"Mana", yield.Mana},
-		}
+			}
 
-		for i := 0; i < len(resources); i += 2 {
+			for i := 0; i < len(resources); i += 2 {
 				opt = &ebiten.DrawImageOptions{}
-			opt.GeoM.Translate(525, y)
+				opt.GeoM.Translate(525, y)
 
 				text := fmt.Sprintf("%s:%d", resources[i].name[:3], resources[i].value)
-			if i+1 < len(resources) {
+				if i+1 < len(resources) {
 					text += fmt.Sprintf(" %s:%d", resources[i+1].name[:3], resources[i+1].value)
+				}
+				drawing.DrawText(screen, text, 8, opt)
+				y += 16
 			}
-			drawing.DrawText(screen, text, 8, opt)
-			y += 16
-		}
 
 			// Structure Cards (20)
 			opt = &ebiten.DrawImageOptions{}
@@ -441,7 +441,7 @@ func (iv *InfoView) drawWildernessPointView(screen *ebiten.Image) {
 			drawing.DrawText(screen, "Structures:", 9, opt)
 			y += 18
 
-			// 配置されているStructureCard (20×4)
+			// Deployed StructureCards (20×4)
 			for i, card := range point.Territory.Cards {
 				if i >= 4 {
 					break
@@ -459,7 +459,7 @@ func (iv *InfoView) drawWildernessPointView(screen *ebiten.Image) {
 		}
 
 	case *core.BossPoint:
-		// Point名 (20)
+		// Point name (20)
 		opt := &ebiten.DrawImageOptions{}
 		opt.GeoM.Translate(525, y)
 		drawing.DrawText(screen, "Boss Point", 12, opt)
@@ -471,7 +471,7 @@ func (iv *InfoView) drawWildernessPointView(screen *ebiten.Image) {
 		drawing.DrawText(screen, "Boss:", 10, opt)
 		y += 20
 
-		// Boss情報 (40)
+		// Boss information (40)
 		if point.Boss != nil {
 			opt = &ebiten.DrawImageOptions{}
 			opt.GeoM.Translate(525, y)
@@ -480,12 +480,12 @@ func (iv *InfoView) drawWildernessPointView(screen *ebiten.Image) {
 				bossName = bossName[:9] + "..."
 			}
 			if point.Defeated {
-				bossName += " (X)" // 撃破済み
+				bossName += " (X)" // Defeated
 			}
 			drawing.DrawText(screen, bossName, 9, opt)
 			y += 20
 
-			// BossのPower (20)
+			// Boss Power (20)
 			opt = &ebiten.DrawImageOptions{}
 			opt.GeoM.Translate(525, y)
 			drawing.DrawText(screen, fmt.Sprintf("Power: %.1f", point.Boss.Power), 9, opt)
@@ -517,17 +517,17 @@ func (iv *InfoView) drawEnemySkillView(screen *ebiten.Image) {
 	}
 
 	for i, _ := range iv.SelectedEnemy.Skills {
-		if i >= 4 { // 最大4個のスキル
+		if i >= 4 { // max 4 skills
 			break
 		}
 
-		// スキル名 (20)
-			opt = &ebiten.DrawImageOptions{}
+		// Skill name (20)
+		opt = &ebiten.DrawImageOptions{}
 		opt.GeoM.Translate(525, y)
-		drawing.DrawText(screen, fmt.Sprintf("Skill %d", i+1), 10, opt) // ダミーテキスト
+		drawing.DrawText(screen, fmt.Sprintf("Skill %d", i+1), 10, opt) // Dummy text
 		y += 20
 
-		// スキル説明 (40)
+		// Skill description (40)
 		opt = &ebiten.DrawImageOptions{}
 		opt.GeoM.Translate(525, y)
 		drawing.DrawText(screen, "Special enemy", 8, opt)

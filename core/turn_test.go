@@ -14,37 +14,37 @@ func TestTurn_YearMonth(t *testing.T) {
 		expectedMonth int
 	}{
 		{
-			name:          "最初のターン",
+			name:          "First turn",
 			turn:          core.Turn(0),
 			expectedYear:  1,
 			expectedMonth: 1,
 		},
 		{
-			name:          "1年目の最後の月",
+			name:          "Last month of year 1",
 			turn:          core.Turn(11),
 			expectedYear:  1,
 			expectedMonth: 12,
 		},
 		{
-			name:          "2年目の最初の月",
+			name:          "First month of year 2",
 			turn:          core.Turn(12),
 			expectedYear:  2,
 			expectedMonth: 1,
 		},
 		{
-			name:          "2年目の途中",
+			name:          "Middle of year 2",
 			turn:          core.Turn(18),
 			expectedYear:  2,
 			expectedMonth: 7,
 		},
 		{
-			name:          "3年目の最初",
+			name:          "Beginning of year 3",
 			turn:          core.Turn(24),
 			expectedYear:  3,
 			expectedMonth: 1,
 		},
 		{
-			name:          "10年目の5月",
+			name:          "May of year 10",
 			turn:          core.Turn(112), // (10-1)*12 + (5-1) = 108 + 4 = 112
 			expectedYear:  10,
 			expectedMonth: 5,
@@ -71,17 +71,17 @@ func TestTurn_Next(t *testing.T) {
 		expected core.Turn
 	}{
 		{
-			name:     "最初のターンから次へ",
+			name:     "From first turn to next",
 			turn:     core.Turn(0),
 			expected: core.Turn(1),
 		},
 		{
-			name:     "通常のターンから次へ",
+			name:     "From regular turn to next",
 			turn:     core.Turn(5),
 			expected: core.Turn(6),
 		},
 		{
-			name:     "年をまたぐターン",
+			name:     "Turn crossing years",
 			turn:     core.Turn(11),
 			expected: core.Turn(12),
 		},
@@ -104,24 +104,24 @@ func TestTurn_String(t *testing.T) {
 		expected string
 	}{
 		{
-			name:     "最初のターン",
+			name:     "First turn",
 			turn:     core.Turn(0),
-			expected: "1年1月",
+			expected: "Year 1, Month 1",
 		},
 		{
-			name:     "1年目12月",
+			name:     "December of year 1",
 			turn:     core.Turn(11),
-			expected: "1年12月",
+			expected: "Year 1, Month 12",
 		},
 		{
-			name:     "2年目1月",
+			name:     "January of year 2",
 			turn:     core.Turn(12),
-			expected: "2年1月",
+			expected: "Year 2, Month 1",
 		},
 		{
-			name:     "10年目5月",
+			name:     "May of year 10",
 			turn:     core.Turn(112),
-			expected: "10年5月",
+			expected: "Year 10, Month 5",
 		},
 	}
 

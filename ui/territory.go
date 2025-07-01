@@ -288,7 +288,7 @@ func (tv *TerritoryView) drawStructureCards(screen *ebiten.Image) {
 	indices := []uint16{0, 1, 2, 0, 2, 3}
 	screen.DrawTriangles(vertices, indices, drawing.WhitePixel, &ebiten.DrawTrianglesOptions{})
 
-	// 配置されたStructureCardを描画（一時置き場tv.Cardsを使用）
+	// Draw deployed StructureCards (using temporary storage tv.Cards)
 	for i, card := range tv.Territory.Cards {
 		cardX := float64(i * 40)
 		cardY := 160.0
@@ -296,14 +296,14 @@ func (tv *TerritoryView) drawStructureCards(screen *ebiten.Image) {
 		DrawCard(screen, cardX, cardY, string(card.CardID))
 	}
 
-	// 空きスロットを表示
+	// Display empty slots
 	if tv.Territory != nil {
 		maxSlots := tv.Territory.CardSlot
-		for i := len(tv.Territory.Cards); i < maxSlots && i < 13; i++ { // 最大13枚まで表示（520÷40=13）
+		for i := len(tv.Territory.Cards); i < maxSlots && i < 13; i++ { // Display up to 13 cards max (520÷40=13)
 			cardX := float64(i * 40)
 			cardY := 160.0
 
-			// 空きスロットの枠線
+			// Empty slot border
 			vertices := []ebiten.Vertex{
 				{DstX: float32(cardX), DstY: float32(cardY), SrcX: 0, SrcY: 0, ColorR: 0.5, ColorG: 0.5, ColorB: 0.5, ColorA: 0.5},
 				{DstX: float32(cardX + 40), DstY: float32(cardY), SrcX: 0, SrcY: 0, ColorR: 0.5, ColorG: 0.5, ColorB: 0.5, ColorA: 0.5},
@@ -333,7 +333,7 @@ func (tv *TerritoryView) handleStructureCardClick(cursorX, cursorY int) {
 		if cardIndex >= 0 && cardIndex < len(tv.Territory.Cards) {
 			targetCard := tv.Territory.Cards[cardIndex]
 
-			// カードをCardDeckに戻す
+			// Return card to CardDeck
 			tv.RemoveCard(targetCard)
 			if tv.OnCardClicked != nil {
 				tv.OnCardClicked(targetCard)
@@ -368,16 +368,16 @@ func (tv *TerritoryView) drawChangeIndicator(screen *ebiten.Image) {
 func (tv *TerritoryView) drawConstructionButton(screen *ebiten.Image) {
 	isChanged := tv.IsChanged()
 
-	// ボタンの色を決定
-	var colorR, colorG, colorB float32 = 0.4, 0.4, 0.4 // 変更なしは灰色
+	// Determine button color
+	var colorR, colorG, colorB float32 = 0.4, 0.4, 0.4 // Gray when no changes
 	var buttonText string = lang.Text("ui-no-changes")
 
 	if isChanged {
-		colorR, colorG, colorB = 0.2, 0.6, 0.8 // 変更ありは青
+		colorR, colorG, colorB = 0.2, 0.6, 0.8 // Blue when there are changes
 		buttonText = lang.Text("ui-confirm")
 	}
 
-	// ボタン背景 (200,220,120,40)
+	// Button background (200,220,120,40)
 	vertices := []ebiten.Vertex{
 		{DstX: 200, DstY: 220, SrcX: 0, SrcY: 0, ColorR: colorR, ColorG: colorG, ColorB: colorB, ColorA: 1},
 		{DstX: 320, DstY: 220, SrcX: 0, SrcY: 0, ColorR: colorR, ColorG: colorG, ColorB: colorB, ColorA: 1},
@@ -402,7 +402,7 @@ func (tv *TerritoryView) IsChanged() bool {
 		return true
 	}
 
-	// 両スライスのStructureCardポインタが全て同じかチェック（順番は問わない）
+	// Check if all StructureCard pointers in both slices are the same (order doesn't matter)
 	for _, oldCard := range tv.OldCards {
 		found := false
 		for _, territoryCard := range tv.Territory.Cards {
@@ -445,7 +445,7 @@ func (tv *TerritoryView) PlaceCard(card *core.StructureCard) bool {
 
 // RemoveCard removes a card
 func (tv *TerritoryView) RemoveCard(card *core.StructureCard) bool {
-	// カードのインデックスを見つける
+	// Find card index
 	cardIndex := -1
 	for i, structureCard := range tv.Territory.Cards {
 		if structureCard == card {
@@ -458,10 +458,10 @@ func (tv *TerritoryView) RemoveCard(card *core.StructureCard) bool {
 		return false
 	}
 
-	// Cardsから除去
+	// Remove from Cards
 	tv.Territory.Cards = append(tv.Territory.Cards[:cardIndex], tv.Territory.Cards[cardIndex+1:]...)
 
-	// GameState.CardDeckに追加
+	// Add to GameState.CardDeck
 	if tv.GameState != nil {
 		cards := &core.Cards{StructureCards: []*core.StructureCard{card}}
 		tv.GameState.CardDeck.Add(cards)

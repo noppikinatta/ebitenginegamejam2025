@@ -345,7 +345,7 @@ func TestGameState_GetPoint(t *testing.T) {
 			if tt.expectedNil {
 				if point != nil {
 					t.Errorf("GetPoint(%d, %d) = %v, want nil", tt.x, tt.y, point)
-	}
+				}
 			} else {
 				if point == nil {
 					t.Errorf("GetPoint(%d, %d) = nil, want non-nil", tt.x, tt.y)

@@ -278,7 +278,7 @@ func TestTerritory_Basic(t *testing.T) {
 	}
 }
 
-// テスト用のモック実装
+// Mock implementation for testing
 type mockYieldModifier struct {
 	modifyFunc func(core.ResourceQuantity) core.ResourceQuantity
 }

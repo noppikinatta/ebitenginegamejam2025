@@ -257,12 +257,12 @@ func (mv *MarketView) getCardPackPrice(index int) (*core.ResourceQuantity, bool)
 // handleMarketItemClick handles MarketItem clicks
 func (mv *MarketView) handleMarketItemClick(cursorX, cursorY int) {
 	positions := [][4]int{
-		{0, 60, 260, 80},    // 左上
-		{260, 60, 260, 80},  // 右上
-		{0, 140, 260, 80},   // 左中
-		{260, 140, 260, 80}, // 右中
-		{0, 220, 260, 80},   // 左下
-		{260, 220, 260, 80}, // 右下
+		{0, 60, 260, 80},    // Top left
+		{260, 60, 260, 80},  // Top right
+		{0, 140, 260, 80},   // Middle left
+		{260, 140, 260, 80}, // Middle right
+		{0, 220, 260, 80},   // Bottom left
+		{260, 220, 260, 80}, // Bottom right
 	}
 
 	marketItems := mv.getAllMarketItems()
@@ -274,16 +274,16 @@ func (mv *MarketView) handleMarketItemClick(cursorX, cursorY int) {
 
 		if cursorX >= pos[0] && cursorX < pos[0]+pos[2] &&
 			cursorY >= pos[1] && cursorY < pos[1]+pos[3] {
-			// MarketItemがクリックされた
+			// MarketItem was clicked
 			item := marketItems[i]
 
-			// レベル不足の場合は購入できない
+			// Cannot purchase if level is insufficient
 			if !mv.isMarketItemAvailable(item) {
-				return // 何もしない
+				return // Do nothing
 			}
 
 			if err := mv.PurchaseCardPack(item); err == nil {
-				// 購入成功時、MapGridViewに戻る
+				// Return to MapGridView on successful purchase
 				if mv.OnBackClicked != nil {
 					mv.OnBackClicked()
 				}
@@ -317,7 +317,7 @@ func (mv *MarketView) PurchaseCardPack(item *core.MarketItem) error {
 		return fmt.Errorf("Market is nil")
 	}
 
-	// アイテムのインデックスを見つける
+	// Find item index
 	itemIndex := -1
 	for i, marketItem := range market.Items {
 		if marketItem == item {
@@ -330,13 +330,13 @@ func (mv *MarketView) PurchaseCardPack(item *core.MarketItem) error {
 		return fmt.Errorf("Item not found in market")
 	}
 
-	// 購入処理
+	// Purchase processing
 	cardPack, ok := mv.Nation.Purchase(itemIndex, mv.GameState.Treasury)
 	if !ok {
 		return fmt.Errorf("Purchase failed")
 	}
 
-	// CardPackを開いてCardsを取得
+	// Open CardPack and get Cards
 	rng := newSimpleRand()
 	cardIDs := cardPack.Open(rng)
 
@@ -345,8 +345,8 @@ func (mv *MarketView) PurchaseCardPack(item *core.MarketItem) error {
 		return fmt.Errorf("Card generation failed")
 	}
 
-	// GameState.CardDeckに追加
-		mv.GameState.CardDeck.Add(cards)
+	// Add to GameState.CardDeck
+	mv.GameState.CardDeck.Add(cards)
 
 	mv.GameState.NextTurn()
 
