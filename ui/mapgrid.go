@@ -245,15 +245,12 @@ func (m *MapGridView) drawConnectionLines(screen *ebiten.Image, x, y int, center
 			continue
 		}
 
-		// 隣接Pointが到達可能かチェック
+		// Check if the adjacent Point is reachable
 		if m.GameState.CanInteract(nextX, nextY) {
-			// 線を描画
+			// Draw a line
 			nextCellTopLeft := m.CellLocations[nextY*5+nextX]
-			nextScreenX := nextCellTopLeft.X + m.TopLeft.X
-			nextScreenY := nextCellTopLeft.Y + m.TopLeft.Y
-			nextCenterX := nextScreenX + m.CellSize.X/2
-			nextCenterY := nextScreenY + m.CellSize.Y/2
-
+			nextCenterX := nextCellTopLeft.X + m.TopLeft.X + m.CellSize.X/2
+			nextCenterY := nextCellTopLeft.Y + m.TopLeft.Y + m.CellSize.Y/2
 			m.drawLine(screen, centerX, centerY, nextCenterX, nextCenterY)
 		}
 	}

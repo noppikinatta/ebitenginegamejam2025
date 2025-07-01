@@ -14,7 +14,7 @@ func TestTreasury_Add(t *testing.T) {
 		expected core.ResourceQuantity
 	}{
 		{
-			name: "正常な加算",
+			name: "Normal addition",
 			initial: core.ResourceQuantity{
 				Money: 100, Food: 50, Wood: 30, Iron: 20, Mana: 10,
 			},
@@ -26,7 +26,7 @@ func TestTreasury_Add(t *testing.T) {
 			},
 		},
 		{
-			name: "ゼロリソースの加算",
+			name: "Addition of zero resources",
 			initial: core.ResourceQuantity{
 				Money: 100, Food: 50, Wood: 30, Iron: 20, Mana: 10,
 			},
@@ -61,7 +61,7 @@ func TestTreasury_Sub(t *testing.T) {
 		expectedOk bool
 	}{
 		{
-			name: "正常な減算",
+			name: "Normal subtraction",
 			initial: core.ResourceQuantity{
 				Money: 100, Food: 50, Wood: 30, Iron: 20, Mana: 10,
 			},
@@ -74,15 +74,15 @@ func TestTreasury_Sub(t *testing.T) {
 			expectedOk: true,
 		},
 		{
-			name: "資源不足で減算失敗",
+			name: "Subtraction fails due to insufficient resources",
 			initial: core.ResourceQuantity{
 				Money: 50, Food: 30, Wood: 20, Iron: 10, Mana: 5,
 			},
 			toSub: core.ResourceQuantity{
-				Money: 100, Food: 20, Wood: 10, Iron: 5, Mana: 2, // Moneyが不足
+				Money: 100, Food: 20, Wood: 10, Iron: 5, Mana: 2, // Insufficient Money
 			},
 			expected: core.ResourceQuantity{
-				Money: 50, Food: 30, Wood: 20, Iron: 10, Mana: 5, // 変化なし
+				Money: 50, Food: 30, Wood: 20, Iron: 10, Mana: 5, // No change
 			},
 			expectedOk: false,
 		},
@@ -107,7 +107,7 @@ func TestTreasury_Sub(t *testing.T) {
 }
 
 func TestNation_VisibleCardPacks(t *testing.T) {
-	// テスト用のカードパック
+	// Card pack for testing
 	pack1 := &core.CardPack{
 		CardPackID: "basic_pack",
 		Ratios: map[core.CardID]int{
@@ -124,7 +124,7 @@ func TestNation_VisibleCardPacks(t *testing.T) {
 		NumPerOpen: 1,
 	}
 
-	// テスト用のマーケットアイテム
+	// Market item for testing
 	items := []*core.MarketItem{
 		{
 			CardPack:      pack1,
@@ -150,7 +150,7 @@ func TestNation_VisibleCardPacks(t *testing.T) {
 
 	visibleMarketItems := nation.VisibleMarketItems()
 
-	// レベル1.5なので、RequiredLevel 1.0の基本パックのみ見える
+	// With level 1.5, only the basic pack with RequiredLevel 1.0 is visible
 	if len(visibleMarketItems) != 1 {
 		t.Errorf("VisibleMarketItems() returned %d packs, want 1", len(visibleMarketItems))
 		return
@@ -162,7 +162,7 @@ func TestNation_VisibleCardPacks(t *testing.T) {
 }
 
 func TestNation_CanPurchase(t *testing.T) {
-	// テスト用のカードパック
+	// Card pack for testing
 	pack := &core.CardPack{
 		CardPackID: "test_pack",
 		Ratios: map[core.CardID]int{
@@ -171,7 +171,7 @@ func TestNation_CanPurchase(t *testing.T) {
 		NumPerOpen: 1,
 	}
 
-	// テスト用のマーケットアイテム
+	// Market item for testing
 	items := []*core.MarketItem{
 		{
 			CardPack:      pack,
@@ -197,7 +197,7 @@ func TestNation_CanPurchase(t *testing.T) {
 		expected bool
 	}{
 		{
-			name:  "購入可能",
+			name:  "Can purchase",
 			index: 0,
 			treasury: &core.Treasury{
 				Resources: core.ResourceQuantity{Money: 150},
@@ -205,7 +205,7 @@ func TestNation_CanPurchase(t *testing.T) {
 			expected: true,
 		},
 		{
-			name:  "資源不足",
+			name:  "Insufficient resources",
 			index: 0,
 			treasury: &core.Treasury{
 				Resources: core.ResourceQuantity{Money: 50},
@@ -213,7 +213,7 @@ func TestNation_CanPurchase(t *testing.T) {
 			expected: false,
 		},
 		{
-			name:  "無効なインデックス",
+			name:  "Invalid index",
 			index: 5,
 			treasury: &core.Treasury{
 				Resources: core.ResourceQuantity{Money: 1000},
@@ -233,7 +233,7 @@ func TestNation_CanPurchase(t *testing.T) {
 }
 
 func TestNation_Purchase(t *testing.T) {
-	// テスト用のカードパック
+	// Card pack for testing
 	pack := &core.CardPack{
 		CardPackID: "purchase_test_pack",
 		Ratios: map[core.CardID]int{
@@ -242,7 +242,7 @@ func TestNation_Purchase(t *testing.T) {
 		NumPerOpen: 1,
 	}
 
-	// テスト用のマーケットアイテム
+	// Market item for testing
 	items := []*core.MarketItem{
 		{
 			CardPack:      pack,
@@ -269,7 +269,7 @@ func TestNation_Purchase(t *testing.T) {
 		finalTreasury   core.ResourceQuantity
 	}{
 		{
-			name:  "正常な購入",
+			name:  "Normal purchase",
 			index: 0,
 			initialTreasury: core.ResourceQuantity{
 				Money: 200, Food: 100, Wood: 50, Iron: 30, Mana: 20,
@@ -280,7 +280,7 @@ func TestNation_Purchase(t *testing.T) {
 			},
 		},
 		{
-			name:  "資源不足で購入失敗",
+			name:  "Purchase fails due to insufficient resources",
 			index: 0,
 			initialTreasury: core.ResourceQuantity{
 				Money: 50, Food: 25, Wood: 10, Iron: 5, Mana: 2,
@@ -320,7 +320,7 @@ func TestNation_Purchase(t *testing.T) {
 }
 
 func TestMyNation_AppendMarketItem(t *testing.T) {
-	// テスト用のカードパック
+	// Card pack for testing
 	pack := &core.CardPack{
 		CardPackID: "new_pack",
 		Ratios: map[core.CardID]int{
@@ -348,15 +348,15 @@ func TestMyNation_AppendMarketItem(t *testing.T) {
 		BasicYield: core.ResourceQuantity{Money: 10, Food: 5},
 	}
 
-	// 初期状態の確認
+	// Check initial state
 	if len(myNation.Market.Items) != 0 {
 		t.Errorf("Initial market items = %d, want 0", len(myNation.Market.Items))
 	}
 
-	// アイテム追加
+	// Add item
 	myNation.AppendMarketItem(newItem)
 
-	// 追加後の確認
+	// Check after addition
 	if len(myNation.Market.Items) != 1 {
 		t.Errorf("Market items after append = %d, want 1", len(myNation.Market.Items))
 		return
@@ -381,20 +381,20 @@ func TestMyNation_AppendLevel(t *testing.T) {
 		BasicYield: core.ResourceQuantity{Money: 10, Food: 5},
 	}
 
-	// 初期レベルの確認
+	// Check initial level
 	if myNation.Market.Level != 1.0 {
 		t.Errorf("Initial market level = %v, want 1.0", myNation.Market.Level)
 	}
 
-	// レベル追加
+	// Add level
 	myNation.AppendLevel(0.5)
 
-	// 追加後の確認
+	// Check after addition
 	if myNation.Market.Level != 1.5 {
 		t.Errorf("Market level after append = %v, want 1.5", myNation.Market.Level)
 	}
 
-	// さらに追加
+	// Add more
 	myNation.AppendLevel(1.0)
 
 	if myNation.Market.Level != 2.5 {
@@ -403,16 +403,16 @@ func TestMyNation_AppendLevel(t *testing.T) {
 }
 
 func TestOtherNation_Purchase(t *testing.T) {
-	// テスト用のカードパック
+	// Card pack for testing
 	pack := &core.CardPack{
 		CardPackID: "other_pack",
 		Ratios: map[core.CardID]int{
-			"card_other": 100,
+			"card_a": 100,
 		},
 		NumPerOpen: 1,
 	}
 
-	// テスト用のマーケットアイテム
+	// Market item for testing
 	items := []*core.MarketItem{
 		{
 			CardPack:      pack,
@@ -437,13 +437,13 @@ func TestOtherNation_Purchase(t *testing.T) {
 		Resources: core.ResourceQuantity{Money: 150},
 	}
 
-	// 購入前のマーケットレベル
+	// Market level before purchase
 	initialLevel := otherNation.Market.Level
 
-	// 購入実行
+	// Execute purchase
 	cardPack, ok := otherNation.Purchase(0, treasury)
 
-	// 購入が成功することを確認
+	// Confirm purchase is successful
 	if !ok {
 		t.Errorf("Purchase() ok = %v, want true", ok)
 	}
@@ -458,8 +458,8 @@ func TestOtherNation_Purchase(t *testing.T) {
 		t.Errorf("Treasury after purchase = %v, want %v", treasury.Resources, expectedTreasury)
 	}
 
-	// OtherNationの特殊機能：Market.Levelが0.2加算されることを確認
-	expectedLevel := initialLevel + 0.2
+	// Confirm OtherNation's special feature: Market.Level is increased by 0.5
+	expectedLevel := initialLevel + 0.5
 	if otherNation.Market.Level != expectedLevel {
 		t.Errorf("Market level after purchase = %v, want %v", otherNation.Market.Level, expectedLevel)
 	}

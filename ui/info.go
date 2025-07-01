@@ -371,10 +371,10 @@ func (iv *InfoView) drawWildernessPointView(screen *ebiten.Image) {
 	switch point := iv.SelectedPoint.(type) {
 	case *core.WildernessPoint:
 		// Point名 (20)
-		opt := &ebiten.DrawImageOptions{}
-		opt.GeoM.Translate(525, y)
+	opt := &ebiten.DrawImageOptions{}
+	opt.GeoM.Translate(525, y)
 		drawing.DrawText(screen, "Wilderness", 12, opt)
-		y += 20
+	y += 20
 
 		// Enemy (20)
 		opt = &ebiten.DrawImageOptions{}
@@ -384,8 +384,8 @@ func (iv *InfoView) drawWildernessPointView(screen *ebiten.Image) {
 
 		// Enemy情報 (40)
 		if point.Enemy != nil {
-			opt = &ebiten.DrawImageOptions{}
-			opt.GeoM.Translate(525, y)
+		opt = &ebiten.DrawImageOptions{}
+		opt.GeoM.Translate(525, y)
 			enemyName := string(point.Enemy.EnemyID)
 			if len(enemyName) > 12 {
 				enemyName = enemyName[:9] + "..."
@@ -394,7 +394,7 @@ func (iv *InfoView) drawWildernessPointView(screen *ebiten.Image) {
 				enemyName += " (X)" // 制圧済み
 			}
 			drawing.DrawText(screen, enemyName, 9, opt)
-			y += 20
+		y += 20
 
 			// EnemyのPower (20)
 			opt = &ebiten.DrawImageOptions{}
@@ -412,28 +412,28 @@ func (iv *InfoView) drawWildernessPointView(screen *ebiten.Image) {
 
 			// Resource種類ごとのYield (20×3 - 1行に2種類表示)
 			yield := point.Territory.BaseYield
-			resources := []struct {
-				name  string
-				value int
-			}{
+		resources := []struct {
+			name  string
+			value int
+		}{
 				{"Money", yield.Money},
 				{"Food", yield.Food},
 				{"Wood", yield.Wood},
 				{"Iron", yield.Iron},
 				{"Mana", yield.Mana},
-			}
+		}
 
-			for i := 0; i < len(resources); i += 2 {
+		for i := 0; i < len(resources); i += 2 {
 				opt = &ebiten.DrawImageOptions{}
-				opt.GeoM.Translate(525, y)
+			opt.GeoM.Translate(525, y)
 
 				text := fmt.Sprintf("%s:%d", resources[i].name[:3], resources[i].value)
-				if i+1 < len(resources) {
+			if i+1 < len(resources) {
 					text += fmt.Sprintf(" %s:%d", resources[i+1].name[:3], resources[i+1].value)
-				}
-				drawing.DrawText(screen, text, 8, opt)
-				y += 16
 			}
+			drawing.DrawText(screen, text, 8, opt)
+			y += 16
+		}
 
 			// Structure Cards (20)
 			opt = &ebiten.DrawImageOptions{}

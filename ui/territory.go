@@ -262,13 +262,13 @@ func (tv *TerritoryView) drawEffectDescription(screen *ebiten.Image) {
 
 		y := startY + float64(i)*18
 
-		// カード名
+		// Card name
 		opt = &ebiten.DrawImageOptions{}
 		opt.GeoM.Translate(65, y)
 		cardName := lang.Text(string(card.CardID))
 		drawing.DrawText(screen, cardName, 10, opt)
 
-		// 効果説明
+		// Effect description
 		opt = &ebiten.DrawImageOptions{}
 		opt.GeoM.Translate(200, y)
 		effect := lang.Text(string(card.DescriptionKey))
@@ -344,11 +344,11 @@ func (tv *TerritoryView) handleStructureCardClick(cursorX, cursorY int) {
 
 // drawChangeIndicator draws the change indicator
 func (tv *TerritoryView) drawChangeIndicator(screen *ebiten.Image) {
+	// Don't display anything if there are no changes
 	if !tv.IsChanged() {
-		return // 変更がなければ何も表示しない
+		return
 	}
-
-	// 変更状態表示の背景 (440,20,40,40)
+	// Background for change status display (440,20,40,40)
 	vertices := []ebiten.Vertex{
 		{DstX: 440, DstY: 20, SrcX: 0, SrcY: 0, ColorR: 0.8, ColorG: 0.6, ColorB: 0.2, ColorA: 1},
 		{DstX: 480, DstY: 20, SrcX: 0, SrcY: 0, ColorR: 0.8, ColorG: 0.6, ColorB: 0.2, ColorA: 1},
@@ -358,8 +358,8 @@ func (tv *TerritoryView) drawChangeIndicator(screen *ebiten.Image) {
 	indices := []uint16{0, 1, 2, 0, 2, 3}
 	screen.DrawTriangles(vertices, indices, drawing.WhitePixel, &ebiten.DrawTrianglesOptions{})
 
-	// "*"マークを表示
-		opt := &ebiten.DrawImageOptions{}
+	// Display "*" mark
+	opt := &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(455, 35)
 	drawing.DrawText(screen, "*", 20, opt)
 }
@@ -387,19 +387,17 @@ func (tv *TerritoryView) drawConstructionButton(screen *ebiten.Image) {
 	indices := []uint16{0, 1, 2, 0, 2, 3}
 	screen.DrawTriangles(vertices, indices, drawing.WhitePixel, &ebiten.DrawTrianglesOptions{})
 
-	// ボタンテキスト
+	// Button text
 	opt := &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(220, 235)
 	drawing.DrawText(screen, buttonText, 12, opt)
 }
 
-// IsChanged determines if there have been any changes
+// IsChanged checks if the cards have been changed
 func (tv *TerritoryView) IsChanged() bool {
 	if tv.Territory == nil {
 		return false
 	}
-
-	// The number of cards is different
 	if len(tv.Territory.Cards) != len(tv.OldCards) {
 		return true
 	}
@@ -421,14 +419,14 @@ func (tv *TerritoryView) IsChanged() bool {
 	return false
 }
 
-// ConfirmConstruction 建設決定処理
+// ConfirmConstruction Construction confirmation process
 func (tv *TerritoryView) ConfirmConstruction() {
 	if tv.Territory == nil {
 		return
 	}
 }
 
-// CanPlaceCard determines if a card can be placed
+// CanPlaceCard checks if a card can be placed
 func (tv *TerritoryView) CanPlaceCard() bool {
 	if tv.Territory == nil {
 		return false
@@ -441,7 +439,6 @@ func (tv *TerritoryView) PlaceCard(card *core.StructureCard) bool {
 	if !tv.CanPlaceCard() {
 		return false
 	}
-
 	tv.Territory.Cards = append(tv.Territory.Cards, card)
 	return true
 }

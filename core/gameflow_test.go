@@ -264,19 +264,19 @@ func TestGameState_CanInteract(t *testing.T) {
 			expected: true,
 		},
 		{
-			name:     "隣接する制圧済みWilderness(1,0)は操作可能",
+			name:     "Controlled Wilderness(1,0) adjacent to MyNationPoint is interactable",
 			x:        1,
 			y:        0,
 			expected: true,
 		},
 		{
-			name:     "ボスポイントは操作可能",
+			name:     "Boss point is interactable",
 			x:        0,
 			y:        2,
 			expected: true,
 		},
 		{
-			name:     "範囲外の座標は操作不可",
+			name:     "Out-of-bounds coordinate is not interactable",
 			x:        5,
 			y:        5,
 			expected: false,
@@ -304,7 +304,7 @@ func TestGameState_GetPoint(t *testing.T) {
 
 	myNationPoint := &core.MyNationPoint{MyNation: myNation}
 
-	// 1x1のマップグリッド
+	// 1x1 map grid
 	points := []core.Point{myNationPoint}
 
 	mapGrid := &core.MapGrid{
@@ -345,7 +345,7 @@ func TestGameState_GetPoint(t *testing.T) {
 			if tt.expectedNil {
 				if point != nil {
 					t.Errorf("GetPoint(%d, %d) = %v, want nil", tt.x, tt.y, point)
-				}
+	}
 			} else {
 				if point == nil {
 					t.Errorf("GetPoint(%d, %d) = nil, want non-nil", tt.x, tt.y)

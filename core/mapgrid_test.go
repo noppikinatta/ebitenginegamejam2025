@@ -7,7 +7,7 @@ import (
 )
 
 func TestMapGrid_CanInteract(t *testing.T) {
-	// テスト用のMyNation
+	// MyNation for testing
 	myNation := &core.MyNation{
 		BaseNation: core.BaseNation{
 			NationID: "player",
@@ -16,7 +16,7 @@ func TestMapGrid_CanInteract(t *testing.T) {
 		BasicYield: core.ResourceQuantity{Money: 10},
 	}
 
-	// テスト用のOtherNation
+	// OtherNation for testing
 	otherNation := &core.OtherNation{
 		BaseNation: core.BaseNation{
 			NationID: "ally",
@@ -24,7 +24,7 @@ func TestMapGrid_CanInteract(t *testing.T) {
 		},
 	}
 
-	// テスト用のEnemy
+	// Enemy for testing
 	enemy := &core.Enemy{
 		EnemyID:        "test_orc",
 		EnemyType:      "orc",
@@ -33,7 +33,7 @@ func TestMapGrid_CanInteract(t *testing.T) {
 		Skills:         []core.EnemySkill{},
 	}
 
-	// テスト用のBoss
+	// Boss for testing
 	boss := &core.Enemy{
 		EnemyID:        "dragon_boss",
 		EnemyType:      "dragon",
@@ -42,7 +42,7 @@ func TestMapGrid_CanInteract(t *testing.T) {
 		Skills:         []core.EnemySkill{},
 	}
 
-	// テスト用のWildernessPoint（制圧済み）
+	// WildernessPoint for testing (controlled)
 	controlledWilderness := &core.WildernessPoint{
 		Controlled: true,
 		Enemy:      enemy,
@@ -54,7 +54,7 @@ func TestMapGrid_CanInteract(t *testing.T) {
 		},
 	}
 
-	// テスト用のWildernessPoint（未制圧）
+	// WildernessPoint for testing (uncontrolled)
 	uncontrolledWilderness := &core.WildernessPoint{
 		Controlled: false,
 		Enemy:      enemy,
@@ -111,67 +111,67 @@ func TestMapGrid_CanInteract(t *testing.T) {
 		reason   string
 	}{
 		{
-			name:     "MyNationPoint(0,0)は常に操作可能",
+			name:     "MyNationPoint(0,0) is always interactable",
 			x:        0,
 			y:        0,
 			expected: true,
-			reason:   "MyNationPointは常に操作可能",
+			reason:   "MyNationPoint is always interactable",
 		},
 		{
-			name:     "MyNationPointに隣接する制圧済みWilderness(1,0)は操作可能",
+			name:     "Controlled Wilderness(1,0) adjacent to MyNationPoint is interactable",
 			x:        1,
 			y:        0,
 			expected: true,
-			reason:   "MyNationPointに隣接し、制圧済み",
+			reason:   "Adjacent to MyNationPoint and controlled",
 		},
 		{
-			name:     "MyNationPointに隣接する未制圧Wilderness(0,1)は操作可能",
+			name:     "Uncontrolled Wilderness(0,1) adjacent to MyNationPoint is interactable",
 			x:        0,
 			y:        1,
 			expected: true,
-			reason:   "MyNationPointに隣接し、未制圧",
+			reason:   "Adjacent to MyNationPoint and uncontrolled",
 		},
 		{
-			name:     "MyNationPointから到達できないOtherNation(0,2)は操作不可",
+			name:     "OtherNation(0,2) unreachable from MyNationPoint is not interactable",
 			x:        0,
 			y:        2,
 			expected: false,
-			reason:   "MyNationPointから到達できない",
+			reason:   "Unreachable from MyNationPoint",
 		},
 		{
-			name:     "到達できるOtherNation(2,2)に隣接する未制圧Wilderness(1,2)は操作可能",
+			name:     "Uncontrolled Wilderness(1,2) adjacent to reachable OtherNation(2,2) is interactable",
 			x:        1,
 			y:        2,
 			expected: true,
-			reason:   "制圧済みのルートでアクセス可能",
+			reason:   "Accessible via a controlled route",
 		},
 		{
-			name:     "到達できる制圧済みWilderness(3,2)に隣接する未制圧Wilderness(3,3)は操作可能",
+			name:     "Uncontrolled Wilderness(3,3) adjacent to reachable controlled Wilderness(3,2) is interactable",
 			x:        3,
 			y:        3,
 			expected: true,
-			reason:   "制圧済みのルートでアクセス可能",
+			reason:   "Accessible via a controlled route",
 		},
 		{
-			name:     "遠く離れた未制圧Wilderness(3,4)は操作不可",
+			name:     "Distant uncontrolled Wilderness(3,4) is not interactable",
 			x:        3,
 			y:        4,
 			expected: false,
-			reason:   "制圧済みのルートでアクセス不可",
+			reason:   "Inaccessible via a controlled route",
 		},
 		{
-			name:     "範囲外の座標(-1,0)は操作不可",
+			name:     "Out-of-bounds coordinate (-1,0) is not interactable",
 			x:        -1,
 			y:        0,
 			expected: false,
-			reason:   "マップ範囲外",
+			reason:   "Out of map bounds",
 		},
 		{
-			name:     "範囲外の座標(5,0)は操作不可",
+			name:     "Out-of-bounds coordinate (5,0) is not interactable",
 			x:        5,
 			y:        0,
 			expected: false,
-			reason:   "マップ範囲外",
+			reason:   "Out of map bounds",
 		},
 	}
 
@@ -196,7 +196,7 @@ func TestMyNationPoint_Location(t *testing.T) {
 
 	point := &core.MyNationPoint{MyNation: myNation}
 
-	// MyNationPointはLocationメソッドを持たないため、基本的な構造確認のみ
+	// MyNationPoint does not have a Location method, so only basic structure is checked
 	if point.MyNation != myNation {
 		t.Errorf("MyNationPoint.MyNation = %v, want %v", point.MyNation, myNation)
 	}
@@ -212,7 +212,7 @@ func TestOtherNationPoint_Location(t *testing.T) {
 
 	point := &core.OtherNationPoint{OtherNation: otherNation}
 
-	// OtherNationPointはLocationメソッドを持たないため、基本的な構造確認のみ
+	// OtherNationPoint does not have a Location method, so only basic structure is checked
 	if point.OtherNation != otherNation {
 		t.Errorf("OtherNationPoint.OtherNation = %v, want %v", point.OtherNation, otherNation)
 	}
@@ -239,11 +239,11 @@ func TestWildernessPoint_Basic(t *testing.T) {
 		controlled bool
 	}{
 		{
-			name:       "未制圧のWilderness",
+			name:       "Uncontrolled Wilderness",
 			controlled: false,
 		},
 		{
-			name:       "制圧済みのWilderness",
+			name:       "Controlled Wilderness",
 			controlled: true,
 		},
 	}

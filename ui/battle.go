@@ -266,9 +266,9 @@ func (bv *BattleView) drawEnemy(screen *ebiten.Image) {
 	}
 }
 
-// drawBattleCards BattleCard置き場を描画
+// drawBattleCards draws the BattleCard area
 func (bv *BattleView) drawBattleCards(screen *ebiten.Image) {
-	// BattleCard置き場の背景 (0,220,480,60)
+	// Background of the BattleCard area (0,220,480,60)
 	vertices := []ebiten.Vertex{
 		{DstX: 0, DstY: 220, SrcX: 0, SrcY: 0, ColorR: 0.2, ColorG: 0.2, ColorB: 0.3, ColorA: 1},
 		{DstX: 480, DstY: 220, SrcX: 0, SrcY: 0, ColorR: 0.2, ColorG: 0.2, ColorB: 0.3, ColorA: 1},
@@ -282,8 +282,8 @@ func (bv *BattleView) drawBattleCards(screen *ebiten.Image) {
 	// 配置されたBattleCardを描画（40x60 × 12枚）
 		for i, card := range bv.Battlefield.BattleCards {
 		if i >= 12 { // 最大12枚まで
-			break
-		}
+				break
+			}
 
 		cardX := float64(i * 40)
 		cardY := 220.0
@@ -299,9 +299,9 @@ func (bv *BattleView) drawBattleCards(screen *ebiten.Image) {
 	}
 }
 
-// drawPowerDisplay draws the power display.
+// drawPowerDisplay draws the Power display.
 func (bv *BattleView) drawPowerDisplay(screen *ebiten.Image) {
-	// Power表示の背景 (480,220,40,60)
+	// Background of the Power display (480,220,40,60)
 	vertices := []ebiten.Vertex{
 		{DstX: 480, DstY: 220, SrcX: 0, SrcY: 0, ColorR: 0.3, ColorG: 0.3, ColorB: 0.4, ColorA: 1},
 		{DstX: 520, DstY: 220, SrcX: 0, SrcY: 0, ColorR: 0.3, ColorG: 0.3, ColorB: 0.4, ColorA: 1},
@@ -343,7 +343,7 @@ func (bv *BattleView) drawConquerButton(screen *ebiten.Image) {
 		colorR, colorG, colorB = 0.2, 0.8, 0.2 // 有効時は緑
 	}
 
-	// ボタン背景
+	// Button background
 	vertices := []ebiten.Vertex{
 		{DstX: 200, DstY: 280, SrcX: 0, SrcY: 0, ColorR: colorR, ColorG: colorG, ColorB: colorB, ColorA: 1},
 		{DstX: 320, DstY: 280, SrcX: 0, SrcY: 0, ColorR: colorR, ColorG: colorG, ColorB: colorB, ColorA: 1},
@@ -405,19 +405,19 @@ func (bv *BattleView) createBattlefield(point core.BattlePoint) *core.Battlefiel
 
 					// Territory.CardsのStructureCard.BattlefieldModifierを適用
 					for _, card := range territory.Cards {
-				if card.BattlefieldModifier != nil {
-							card.BattlefieldModifier.Modify(battlefield)
-						}
+					if card.BattlefieldModifier != nil {
+						card.BattlefieldModifier.Modify(battlefield)
 					}
 				}
 			}
 		}
 	}
+	}
 
 	return battlefield
 }
 
-// CanPlaceCard カードを配置できるかどうかを判定
+// CanPlaceCard determines if a card can be placed
 func (bv *BattleView) CanPlaceCard() bool {
 	if bv.Battlefield == nil {
 		return false
@@ -425,16 +425,16 @@ func (bv *BattleView) CanPlaceCard() bool {
 	return len(bv.Battlefield.BattleCards) < bv.Battlefield.CardSlot
 }
 
-// PlaceCard カードを配置する
+// PlaceCard places a card
 func (bv *BattleView) PlaceCard(card *core.BattleCard) bool {
 	if bv.Battlefield == nil {
-	return false
-}
+		return false
+	}
 
 	return bv.Battlefield.AddBattleCard(card)
 }
 
-// RemoveCard カードを除去する
+// RemoveCard removes a card
 func (bv *BattleView) RemoveCard(card *core.BattleCard) bool {
 	if bv.Battlefield == nil {
 		return false
@@ -445,9 +445,9 @@ func (bv *BattleView) RemoveCard(card *core.BattleCard) bool {
 	for i, battleCard := range bv.Battlefield.BattleCards {
 		if battleCard == card {
 			cardIndex = i
-				break
-			}
+			break
 		}
+	}
 
 	if cardIndex == -1 {
 		return false
@@ -466,24 +466,23 @@ func (bv *BattleView) RemoveCard(card *core.BattleCard) bool {
 	return success
 }
 
-// Conquer 制圧処理を実行する
+// Conquer executes the conquest process
 func (bv *BattleView) Conquer() bool {
 	if bv.Battlefield == nil || bv.GameState == nil || bv.BattlePoint == nil {
 		return false
 	}
-
-	// 勝利可能かチェック
+	// Check if victory is possible
 	if !bv.Battlefield.CanBeat() {
 		return false
 	}
 
-	// 戦闘勝利処理
+	// Battle victory process
 	bv.Battlefield.Beat()
 
-	// 置いたBattleCardをすべてCardDeckに戻す
+	// Return all placed BattleCards to the CardDeck
 	bv.GameState.CardDeck.Add(&core.Cards{BattleCards: bv.Battlefield.BattleCards})
 
-	// 対象BattlePointのControlledをtrueに変更
+	// Change the target BattlePoint's Controlled to true
 	bv.BattlePoint.SetControlled(true)
 	bv.GameState.MapGrid.UpdateAccesibles()
 

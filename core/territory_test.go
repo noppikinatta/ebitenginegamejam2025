@@ -34,17 +34,17 @@ func TestTerritory_AppendCard(t *testing.T) {
 		expected bool
 	}{
 		{
-			name:     "最初のカード追加",
+			name:     "Add first card",
 			card:     card1,
 			expected: true,
 		},
 		{
-			name:     "2枚目のカード追加",
+			name:     "Add second card",
 			card:     card2,
 			expected: true,
 		},
 		{
-			name:     "スロット上限超過",
+			name:     "Exceed card slot limit",
 			card:     card3,
 			expected: false,
 		},
@@ -59,7 +59,7 @@ func TestTerritory_AppendCard(t *testing.T) {
 		})
 	}
 
-	// スロット数のチェック
+	// Check number of cards
 	if len(territory.Cards) != 2 {
 		t.Errorf("Cards length = %v, want %v", len(territory.Cards), 2)
 	}
@@ -90,32 +90,32 @@ func TestTerritory_RemoveCard(t *testing.T) {
 		expectedOk   bool
 	}{
 		{
-			name:         "有効なインデックス(0)",
+			name:         "Valid index (0)",
 			index:        0,
 			expectedCard: card1,
 			expectedOk:   true,
 		},
 		{
-			name:         "有効なインデックス(1)",
+			name:         "Valid index (1)",
 			index:        1,
 			expectedCard: card2,
 			expectedOk:   true,
 		},
 		{
-			name:         "無効なインデックス(-1)",
+			name:         "Invalid index (-1)",
 			index:        -1,
 			expectedCard: nil,
 			expectedOk:   false,
 		},
 		{
-			name:         "無効なインデックス(範囲外)",
+			name:         "Invalid index (out of range)",
 			index:        5,
 			expectedCard: nil,
 			expectedOk:   false,
 		},
 	}
 
-	// 最初のテスト（インデックス0の削除）
+	// First test (remove index 0)
 	card, ok := territory.RemoveCard(0)
 	if !ok {
 		t.Errorf("RemoveCard(0) ok = %v, want %v", ok, true)
@@ -127,12 +127,12 @@ func TestTerritory_RemoveCard(t *testing.T) {
 		t.Errorf("Cards length after removal = %v, want %v", len(territory.Cards), 1)
 	}
 
-	// 残りのテスト
+	// Remaining tests
 	for i, tt := range tests[1:] {
 		t.Run(tt.name, func(t *testing.T) {
-			// territory.Cardsを復元（card2のみ残っている状態）
+			// Restore territory.Cards (only card2 remains)
 			if i == 0 {
-				// インデックス1のテスト -> インデックス0になる
+				// Test index 1 -> becomes index 0
 				card, ok := territory.RemoveCard(0)
 				if ok != tt.expectedOk {
 					t.Errorf("RemoveCard() ok = %v, want %v", ok, tt.expectedOk)
@@ -141,7 +141,7 @@ func TestTerritory_RemoveCard(t *testing.T) {
 					t.Errorf("RemoveCard() card = %v, want %v", card, tt.expectedCard)
 				}
 			} else {
-				// 無効なインデックスのテスト
+				// Test invalid index
 				card, ok := territory.RemoveCard(tt.index)
 				if ok != tt.expectedOk {
 					t.Errorf("RemoveCard() ok = %v, want %v", ok, tt.expectedOk)
@@ -155,7 +155,7 @@ func TestTerritory_RemoveCard(t *testing.T) {
 }
 
 func TestTerritory_Yield(t *testing.T) {
-	// テスト用のYieldModifier実装
+	// mock implementation for YieldModifier for testing
 	doubleMoneyModifier := &mockYieldModifier{
 		modifyFunc: func(quantity core.ResourceQuantity) core.ResourceQuantity {
 			quantity.Money *= 2
@@ -171,13 +171,13 @@ func TestTerritory_Yield(t *testing.T) {
 		},
 	}
 
-	// ModifierなしのStructureCard
+	// StructureCard without modifier
 	simpleCard := &core.StructureCard{
 		CardID:        "simple_card",
 		YieldModifier: nil,
 	}
 
-	// ModifierありのStructureCard
+	// StructureCard with modifier
 	bonusCard := &core.StructureCard{
 		CardID:        "bonus_card",
 		YieldModifier: doubleMoneyModifier,
@@ -194,35 +194,35 @@ func TestTerritory_Yield(t *testing.T) {
 		expected core.ResourceQuantity
 	}{
 		{
-			name:  "カードなし",
+			name:  "No cards",
 			cards: []*core.StructureCard{},
 			expected: core.ResourceQuantity{
 				Money: 10, Food: 5, Wood: 3, Iron: 2, Mana: 1,
 			},
 		},
 		{
-			name:  "Modifierなしのカード",
+			name:  "Card without modifier",
 			cards: []*core.StructureCard{simpleCard},
 			expected: core.ResourceQuantity{
 				Money: 10, Food: 5, Wood: 3, Iron: 2, Mana: 1,
 			},
 		},
 		{
-			name:  "Moneyを2倍にするModifier",
+			name:  "Modifier that doubles money",
 			cards: []*core.StructureCard{bonusCard},
 			expected: core.ResourceQuantity{
 				Money: 20, Food: 5, Wood: 3, Iron: 2, Mana: 1, // Money: 10 * 2 = 20
 			},
 		},
 		{
-			name:  "リソースを追加するModifier",
+			name:  "Modifier that adds resources",
 			cards: []*core.StructureCard{addCard},
 			expected: core.ResourceQuantity{
 				Money: 15, Food: 8, Wood: 5, Iron: 3, Mana: 2, // Base + (5,3,2,1,1)
 			},
 		},
 		{
-			name:  "複数のModifier（順次適用）",
+			name:  "Multiple modifiers (applied sequentially)",
 			cards: []*core.StructureCard{bonusCard, addCard},
 			expected: core.ResourceQuantity{
 				Money: 25, Food: 8, Wood: 5, Iron: 3, Mana: 2, // (10*2) + 5 = 25, etc.

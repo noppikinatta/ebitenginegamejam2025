@@ -7,7 +7,7 @@ import (
 )
 
 func TestMarketItem_CanPurchase(t *testing.T) {
-	// テスト用のカードパック
+	// Card pack for testing
 	cardPack := &core.CardPack{
 		CardPackID: "test_pack",
 		Ratios: map[core.CardID]int{
@@ -24,7 +24,7 @@ func TestMarketItem_CanPurchase(t *testing.T) {
 		expected bool
 	}{
 		{
-			name: "十分な資源がある場合",
+			name: "Sufficient resources",
 			item: &core.MarketItem{
 				CardPack: cardPack,
 				Price: core.ResourceQuantity{
@@ -40,7 +40,7 @@ func TestMarketItem_CanPurchase(t *testing.T) {
 			expected: true,
 		},
 		{
-			name: "ちょうど同じ資源量の場合",
+			name: "Exactly the same amount of resources",
 			item: &core.MarketItem{
 				CardPack: cardPack,
 				Price: core.ResourceQuantity{
@@ -56,7 +56,7 @@ func TestMarketItem_CanPurchase(t *testing.T) {
 			expected: true,
 		},
 		{
-			name: "資源が不足している場合",
+			name: "Insufficient resources",
 			item: &core.MarketItem{
 				CardPack: cardPack,
 				Price: core.ResourceQuantity{
@@ -72,7 +72,7 @@ func TestMarketItem_CanPurchase(t *testing.T) {
 			expected: false,
 		},
 		{
-			name: "一部リソースが不足している場合",
+			name: "Insufficient partial resources",
 			item: &core.MarketItem{
 				CardPack: cardPack,
 				Price: core.ResourceQuantity{
@@ -82,7 +82,7 @@ func TestMarketItem_CanPurchase(t *testing.T) {
 			},
 			treasury: &core.Treasury{
 				Resources: core.ResourceQuantity{
-					Money: 150, Food: 30, Wood: 50, Iron: 30, Mana: 20, // Foodが不足
+					Money: 150, Food: 30, Wood: 50, Iron: 30, Mana: 20, // Insufficient Food
 				},
 			},
 			expected: false,
@@ -100,7 +100,7 @@ func TestMarketItem_CanPurchase(t *testing.T) {
 }
 
 func TestMarket_VisibleCardPacks(t *testing.T) {
-	// テスト用のカードパック
+	// Card pack for testing
 	pack1 := &core.CardPack{
 		CardPackID: "basic_pack",
 		Ratios: map[core.CardID]int{
@@ -128,7 +128,7 @@ func TestMarket_VisibleCardPacks(t *testing.T) {
 		NumPerOpen: 1,
 	}
 
-	// テスト用のマーケットアイテム
+	// Market items for testing
 	items := []*core.MarketItem{
 		{
 			CardPack: pack1,
@@ -157,34 +157,34 @@ func TestMarket_VisibleCardPacks(t *testing.T) {
 		name          string
 		marketLevel   core.MarketLevel
 		expectedCount int
-		expectedPacks []string // CardPackIDのリスト
+		expectedPacks []string // List of CardPackIDs
 	}{
 		{
-			name:          "レベル1.0 - 基本パックのみ見える",
+			name:          "Level 1.0 - Only basic pack is visible",
 			marketLevel:   1.0,
 			expectedCount: 1,
 			expectedPacks: []string{"basic_pack"},
 		},
 		{
-			name:          "レベル2.0 - 基本パック＋上級パック",
+			name:          "Level 2.0 - Basic and advanced packs are visible",
 			marketLevel:   2.0,
 			expectedCount: 2,
 			expectedPacks: []string{"basic_pack", "advanced_pack"},
 		},
 		{
-			name:          "レベル3.0 - 全パック見える",
+			name:          "Level 3.0 - All packs are visible",
 			marketLevel:   3.0,
 			expectedCount: 3,
 			expectedPacks: []string{"basic_pack", "advanced_pack", "premium_pack"},
 		},
 		{
-			name:          "レベル0.5 - 何も見えない",
+			name:          "Level 0.5 - Nothing is visible",
 			marketLevel:   0.5,
 			expectedCount: 0,
 			expectedPacks: []string{},
 		},
 		{
-			name:          "レベル1.5 - 基本パックのみ",
+			name:          "Level 1.5 - Only basic pack is visible",
 			marketLevel:   1.5,
 			expectedCount: 1,
 			expectedPacks: []string{"basic_pack"},
@@ -204,7 +204,7 @@ func TestMarket_VisibleCardPacks(t *testing.T) {
 				return
 			}
 
-			// 期待されるCardPackIDが含まれているかチェック
+			// Check if the expected CardPackIDs are included
 			for i, item := range result {
 				if i >= len(tt.expectedPacks) {
 					t.Errorf("Unexpected pack at index %d: %v", i, item.CardPack.CardPackID)
@@ -219,7 +219,7 @@ func TestMarket_VisibleCardPacks(t *testing.T) {
 }
 
 func TestMarket_CanPurchase(t *testing.T) {
-	// テスト用のカードパック
+	// Card pack for testing
 	pack := &core.CardPack{
 		CardPackID: "test_pack",
 		Ratios: map[core.CardID]int{
@@ -228,7 +228,7 @@ func TestMarket_CanPurchase(t *testing.T) {
 		NumPerOpen: 1,
 	}
 
-	// テスト用のマーケットアイテム
+	// Market items for testing
 	items := []*core.MarketItem{
 		{
 			CardPack: pack,
@@ -258,42 +258,34 @@ func TestMarket_CanPurchase(t *testing.T) {
 		expected bool
 	}{
 		{
-			name:  "有効なインデックス、十分な資源",
+			name:  "Valid index, sufficient resources",
 			index: 0,
 			treasury: &core.Treasury{
-				Resources: core.ResourceQuantity{
-					Money: 150,
-				},
+				Resources: core.ResourceQuantity{Money: 150},
 			},
 			expected: true,
 		},
 		{
-			name:  "有効なインデックス、資源不足",
+			name:  "Valid index, insufficient resources",
 			index: 1,
 			treasury: &core.Treasury{
-				Resources: core.ResourceQuantity{
-					Money: 100, // 200必要だが100しかない
-				},
+				Resources: core.ResourceQuantity{Money: 100}, // Requires 200, but only have 100
 			},
 			expected: false,
 		},
 		{
-			name:  "無効なインデックス（負の値）",
+			name:  "Invalid index (negative)",
 			index: -1,
 			treasury: &core.Treasury{
-				Resources: core.ResourceQuantity{
-					Money: 1000,
-				},
+				Resources: core.ResourceQuantity{Money: 1000},
 			},
 			expected: false,
 		},
 		{
-			name:  "無効なインデックス（範囲外）",
+			name:  "Invalid index (out of range)",
 			index: 5,
 			treasury: &core.Treasury{
-				Resources: core.ResourceQuantity{
-					Money: 1000,
-				},
+				Resources: core.ResourceQuantity{Money: 1000},
 			},
 			expected: false,
 		},
@@ -310,16 +302,16 @@ func TestMarket_CanPurchase(t *testing.T) {
 }
 
 func TestMarket_Purchase(t *testing.T) {
-	// テスト用のカードパック
+	// Card pack for testing
 	pack := &core.CardPack{
-		CardPackID: "purchase_pack",
+		CardPackID: "purchase_test_pack",
 		Ratios: map[core.CardID]int{
 			"card_a": 100,
 		},
 		NumPerOpen: 1,
 	}
 
-	// テスト用のマーケットアイテム
+	// Market items for testing
 	items := []*core.MarketItem{
 		{
 			CardPack: pack,
@@ -343,36 +335,36 @@ func TestMarket_Purchase(t *testing.T) {
 		finalTreasury   core.ResourceQuantity
 	}{
 		{
-			name:  "正常な購入",
+			name:  "Normal purchase",
 			index: 0,
 			initialTreasury: core.ResourceQuantity{
 				Money: 200, Food: 100, Wood: 50, Iron: 30, Mana: 20,
 			},
 			expectedOk: true,
 			finalTreasury: core.ResourceQuantity{
-				Money: 100, Food: 50, Wood: 50, Iron: 30, Mana: 20, // Money: 200-100, Food: 100-50
+				Money: 100, Food: 50, Wood: 50, Iron: 30, Mana: 20,
 			},
 		},
 		{
-			name:  "資源不足で購入失敗",
+			name:  "Purchase failed due to insufficient resources",
 			index: 0,
 			initialTreasury: core.ResourceQuantity{
 				Money: 50, Food: 25, Wood: 10, Iron: 5, Mana: 2,
 			},
 			expectedOk: false,
 			finalTreasury: core.ResourceQuantity{
-				Money: 50, Food: 25, Wood: 10, Iron: 5, Mana: 2, // 変化なし
+				Money: 50, Food: 25, Wood: 10, Iron: 5, Mana: 2,
 			},
 		},
 		{
-			name:  "無効なインデックス",
-			index: 5,
+			name:  "Invalid index",
+			index: 1,
 			initialTreasury: core.ResourceQuantity{
 				Money: 1000, Food: 1000, Wood: 1000, Iron: 1000, Mana: 1000,
 			},
 			expectedOk: false,
 			finalTreasury: core.ResourceQuantity{
-				Money: 1000, Food: 1000, Wood: 1000, Iron: 1000, Mana: 1000, // 変化なし
+				Money: 1000, Food: 1000, Wood: 1000, Iron: 1000, Mana: 1000,
 			},
 		},
 	}

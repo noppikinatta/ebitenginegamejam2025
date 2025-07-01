@@ -259,7 +259,7 @@ func (c *CardDeckView) drawBackground(screen *ebiten.Image) {
 // drawCards draws the cards.
 func (c *CardDeckView) drawCards(screen *ebiten.Image) {
 	if c.CardDeck == nil {
-		// カードデッキがない場合のメッセージ
+		// Message when card deck is empty
 		opt := &ebiten.DrawImageOptions{}
 		opt.GeoM.Translate(320, 320)
 		drawing.DrawText(screen, lang.Text("card-no-deck"), 12, opt)
@@ -267,18 +267,17 @@ func (c *CardDeckView) drawCards(screen *ebiten.Image) {
 	}
 
 	allCards := c.getAllCards()
-
 	if len(allCards) == 0 {
-		// カードがない場合のメッセージ
+		// Message when there are no cards
 		opt := &ebiten.DrawImageOptions{}
 		opt.GeoM.Translate(300, 320)
 		drawing.DrawText(screen, lang.Text("card-no-cards"), 12, opt)
 		return
 	}
 
-	// カードを40x60サイズで描画（最大16枚）
+	// Draw cards in 40x60 size (max 16)
 	for i, card := range allCards {
-		if i >= 16 { // 最大16枚まで
+		if i >= 16 { // Up to 16 cards
 			break
 		}
 
@@ -288,7 +287,7 @@ func (c *CardDeckView) drawCards(screen *ebiten.Image) {
 		c.drawCard(screen, card, x, y, i == c.SelectedIndex)
 	}
 
-	// 16枚を超える場合は省略表示
+	// Abbreviated display if over 16 cards
 	if len(allCards) > 16 {
 		opt := &ebiten.DrawImageOptions{}
 		opt.GeoM.Translate(580, 345)

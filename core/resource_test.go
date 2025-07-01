@@ -14,7 +14,7 @@ func TestResourceQuantity_Add(t *testing.T) {
 		expected core.ResourceQuantity
 	}{
 		{
-			name: "正常な加算",
+			name: "Normal addition",
 			base: core.ResourceQuantity{
 				Money: 100, Food: 50, Wood: 30, Iron: 20, Mana: 10,
 			},
@@ -26,7 +26,7 @@ func TestResourceQuantity_Add(t *testing.T) {
 			},
 		},
 		{
-			name: "ゼロとの加算",
+			name: "Addition with zero",
 			base: core.ResourceQuantity{
 				Money: 100, Food: 50, Wood: 30, Iron: 20, Mana: 10,
 			},
@@ -36,7 +36,7 @@ func TestResourceQuantity_Add(t *testing.T) {
 			},
 		},
 		{
-			name: "負の値との加算",
+			name: "Addition with negative values",
 			base: core.ResourceQuantity{
 				Money: 100, Food: 50, Wood: 30, Iron: 20, Mana: 10,
 			},
@@ -67,7 +67,7 @@ func TestResourceQuantity_Sub(t *testing.T) {
 		expected core.ResourceQuantity
 	}{
 		{
-			name: "正常な減算",
+			name: "Normal subtraction",
 			base: core.ResourceQuantity{
 				Money: 100, Food: 50, Wood: 30, Iron: 20, Mana: 10,
 			},
@@ -79,7 +79,7 @@ func TestResourceQuantity_Sub(t *testing.T) {
 			},
 		},
 		{
-			name: "ゼロとの減算",
+			name: "Subtraction with zero",
 			base: core.ResourceQuantity{
 				Money: 100, Food: 50, Wood: 30, Iron: 20, Mana: 10,
 			},
@@ -89,7 +89,7 @@ func TestResourceQuantity_Sub(t *testing.T) {
 			},
 		},
 		{
-			name: "負の値になる減算",
+			name: "Subtraction resulting in negative values",
 			base: core.ResourceQuantity{
 				Money: 50, Food: 30, Wood: 20, Iron: 10, Mana: 5,
 			},
@@ -120,7 +120,7 @@ func TestResourceQuantity_CanPurchase(t *testing.T) {
 		expected bool
 	}{
 		{
-			name: "十分な資源がある場合",
+			name: "Sufficient resources",
 			treasury: core.ResourceQuantity{
 				Money: 100, Food: 50, Wood: 30, Iron: 20, Mana: 10,
 			},
@@ -130,7 +130,7 @@ func TestResourceQuantity_CanPurchase(t *testing.T) {
 			expected: true,
 		},
 		{
-			name: "ちょうど同じ資源量の場合",
+			name: "Exactly the same amount of resources",
 			treasury: core.ResourceQuantity{
 				Money: 100, Food: 50, Wood: 30, Iron: 20, Mana: 10,
 			},
@@ -140,7 +140,7 @@ func TestResourceQuantity_CanPurchase(t *testing.T) {
 			expected: true,
 		},
 		{
-			name: "Moneyが不足している場合",
+			name: "Insufficient Money",
 			treasury: core.ResourceQuantity{
 				Money: 40, Food: 50, Wood: 30, Iron: 20, Mana: 10,
 			},
@@ -150,7 +150,7 @@ func TestResourceQuantity_CanPurchase(t *testing.T) {
 			expected: false,
 		},
 		{
-			name: "Foodが不足している場合",
+			name: "Insufficient Food",
 			treasury: core.ResourceQuantity{
 				Money: 100, Food: 20, Wood: 30, Iron: 20, Mana: 10,
 			},
@@ -160,7 +160,7 @@ func TestResourceQuantity_CanPurchase(t *testing.T) {
 			expected: false,
 		},
 		{
-			name: "複数リソースが不足している場合",
+			name: "Insufficient multiple resources",
 			treasury: core.ResourceQuantity{
 				Money: 40, Food: 20, Wood: 10, Iron: 5, Mana: 2,
 			},
@@ -170,7 +170,7 @@ func TestResourceQuantity_CanPurchase(t *testing.T) {
 			expected: false,
 		},
 		{
-			name: "価格が0の場合",
+			name: "Price is zero",
 			treasury: core.ResourceQuantity{
 				Money: 100, Food: 50, Wood: 30, Iron: 20, Mana: 10,
 			},
@@ -178,13 +178,13 @@ func TestResourceQuantity_CanPurchase(t *testing.T) {
 			expected: true,
 		},
 		{
-			name:     "国庫が空の場合、価格が0なら購入可能",
+			name:     "Can purchase if price is zero when treasury is empty",
 			treasury: core.ResourceQuantity{},
 			price:    core.ResourceQuantity{},
 			expected: true,
 		},
 		{
-			name:     "国庫が空の場合、何か価格があれば購入不可",
+			name:     "Cannot purchase if price is not zero when treasury is empty",
 			treasury: core.ResourceQuantity{},
 			price: core.ResourceQuantity{
 				Money: 1,

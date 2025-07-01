@@ -346,14 +346,14 @@ func (mv *MarketView) PurchaseCardPack(item *core.MarketItem) error {
 	}
 
 	// GameState.CardDeckに追加
-	mv.GameState.CardDeck.Add(cards)
+		mv.GameState.CardDeck.Add(cards)
 
 	mv.GameState.NextTurn()
 
 	return nil
 }
 
-// isMarketItemAvailable MarketItemが利用可能かどうかを判定
+// isMarketItemAvailable Determines if a MarketItem is available
 func (mv *MarketView) isMarketItemAvailable(item *core.MarketItem) bool {
 	if mv.Nation == nil {
 		return false
@@ -362,5 +362,6 @@ func (mv *MarketView) isMarketItemAvailable(item *core.MarketItem) bool {
 	if market == nil {
 		return false
 	}
+	// Currently, only level is checked
 	return market.Level >= item.RequiredLevel
 }
