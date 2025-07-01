@@ -6,8 +6,8 @@ import (
 )
 
 // ResourceView is a widget for displaying resources.
-// Position: (0,0,300,20).
-// Displays 5 types of resources in 60x20 each.
+// Position: (0,0,600,40).
+// Displays 5 types of resources in 120x40 each.
 type ResourceView struct {
 	GameState *core.GameState
 }
@@ -29,19 +29,19 @@ func (rv *ResourceView) Draw(screen *ebiten.Image) {
 	resources := rv.GameState.Treasury.Resources
 	yield := rv.GameState.GetYield()
 
-	// Display 5 types of resources at 80x20 each.
-	// Money (0, 0, 80, 20).
+	// Display 5 types of resources at 120x40 each.
+	// Money (0, 0, 120, 40).
 	DrawResource(screen, 0, 0, "resource-money", resources.Money, yield.Money)
 
-	// Food (80, 0, 80, 20).
-	DrawResource(screen, 80, 0, "resource-food", resources.Food, yield.Food)
+	// Food (120, 0, 120, 40).
+	DrawResource(screen, 120, 0, "resource-food", resources.Food, yield.Food)
 
-	// Wood (160, 0, 80, 20).
-	DrawResource(screen, 160, 0, "resource-wood", resources.Wood, yield.Wood)
+	// Wood (240, 0, 120, 40).
+	DrawResource(screen, 240, 0, "resource-wood", resources.Wood, yield.Wood)
 
-	// Iron (240, 0, 80, 20).
-	DrawResource(screen, 240, 0, "resource-iron", resources.Iron, yield.Iron)
+	// Iron (360, 0, 120, 40).
+	DrawResource(screen, 360, 0, "resource-iron", resources.Iron, yield.Iron)
 
-	// Mana (320, 0, 80, 20).
-	DrawResource(screen, 320, 0, "resource-mana", resources.Mana, yield.Mana)
+	// Mana (480, 0, 120, 40).
+	DrawResource(screen, 480, 0, "resource-mana", resources.Mana, yield.Mana)
 }

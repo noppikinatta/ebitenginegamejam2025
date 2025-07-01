@@ -43,18 +43,19 @@ func (t *Title) Draw(screen *ebiten.Image) {
 
 	titleImg := drawing.Image("title")
 	opt := &ebiten.DrawImageOptions{}
-	opt.GeoM.Translate(160, 0)
+	opt.GeoM.Scale(2.0, 2.0)
+	opt.GeoM.Translate(320, 0)
 	screen.DrawImage(titleImg, opt)
 
 	opt = &ebiten.DrawImageOptions{}
-	opt.GeoM.Translate(20, 200)
-	drawing.DrawText(screen, lang.Text("story-1"), 12, opt)
+	opt.GeoM.Translate(40, 400)
+	drawing.DrawText(screen, lang.Text("story-1"), 24, opt)
 
 	opt = &ebiten.DrawImageOptions{}
-	opt.GeoM.Translate(220, 320)
-	drawing.DrawText(screen, "Click to Start", 14, opt)
+	opt.GeoM.Translate(440, 640)
+	drawing.DrawText(screen, "Click to Start", 28, opt)
 }
 
 func (t *Title) Layout(outsideWidth, outsideHeight int) (int, int) {
-	return 640, 360
+	return 1280, 720
 }

@@ -16,7 +16,7 @@ const (
 )
 
 // MainView is the main view container Widget.
-// Position: (0,20,520,280).
+// Position: (0,40,1040,560).
 // Switches between MapGridView, MarketView, BattleView, and TerritoryView.
 type MainView struct {
 	CurrentView ViewType

@@ -13,8 +13,8 @@ import (
 )
 
 // MapGridView is a widget for displaying the map grid.
-// Position: (0,20,520,280) - Drawn within MainView.
-// 5x5 Point arrangement (fixed), 520x280 divided into 5x5 (104x56 cells).
+// Position: (0,40,1040,560) - Drawn within MainView.
+// 5x5 Point arrangement (fixed), 1040x560 divided into 5x5 (208x112 cells).
 type MapGridView struct {
 	GameState     *core.GameState
 	TopLeft       geom.PointF
@@ -27,7 +27,7 @@ type MapGridView struct {
 
 // NewMapGridView creates a MapGridView.
 func NewMapGridView(gameState *core.GameState, onPointClicked func(point core.Point)) *MapGridView {
-	cellSize := geom.PointF{X: 520.0 / 5.0, Y: 280.0 / 5.0}
+	cellSize := geom.PointF{X: 1040.0 / 5.0, Y: 560.0 / 5.0}
 	cellLocations := make([]geom.PointF, 25)
 	for y := 0; y < 5; y++ {
 		for x := 0; x < 5; x++ {
@@ -38,7 +38,7 @@ func NewMapGridView(gameState *core.GameState, onPointClicked func(point core.Po
 	}
 	return &MapGridView{
 		GameState:      gameState,
-		TopLeft:        geom.PointF{X: 0, Y: 20},
+		TopLeft:        geom.PointF{X: 0, Y: 40},
 		CellSize:       cellSize,
 		CellLocations:  cellLocations,
 		OnPointClicked: onPointClicked,
@@ -76,10 +76,10 @@ func (m *MapGridView) HandleInput(input *Input) error {
 
 	// Calculate the drawing area of the Point image.
 	cellTopLeft := m.CellLocations[gridY*5+drawGridX]
-	imageX := cellTopLeft.X + (m.CellSize.X-24)/2
-	imageY := cellTopLeft.Y + (m.CellSize.Y-24)/2 - 10 // Consider the offset in the Draw method.
-	imageWidth := 24.0
-	imageHeight := 24.0
+	imageX := cellTopLeft.X + (m.CellSize.X-48)/2
+	imageY := cellTopLeft.Y + (m.CellSize.Y-48)/2 - 20 // Consider the offset in the Draw method.
+	imageWidth := 48.0
+	imageHeight := 48.0
 
 	// Check if the click position is within the range of the Point image.
 	if relativeX >= imageX && relativeX < imageX+imageWidth &&
@@ -137,40 +137,44 @@ func (m *MapGridView) Draw(screen *ebiten.Image) {
 			screenX := cellTopLeft.X + m.TopLeft.X
 			screenY := cellTopLeft.Y + m.TopLeft.Y
 
-			// Draw the Point image (24x24, center of the cell).
-			imageX := screenX + (m.CellSize.X-24)/2
-			imageY := screenY + (m.CellSize.Y-24)/2 - 10 // Consider the space for characters.
+			// Draw the Point image (48x48, center of the cell).
+			imageX := screenX + (m.CellSize.X-48)/2
+			imageY := screenY + (m.CellSize.Y-48)/2 - 20 // Consider the space for characters.
 			interactive := m.GameState.CanInteract(x, y)
 			m.drawPointImage(screen, imageX, imageY, point, interactive)
 
 			// Draw the Point name (below the Point image).
-			textX := screenX + 8
-			textY := imageY + 24 + 2
+			textX := screenX + 16
+			textY := imageY + 48 + 4
 			pointName := m.getPointName(x, y, point)
 
 			opt := &ebiten.DrawImageOptions{}
 			opt.GeoM.Translate(textX, textY)
-			drawing.DrawText(screen, pointName, 12, opt)
+			drawing.DrawText(screen, pointName, 24, opt)
 
 			// If not controlled, draw the enemy's power.
 			if p, ok := point.(*core.WildernessPoint); ok && !p.Controlled && interactive {
 				power := p.Enemy.Power
 				opt := &ebiten.DrawImageOptions{}
-				opt.GeoM.Translate(imageX, imageY+8)
+				opt.GeoM.Scale(2.0, 2.0)
+				opt.GeoM.Translate(imageX, imageY+16)
 				powerIcon := drawing.Image("ui-power")
 				screen.DrawImage(powerIcon, opt)
-				opt.GeoM.Translate(16, 0)
-				drawing.DrawText(screen, fmt.Sprintf("%.1f", power), 12, opt)
+				opt = &ebiten.DrawImageOptions{}
+				opt.GeoM.Translate(imageX+32, imageY+16)
+				drawing.DrawText(screen, fmt.Sprintf("%.1f", power), 24, opt)
 			}
 
 			if p, ok := point.(*core.BossPoint); ok && interactive {
 				power := p.Boss.Power
 				opt := &ebiten.DrawImageOptions{}
-				opt.GeoM.Translate(imageX, imageY+8)
+				opt.GeoM.Scale(2.0, 2.0)
+				opt.GeoM.Translate(imageX, imageY+16)
 				powerIcon := drawing.Image("ui-power")
 				screen.DrawImage(powerIcon, opt)
-				opt.GeoM.Translate(16, 0)
-				drawing.DrawText(screen, fmt.Sprintf("%.1f", power), 12, opt)
+				opt = &ebiten.DrawImageOptions{}
+				opt.GeoM.Translate(imageX+32, imageY+16)
+				drawing.DrawText(screen, fmt.Sprintf("%.1f", power), 24, opt)
 			}
 		}
 	}
@@ -182,11 +186,13 @@ func (m *MapGridView) drawPointImage(screen *ebiten.Image, x, y float64, point c
 	case *core.MyNationPoint:
 		pointImg := drawing.Image("point-mynation")
 		opt := &ebiten.DrawImageOptions{}
+		opt.GeoM.Scale(2.0, 2.0)
 		opt.GeoM.Translate(x, y)
 		screen.DrawImage(pointImg, opt)
 	case *core.OtherNationPoint:
 		pointImg := drawing.Image("point-othernation")
 		opt := &ebiten.DrawImageOptions{}
+		opt.GeoM.Scale(2.0, 2.0)
 		opt.GeoM.Translate(x, y)
 		if !interactive {
 			opt.ColorScale.Scale(0.5, 0.5, 0.5, 1)
@@ -195,6 +201,7 @@ func (m *MapGridView) drawPointImage(screen *ebiten.Image, x, y float64, point c
 	case *core.WildernessPoint:
 		pointImg := drawing.Image(typedPoint.TerrainType)
 		opt := &ebiten.DrawImageOptions{}
+		opt.GeoM.Scale(2.0, 2.0)
 		opt.GeoM.Translate(x, y)
 		if !interactive {
 			opt.ColorScale.Scale(0.5, 0.5, 0.5, 1)
@@ -203,6 +210,7 @@ func (m *MapGridView) drawPointImage(screen *ebiten.Image, x, y float64, point c
 	case *core.BossPoint:
 		pointImg := drawing.Image("point-boss")
 		opt := &ebiten.DrawImageOptions{}
+		opt.GeoM.Scale(2.0, 2.0)
 		opt.GeoM.Translate(x, y)
 		if !interactive {
 			opt.ColorScale.Scale(0.5, 0.5, 0.5, 1)
@@ -210,7 +218,7 @@ func (m *MapGridView) drawPointImage(screen *ebiten.Image, x, y float64, point c
 		screen.DrawImage(pointImg, opt)
 	default:
 		opt := &ebiten.DrawImageOptions{}
-		opt.GeoM.Scale(24, 24)
+		opt.GeoM.Scale(48, 48)
 		opt.GeoM.Translate(x, y)
 		screen.DrawImage(drawing.WhitePixel, opt)
 	}
@@ -258,5 +266,5 @@ func (m *MapGridView) drawConnectionLines(screen *ebiten.Image, x, y int, center
 
 // drawLine draws a line between two points.
 func (m *MapGridView) drawLine(screen *ebiten.Image, x1, y1, x2, y2 float64) {
-	vector.StrokeLine(screen, float32(x1), float32(y1), float32(x2), float32(y2), 2, color.White, true)
+	vector.StrokeLine(screen, float32(x1), float32(y1), float32(x2), float32(y2), 4, color.White, true)
 }

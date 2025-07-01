@@ -82,8 +82,8 @@ func (bv *BattleView) HandleInput(input *Input) error {
 			bv.handleBattleCardClick(cursorX, cursorY)
 		}
 
-		// Click detection for the back button (480,20,40,40).
-		if cursorX >= 480 && cursorX < 520 && cursorY >= 20 && cursorY < 60 {
+		// Click detection for the back button (960,40,80,80).
+		if cursorX >= 960 && cursorX < 1040 && cursorY >= 40 && cursorY < 120 {
 			// Return all placed BattleCards to the CardDeck.
 			bv.GameState.CardDeck.Add(&core.Cards{BattleCards: bv.Battlefield.BattleCards})
 			bv.Battlefield.BattleCards = make([]*core.BattleCard, 0)
@@ -93,8 +93,8 @@ func (bv *BattleView) HandleInput(input *Input) error {
 			}
 		}
 
-		// Click detection for the conquer button (200,280,120,40).
-		if cursorX >= 200 && cursorX < 320 && cursorY >= 280 && cursorY < 300 {
+		// Click detection for the conquer button (400,560,240,40).
+		if cursorX >= 400 && cursorX < 640 && cursorY >= 560 && cursorY < 600 {
 			if bv.CanDefeatEnemy() {
 				bv.Conquer()
 			}
@@ -107,7 +107,7 @@ func (bv *BattleView) HandleInput(input *Input) error {
 		}
 
 		// Click detection for the enemy image (victory process).
-		if bv.CanDefeatEnemy() && cursorX >= 180 && cursorX < 340 && cursorY >= 60 && cursorY < 220 {
+		if bv.CanDefeatEnemy() && cursorX >= 360 && cursorX < 680 && cursorY >= 120 && cursorY < 440 {
 			if bv.Conquer() {
 				// On successful conquest, return to MapGridView.
 				if bv.OnBackClicked != nil {
@@ -124,10 +124,10 @@ func (bv *BattleView) HandleInput(input *Input) error {
 }
 
 func (bv *BattleView) cardIndex(cursorX, cursorY int) int {
-	if cursorX < 0 || cursorX >= 480 || cursorY < 220 || cursorY >= 280 {
+	if cursorX < 0 || cursorX >= 960 || cursorY < 440 || cursorY >= 560 {
 		return -1
 	}
-	cardIndex := cursorX / 40
+	cardIndex := cursorX / 80
 	if cardIndex < 0 || cardIndex >= len(bv.Battlefield.BattleCards) {
 		return -1
 	}
@@ -136,9 +136,9 @@ func (bv *BattleView) cardIndex(cursorX, cursorY int) int {
 
 // handleBattleCardClick handles BattleCard clicks.
 func (bv *BattleView) handleBattleCardClick(cursorX, cursorY int) {
-	// Each card (40x60) in the BattleCard area (0,220,480,60).
-	if cursorY >= 220 && cursorY < 280 {
-		cardIndex := cursorX / 40
+	// Each card (80x120) in the BattleCard area (0,440,960,120).
+	if cursorY >= 440 && cursorY < 560 {
+		cardIndex := cursorX / 80
 
 		var targetCard *core.BattleCard
 		if bv.Battlefield != nil && cardIndex >= 0 && cardIndex < len(bv.Battlefield.BattleCards) {
@@ -154,22 +154,22 @@ func (bv *BattleView) handleBattleCardClick(cursorX, cursorY int) {
 
 // Draw handles drawing.
 func (bv *BattleView) Draw(screen *ebiten.Image) {
-	// Draw header (0,20,520,40).
+	// Draw header (0,40,1040,80).
 	bv.drawHeader(screen)
 
-	// Draw back button (480,20,40,40).
+	// Draw back button (960,40,80,80).
 	bv.drawBackButton(screen)
 
-	// Draw enemy image (180,60,160,160).
+	// Draw enemy image (360,120,320,320).
 	bv.drawEnemy(screen)
 
-	// Draw BattleCard area (0,220,480,60).
+	// Draw BattleCard area (0,440,960,120).
 	bv.drawBattleCards(screen)
 
-	// Draw power display (480,220,40,60).
+	// Draw power display (960,440,80,120).
 	bv.drawPowerDisplay(screen)
 
-	// Draw conquer button (200,280,120,40).
+	// Draw conquer button (400,560,240,80).
 	bv.drawConquerButton(screen)
 
 	bv.drawHoveredCardTooltip(screen)
@@ -179,10 +179,10 @@ func (bv *BattleView) Draw(screen *ebiten.Image) {
 func (bv *BattleView) drawHeader(screen *ebiten.Image) {
 	// Header background.
 	vertices := []ebiten.Vertex{
-		{DstX: 0, DstY: 20, SrcX: 0, SrcY: 0, ColorR: 0.4, ColorG: 0.2, ColorB: 0.2, ColorA: 1},
-		{DstX: 520, DstY: 20, SrcX: 0, SrcY: 0, ColorR: 0.4, ColorG: 0.2, ColorB: 0.2, ColorA: 1},
-		{DstX: 520, DstY: 60, SrcX: 0, SrcY: 0, ColorR: 0.4, ColorG: 0.2, ColorB: 0.2, ColorA: 1},
-		{DstX: 0, DstY: 60, SrcX: 0, SrcY: 0, ColorR: 0.4, ColorG: 0.2, ColorB: 0.2, ColorA: 1},
+		{DstX: 0, DstY: 40, SrcX: 0, SrcY: 0, ColorR: 0.4, ColorG: 0.2, ColorB: 0.2, ColorA: 1},
+		{DstX: 1040, DstY: 40, SrcX: 0, SrcY: 0, ColorR: 0.4, ColorG: 0.2, ColorB: 0.2, ColorA: 1},
+		{DstX: 1040, DstY: 120, SrcX: 0, SrcY: 0, ColorR: 0.4, ColorG: 0.2, ColorB: 0.2, ColorA: 1},
+		{DstX: 0, DstY: 120, SrcX: 0, SrcY: 0, ColorR: 0.4, ColorG: 0.2, ColorB: 0.2, ColorA: 1},
 	}
 	indices := []uint16{0, 1, 2, 0, 2, 3}
 	screen.DrawTriangles(vertices, indices, drawing.WhitePixel, &ebiten.DrawTrianglesOptions{})
@@ -198,26 +198,26 @@ func (bv *BattleView) drawHeader(screen *ebiten.Image) {
 	title := lang.ExecuteTemplate("battle-title", map[string]any{"location": lang.Text(pointName)})
 
 	opt := &ebiten.DrawImageOptions{}
-	opt.GeoM.Translate(10, 30)
-	drawing.DrawText(screen, title, 16, opt)
+	opt.GeoM.Translate(20, 60)
+	drawing.DrawText(screen, title, 32, opt)
 }
 
 // drawBackButton draws the back button.
 func (bv *BattleView) drawBackButton(screen *ebiten.Image) {
-	DrawButton(screen, 480, 20, 40, 40, "ui-close")
+	DrawButton(screen, 960, 40, 80, 80, "ui-close")
 }
 
 // drawEnemy draws the enemy image.
 func (bv *BattleView) drawEnemy(screen *ebiten.Image) {
-	// Enemy image background (180,60,160,160).
+	// Enemy image background (360,120,320,320).
 	var color [4]float32
 	color = [4]float32{0.8, 0.8, 0.8, 1}
 
 	vertices := []ebiten.Vertex{
-		{DstX: 180, DstY: 60, SrcX: 0, SrcY: 0, ColorR: color[0], ColorG: color[1], ColorB: color[2], ColorA: color[3]},
-		{DstX: 340, DstY: 60, SrcX: 0, SrcY: 0, ColorR: color[0], ColorG: color[1], ColorB: color[2], ColorA: color[3]},
-		{DstX: 340, DstY: 220, SrcX: 0, SrcY: 0, ColorR: color[0], ColorG: color[1], ColorB: color[2], ColorA: color[3]},
-		{DstX: 180, DstY: 220, SrcX: 0, SrcY: 0, ColorR: color[0], ColorG: color[1], ColorB: color[2], ColorA: color[3]},
+		{DstX: 360, DstY: 120, SrcX: 0, SrcY: 0, ColorR: color[0], ColorG: color[1], ColorB: color[2], ColorA: color[3]},
+		{DstX: 680, DstY: 120, SrcX: 0, SrcY: 0, ColorR: color[0], ColorG: color[1], ColorB: color[2], ColorA: color[3]},
+		{DstX: 680, DstY: 440, SrcX: 0, SrcY: 0, ColorR: color[0], ColorG: color[1], ColorB: color[2], ColorA: color[3]},
+		{DstX: 360, DstY: 440, SrcX: 0, SrcY: 0, ColorR: color[0], ColorG: color[1], ColorB: color[2], ColorA: color[3]},
 	}
 	indices := []uint16{0, 1, 2, 0, 2, 3}
 	screen.DrawTriangles(vertices, indices, drawing.WhitePixel, &ebiten.DrawTrianglesOptions{})
@@ -228,85 +228,88 @@ func (bv *BattleView) drawEnemy(screen *ebiten.Image) {
 
 		enemyImage := drawing.Image(string(enemy.EnemyID))
 		opt := &ebiten.DrawImageOptions{}
-		opt.GeoM.Scale(2, 2)
-		opt.GeoM.Translate(180, 60)
+		opt.GeoM.Scale(4, 4)
+		opt.GeoM.Translate(360, 120)
 		screen.DrawImage(enemyImage, opt)
 
 		// Enemy type.
 		opt = &ebiten.DrawImageOptions{}
-		opt.GeoM.Translate(185, 70)
+		opt.GeoM.Translate(370, 140)
 		enemyType := lang.ExecuteTemplate("battle-enemy-type", map[string]any{"type": lang.Text(string(enemy.EnemyType))})
-		drawing.DrawText(screen, enemyType, 12, opt)
+		drawing.DrawText(screen, enemyType, 24, opt)
 
 		// Enemy's Power.
 		opt = &ebiten.DrawImageOptions{}
-		opt.GeoM.Translate(185, 90)
+		opt.GeoM.Scale(2.0, 2.0)
+		opt.GeoM.Translate(370, 180)
 		powerIcon := drawing.Image("ui-power")
 		screen.DrawImage(powerIcon, opt)
-		opt.GeoM.Translate(16, 0)
+		opt = &ebiten.DrawImageOptions{}
+		opt.GeoM.Translate(402, 180)
 		powerText := fmt.Sprintf("%s: %.1f", lang.Text("battle-power"), enemy.Power)
-		drawing.DrawText(screen, powerText, 12, opt)
+		drawing.DrawText(screen, powerText, 24, opt)
 
 		// Enemy's quote.
 		opt = &ebiten.DrawImageOptions{}
-		opt.GeoM.Translate(16, 160)
+		opt.GeoM.Translate(32, 320)
 		enemyTalk := lang.ExecuteTemplate("battle-enemy-talk", map[string]any{"name": lang.Text(string(enemy.EnemyID)), "text": lang.Text(string(enemy.Question))})
-		drawing.DrawText(screen, enemyTalk, 12, opt)
+		drawing.DrawText(screen, enemyTalk, 24, opt)
 
 		// Enemy skills
 		for i, skill := range enemy.Skills {
 			opt = &ebiten.DrawImageOptions{}
-			opt.GeoM.Translate(350, 60+float64(i*60))
+			opt.GeoM.Translate(700, 120+float64(i*120))
 			skillName := lang.Text(string(skill.ID()))
-			drawing.DrawText(screen, skillName, 12, opt)
-			opt.GeoM.Translate(0, 16)
+			drawing.DrawText(screen, skillName, 24, opt)
+			opt = &ebiten.DrawImageOptions{}
+			opt.GeoM.Translate(700, 152+float64(i*120))
 			skillDescription := lang.Text(string(skill.ID()) + "-desc")
-			drawing.DrawText(screen, skillDescription, 9, opt)
+			drawing.DrawText(screen, skillDescription, 18, opt)
 		}
 	}
 }
 
 // drawBattleCards draws the BattleCard area
 func (bv *BattleView) drawBattleCards(screen *ebiten.Image) {
-	// Background of the BattleCard area (0,220,480,60)
+	// Background of the BattleCard area (0,440,960,120)
 	vertices := []ebiten.Vertex{
-		{DstX: 0, DstY: 220, SrcX: 0, SrcY: 0, ColorR: 0.2, ColorG: 0.2, ColorB: 0.3, ColorA: 1},
-		{DstX: 480, DstY: 220, SrcX: 0, SrcY: 0, ColorR: 0.2, ColorG: 0.2, ColorB: 0.3, ColorA: 1},
-		{DstX: 480, DstY: 280, SrcX: 0, SrcY: 0, ColorR: 0.2, ColorG: 0.2, ColorB: 0.3, ColorA: 1},
-		{DstX: 0, DstY: 280, SrcX: 0, SrcY: 0, ColorR: 0.2, ColorG: 0.2, ColorB: 0.3, ColorA: 1},
+		{DstX: 0, DstY: 440, SrcX: 0, SrcY: 0, ColorR: 0.2, ColorG: 0.2, ColorB: 0.3, ColorA: 1},
+		{DstX: 960, DstY: 440, SrcX: 0, SrcY: 0, ColorR: 0.2, ColorG: 0.2, ColorB: 0.3, ColorA: 1},
+		{DstX: 960, DstY: 560, SrcX: 0, SrcY: 0, ColorR: 0.2, ColorG: 0.2, ColorB: 0.3, ColorA: 1},
+		{DstX: 0, DstY: 560, SrcX: 0, SrcY: 0, ColorR: 0.2, ColorG: 0.2, ColorB: 0.3, ColorA: 1},
 	}
 	indices := []uint16{0, 1, 2, 0, 2, 3}
 	screen.DrawTriangles(vertices, indices, drawing.WhitePixel, &ebiten.DrawTrianglesOptions{})
 
 	// Draw each card.
-	// Draw deployed BattleCards (40x60 × 12 cards)
+	// Draw deployed BattleCards (80x120 × 12 cards)
 	for i, card := range bv.Battlefield.BattleCards {
 		if i >= 12 { // Maximum of 12 cards
 			break
 		}
 
-		cardX := float64(i * 40)
-		cardY := 220.0
+		cardX := float64(i * 80)
+		cardY := 440.0
 
 		// Draw card
 		DrawBattleCard(screen, cardX, cardY, card)
 	}
 
 	for i := len(bv.Battlefield.BattleCards); i < bv.Battlefield.CardSlot; i++ {
-		cardX := float64(i * 40)
-		cardY := 220.0
+		cardX := float64(i * 80)
+		cardY := 440.0
 		DrawCardBackground(screen, cardX, cardY, 0.5)
 	}
 }
 
 // drawPowerDisplay draws the Power display.
 func (bv *BattleView) drawPowerDisplay(screen *ebiten.Image) {
-	// Background of the Power display (480,220,40,60)
+	// Background of the Power display (960,440,80,120)
 	vertices := []ebiten.Vertex{
-		{DstX: 480, DstY: 220, SrcX: 0, SrcY: 0, ColorR: 0.3, ColorG: 0.3, ColorB: 0.4, ColorA: 1},
-		{DstX: 520, DstY: 220, SrcX: 0, SrcY: 0, ColorR: 0.3, ColorG: 0.3, ColorB: 0.4, ColorA: 1},
-		{DstX: 520, DstY: 280, SrcX: 0, SrcY: 0, ColorR: 0.3, ColorG: 0.3, ColorB: 0.4, ColorA: 1},
-		{DstX: 480, DstY: 280, SrcX: 0, SrcY: 0, ColorR: 0.3, ColorG: 0.3, ColorB: 0.4, ColorA: 1},
+		{DstX: 960, DstY: 440, SrcX: 0, SrcY: 0, ColorR: 0.3, ColorG: 0.3, ColorB: 0.4, ColorA: 1},
+		{DstX: 1040, DstY: 440, SrcX: 0, SrcY: 0, ColorR: 0.3, ColorG: 0.3, ColorB: 0.4, ColorA: 1},
+		{DstX: 1040, DstY: 560, SrcX: 0, SrcY: 0, ColorR: 0.3, ColorG: 0.3, ColorB: 0.4, ColorA: 1},
+		{DstX: 960, DstY: 560, SrcX: 0, SrcY: 0, ColorR: 0.3, ColorG: 0.3, ColorB: 0.4, ColorA: 1},
 	}
 	indices := []uint16{0, 1, 2, 0, 2, 3}
 	screen.DrawTriangles(vertices, indices, drawing.WhitePixel, &ebiten.DrawTrianglesOptions{})
@@ -315,21 +318,22 @@ func (bv *BattleView) drawPowerDisplay(screen *ebiten.Image) {
 	totalPower := bv.GetTotalPower()
 
 	opt := &ebiten.DrawImageOptions{}
-	opt.GeoM.Translate(485, 225)
+	opt.GeoM.Scale(2.0, 2.0)
+	opt.GeoM.Translate(970, 450)
 	powerIcon := drawing.Image("ui-power")
 	screen.DrawImage(powerIcon, opt)
 
 	opt = &ebiten.DrawImageOptions{}
-	opt.GeoM.Translate(485, 240)
+	opt.GeoM.Translate(970, 480)
 	powerText := fmt.Sprintf("%.1f", totalPower)
-	drawing.DrawText(screen, powerText, 14, opt)
+	drawing.DrawText(screen, powerText, 28, opt)
 
 	// Display required Power (enemy's Power)
 	if bv.BattlePoint != nil {
 		opt = &ebiten.DrawImageOptions{}
-		opt.GeoM.Translate(485, 255)
+		opt.GeoM.Translate(970, 510)
 		requiredText := fmt.Sprintf("/%.1f", bv.BattlePoint.GetEnemy().Power)
-		drawing.DrawText(screen, requiredText, 10, opt)
+		drawing.DrawText(screen, requiredText, 20, opt)
 	}
 }
 
@@ -345,10 +349,10 @@ func (bv *BattleView) drawConquerButton(screen *ebiten.Image) {
 
 	// Button background
 	vertices := []ebiten.Vertex{
-		{DstX: 200, DstY: 280, SrcX: 0, SrcY: 0, ColorR: colorR, ColorG: colorG, ColorB: colorB, ColorA: 1},
-		{DstX: 320, DstY: 280, SrcX: 0, SrcY: 0, ColorR: colorR, ColorG: colorG, ColorB: colorB, ColorA: 1},
-		{DstX: 320, DstY: 320, SrcX: 0, SrcY: 0, ColorR: colorR, ColorG: colorG, ColorB: colorB, ColorA: 1},
-		{DstX: 200, DstY: 320, SrcX: 0, SrcY: 0, ColorR: colorR, ColorG: colorG, ColorB: colorB, ColorA: 1},
+		{DstX: 400, DstY: 560, SrcX: 0, SrcY: 0, ColorR: colorR, ColorG: colorG, ColorB: colorB, ColorA: 1},
+		{DstX: 640, DstY: 560, SrcX: 0, SrcY: 0, ColorR: colorR, ColorG: colorG, ColorB: colorB, ColorA: 1},
+		{DstX: 640, DstY: 600, SrcX: 0, SrcY: 0, ColorR: colorR, ColorG: colorG, ColorB: colorB, ColorA: 1},
+		{DstX: 400, DstY: 600, SrcX: 0, SrcY: 0, ColorR: colorR, ColorG: colorG, ColorB: colorB, ColorA: 1},
 	}
 	indices := []uint16{0, 1, 2, 0, 2, 3}
 	screen.DrawTriangles(vertices, indices, drawing.WhitePixel, &ebiten.DrawTrianglesOptions{})
@@ -356,12 +360,12 @@ func (bv *BattleView) drawConquerButton(screen *ebiten.Image) {
 	// Button text
 	if canConquer {
 		opt := &ebiten.DrawImageOptions{}
-		opt.GeoM.Translate(210, 280)
-		drawing.DrawText(screen, lang.Text("ui-conquer"), 14, opt)
+		opt.GeoM.Translate(420, 560)
+		drawing.DrawText(screen, lang.Text("ui-conquer"), 28, opt)
 	} else {
 		opt := &ebiten.DrawImageOptions{}
-		opt.GeoM.Translate(210, 280)
-		drawing.DrawText(screen, lang.Text("ui-need-power"), 12, opt)
+		opt.GeoM.Translate(420, 560)
+		drawing.DrawText(screen, lang.Text("ui-need-power"), 24, opt)
 	}
 }
 

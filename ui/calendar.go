@@ -9,7 +9,7 @@ import (
 )
 
 // CalendarView is a widget for displaying the calendar.
-// Position: (520,0,120,20).
+// Position: (1040,0,240,40).
 // Displays the current Turn in year/month format.
 type CalendarView struct {
 	GameState *core.GameState
@@ -36,8 +36,8 @@ func (cv *CalendarView) Draw(screen *ebiten.Image) {
 	// Display in YYYY/MM format.
 	text := fmt.Sprintf("%04d/%02d", year, month)
 
-	// Position: (520,0,120,20).
+	// Position: (1040,0,240,40).
 	opt := &ebiten.DrawImageOptions{}
-	opt.GeoM.Translate(520, 0)
-	drawing.DrawText(screen, text, 12, opt)
+	opt.GeoM.Translate(1040, 0)
+	drawing.DrawText(screen, text, 24, opt)
 }

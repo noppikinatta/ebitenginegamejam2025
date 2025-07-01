@@ -10,8 +10,8 @@ import (
 )
 
 // CardDeckView is a Widget for the card deck.
-// Position: (0,300,640,60).
-// Displays up to 16 cards at 40x60.
+// Position: (0,600,1280,120).
+// Displays up to 16 cards at 80x120.
 type CardDeckView struct {
 	CardDeck       *core.CardDeck    // The card deck to display.
 	SelectedIndex  int               // The index of the selected card (-1 for none).
@@ -176,8 +176,8 @@ func (c *CardDeckView) HandleInput(input *Input) error {
 	}
 
 	if input.Mouse.IsJustReleased(ebiten.MouseButtonLeft) {
-		// Check if within the CardDeckView area (0,300,640,60).
-		if cursorY >= 300 && cursorY < 360 && cursorX >= 0 && cursorX < 640 {
+		// Check if within the CardDeckView area (0,600,1280,120).
+		if cursorY >= 600 && cursorY < 720 && cursorX >= 0 && cursorX < 1280 {
 			c.handleCardClick(cursorX, cursorY)
 		}
 	}
@@ -185,12 +185,12 @@ func (c *CardDeckView) HandleInput(input *Input) error {
 }
 
 func (c *CardDeckView) CardIndex(cursorX, cursorY int) int {
-	if cursorX < 0 || cursorX >= 640 || cursorY < 300 || cursorY >= 360 {
+	if cursorX < 0 || cursorX >= 1280 || cursorY < 600 || cursorY >= 720 {
 		return -1
 	}
 
 	allCards := c.getAllCards()
-	cardIndex := cursorX / 40
+	cardIndex := cursorX / 80
 
 	if cardIndex < 0 || cardIndex >= len(allCards) || cardIndex >= 16 {
 		return -1
@@ -245,12 +245,12 @@ func (c *CardDeckView) Draw(screen *ebiten.Image) {
 
 // drawBackground draws the background.
 func (c *CardDeckView) drawBackground(screen *ebiten.Image) {
-	// CardDeckView background (0,300,640,60).
+	// CardDeckView background (0,600,1280,120).
 	vertices := []ebiten.Vertex{
-		{DstX: 0, DstY: 300, SrcX: 0, SrcY: 0, ColorR: 0.1, ColorG: 0.1, ColorB: 0.15, ColorA: 1},
-		{DstX: 640, DstY: 300, SrcX: 0, SrcY: 0, ColorR: 0.1, ColorG: 0.1, ColorB: 0.15, ColorA: 1},
-		{DstX: 640, DstY: 360, SrcX: 0, SrcY: 0, ColorR: 0.1, ColorG: 0.1, ColorB: 0.15, ColorA: 1},
-		{DstX: 0, DstY: 360, SrcX: 0, SrcY: 0, ColorR: 0.1, ColorG: 0.1, ColorB: 0.15, ColorA: 1},
+		{DstX: 0, DstY: 600, SrcX: 0, SrcY: 0, ColorR: 0.1, ColorG: 0.1, ColorB: 0.15, ColorA: 1},
+		{DstX: 1280, DstY: 600, SrcX: 0, SrcY: 0, ColorR: 0.1, ColorG: 0.1, ColorB: 0.15, ColorA: 1},
+		{DstX: 1280, DstY: 720, SrcX: 0, SrcY: 0, ColorR: 0.1, ColorG: 0.1, ColorB: 0.15, ColorA: 1},
+		{DstX: 0, DstY: 720, SrcX: 0, SrcY: 0, ColorR: 0.1, ColorG: 0.1, ColorB: 0.15, ColorA: 1},
 	}
 	indices := []uint16{0, 1, 2, 0, 2, 3}
 	screen.DrawTriangles(vertices, indices, drawing.WhitePixel, &ebiten.DrawTrianglesOptions{})
@@ -261,8 +261,8 @@ func (c *CardDeckView) drawCards(screen *ebiten.Image) {
 	if c.CardDeck == nil {
 		// Message when card deck is empty
 		opt := &ebiten.DrawImageOptions{}
-		opt.GeoM.Translate(320, 320)
-		drawing.DrawText(screen, lang.Text("card-no-deck"), 12, opt)
+		opt.GeoM.Translate(640, 640)
+		drawing.DrawText(screen, lang.Text("card-no-deck"), 24, opt)
 		return
 	}
 
@@ -270,19 +270,19 @@ func (c *CardDeckView) drawCards(screen *ebiten.Image) {
 	if len(allCards) == 0 {
 		// Message when there are no cards
 		opt := &ebiten.DrawImageOptions{}
-		opt.GeoM.Translate(300, 320)
-		drawing.DrawText(screen, lang.Text("card-no-cards"), 12, opt)
+		opt.GeoM.Translate(600, 640)
+		drawing.DrawText(screen, lang.Text("card-no-cards"), 24, opt)
 		return
 	}
 
-	// Draw cards in 40x60 size (max 16)
+	// Draw cards in 80x120 size (max 16)
 	for i, card := range allCards {
 		if i >= 16 { // Up to 16 cards
 			break
 		}
 
-		x := float64(i * 40)
-		y := float64(300)
+		x := float64(i * 80)
+		y := float64(600)
 
 		c.drawCard(screen, card, x, y, i == c.SelectedIndex)
 	}
@@ -290,8 +290,8 @@ func (c *CardDeckView) drawCards(screen *ebiten.Image) {
 	// Abbreviated display if over 16 cards
 	if len(allCards) > 16 {
 		opt := &ebiten.DrawImageOptions{}
-		opt.GeoM.Translate(580, 345)
-		drawing.DrawText(screen, fmt.Sprintf("+%d", len(allCards)-16), 9, opt)
+		opt.GeoM.Translate(1160, 690)
+		drawing.DrawText(screen, fmt.Sprintf("+%d", len(allCards)-16), 18, opt)
 	}
 }
 

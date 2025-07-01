@@ -44,8 +44,8 @@ func (mv *MarketView) HandleInput(input *Input) error {
 	if input.Mouse.IsJustReleased(ebiten.MouseButtonLeft) {
 		cursorX, cursorY := input.Mouse.CursorPosition()
 
-		// Back button click detection (480,20,40,40)
-		if cursorX >= 480 && cursorX < 520 && cursorY >= 20 && cursorY < 60 {
+		// Back button click detection (960,40,80,80)
+		if cursorX >= 960 && cursorX < 1040 && cursorY >= 40 && cursorY < 120 {
 			if mv.OnBackClicked != nil {
 				mv.OnBackClicked()
 				return nil
@@ -64,10 +64,10 @@ func (mv *MarketView) Draw(screen *ebiten.Image) {
 		return
 	}
 
-	// Draw header (0,20,480,40)
+	// Draw header (0,40,960,80)
 	mv.drawHeader(screen)
 
-	// Draw back button (480,20,40,40)
+	// Draw back button (960,40,80,80)
 	mv.drawBackButton(screen)
 
 	// Draw CardPack list
@@ -80,38 +80,38 @@ func (mv *MarketView) drawHeader(screen *ebiten.Image) {
 
 	// Header background
 	vertices := []ebiten.Vertex{
-		{DstX: 0, DstY: 20, SrcX: 0, SrcY: 0, ColorR: 0.3, ColorG: 0.3, ColorB: 0.3, ColorA: 1},
-		{DstX: 480, DstY: 20, SrcX: 0, SrcY: 0, ColorR: 0.3, ColorG: 0.3, ColorB: 0.3, ColorA: 1},
-		{DstX: 480, DstY: 60, SrcX: 0, SrcY: 0, ColorR: 0.3, ColorG: 0.3, ColorB: 0.3, ColorA: 1},
-		{DstX: 0, DstY: 60, SrcX: 0, SrcY: 0, ColorR: 0.3, ColorG: 0.3, ColorB: 0.3, ColorA: 1},
+		{DstX: 0, DstY: 40, SrcX: 0, SrcY: 0, ColorR: 0.3, ColorG: 0.3, ColorB: 0.3, ColorA: 1},
+		{DstX: 960, DstY: 40, SrcX: 0, SrcY: 0, ColorR: 0.3, ColorG: 0.3, ColorB: 0.3, ColorA: 1},
+		{DstX: 960, DstY: 120, SrcX: 0, SrcY: 0, ColorR: 0.3, ColorG: 0.3, ColorB: 0.3, ColorA: 1},
+		{DstX: 0, DstY: 120, SrcX: 0, SrcY: 0, ColorR: 0.3, ColorG: 0.3, ColorB: 0.3, ColorA: 1},
 	}
 	indices := []uint16{0, 1, 2, 0, 2, 3}
 	screen.DrawTriangles(vertices, indices, drawing.WhitePixel, &ebiten.DrawTrianglesOptions{})
 
 	// Nation name text
 	opt := &ebiten.DrawImageOptions{}
-	opt.GeoM.Translate(10, 30)
-	drawing.DrawText(screen, nationName, 16, opt)
+	opt.GeoM.Translate(20, 60)
+	drawing.DrawText(screen, nationName, 32, opt)
 }
 
 // drawBackButton draws the back button
 func (mv *MarketView) drawBackButton(screen *ebiten.Image) {
-	DrawButton(screen, 480, 20, 40, 40, "ui-close")
+	DrawButton(screen, 960, 40, 80, 80, "ui-close")
 }
 
 // drawMarketItems draws the list of MarketItems
 func (mv *MarketView) drawMarketItems(screen *ebiten.Image) {
 	marketItems := mv.getAllMarketItems()
 
-	// CardPack display area: 260x80 x 6
-	// Positions: (0,60,260,80), (260,60,260,80), (0,140,260,80), (260,140,260,80), (0,220,260,80), (260,220,260,80)
+	// CardPack display area: 520x160 x 6
+	// Positions: (0,120,520,160), (520,120,520,160), (0,280,520,160), (520,280,520,160), (0,440,520,160), (520,440,520,160)
 	positions := [][4]float64{
-		{0, 60, 260, 80},    // Top left
-		{260, 60, 260, 80},  // Top right
-		{0, 140, 260, 80},   // Middle left
-		{260, 140, 260, 80}, // Middle right
-		{0, 220, 260, 80},   // Bottom left
-		{260, 220, 260, 80}, // Bottom right
+		{0, 120, 520, 160},    // Top left
+		{520, 120, 520, 160},  // Top right
+		{0, 280, 520, 160},   // Middle left
+		{520, 280, 520, 160}, // Middle right
+		{0, 440, 520, 160},   // Bottom left
+		{520, 440, 520, 160}, // Bottom right
 	}
 
 	for i, item := range marketItems {
@@ -143,39 +143,39 @@ func (mv *MarketView) drawMarketItem(screen *ebiten.Image, item *core.MarketItem
 	indices := []uint16{0, 1, 2, 0, 2, 3}
 	screen.DrawTriangles(vertices, indices, drawing.WhitePixel, &ebiten.DrawTrianglesOptions{})
 
-	// CardPack image (0,60,40,40) -> relative position (0,0,40,40)
-	mv.drawCardPackImage(screen, x, y, 40, 40)
+	// CardPack image (0,120,80,80) -> relative position (0,0,80,80)
+	mv.drawCardPackImage(screen, x, y, 80, 80)
 
-	// CardPack name (40,60,220,20) -> relative position (40,0,220,20)
+	// CardPack name (80,120,440,40) -> relative position (80,0,440,40)
 	opt := &ebiten.DrawImageOptions{}
-	opt.GeoM.Translate(x+40, y)
+	opt.GeoM.Translate(x+80, y)
 	cardPackName := lang.Text(string(item.CardPack.CardPackID))
-	drawing.DrawText(screen, cardPackName, 14, opt)
+	drawing.DrawText(screen, cardPackName, 28, opt)
 
-	// CardPack description (40,80,220,40) -> relative position (40,20,220,40)
+	// CardPack description (80,160,440,80) -> relative position (80,40,440,80)
 	opt = &ebiten.DrawImageOptions{}
-	opt.GeoM.Translate(x+40, y+20)
+	opt.GeoM.Translate(x+80, y+40)
 	var description string
 	if !isAvailable {
 		description = lang.ExecuteTemplate("market-required-level", map[string]any{"level": item.RequiredLevel})
-		drawing.DrawText(screen, description, 10, opt)
+		drawing.DrawText(screen, description, 20, opt)
 	}
 
-	// CardPack price (0,120,260,20) -> relative position (0,60,260,20)
-	mv.drawCardPackPrice(screen, item, index, x, y+60, 260, 20)
+	// CardPack price (0,240,520,40) -> relative position (0,120,520,40)
+	mv.drawCardPackPrice(screen, item, index, x, y+120, 520, 40)
 }
 
 // drawCardPackImage draws the CardPack image
 func (mv *MarketView) drawCardPackImage(screen *ebiten.Image, x, y, width, height float64) {
-	// 24x32 image (rectangle as a dummy)
-	imageX := x + (width-24)/2
-	imageY := y + (height-32)/2
+	// 48x64 image (rectangle as a dummy)
+	imageX := x + (width-48)/2
+	imageY := y + (height-64)/2
 
 	vertices := []ebiten.Vertex{
 		{DstX: float32(imageX), DstY: float32(imageY), SrcX: 0, SrcY: 0, ColorR: 0.6, ColorG: 0.4, ColorB: 0.2, ColorA: 1},
-		{DstX: float32(imageX + 24), DstY: float32(imageY), SrcX: 0, SrcY: 0, ColorR: 0.6, ColorG: 0.4, ColorB: 0.2, ColorA: 1},
-		{DstX: float32(imageX + 24), DstY: float32(imageY + 32), SrcX: 0, SrcY: 0, ColorR: 0.6, ColorG: 0.4, ColorB: 0.2, ColorA: 1},
-		{DstX: float32(imageX), DstY: float32(imageY + 32), SrcX: 0, SrcY: 0, ColorR: 0.6, ColorG: 0.4, ColorB: 0.2, ColorA: 1},
+		{DstX: float32(imageX + 48), DstY: float32(imageY), SrcX: 0, SrcY: 0, ColorR: 0.6, ColorG: 0.4, ColorB: 0.2, ColorA: 1},
+		{DstX: float32(imageX + 48), DstY: float32(imageY + 64), SrcX: 0, SrcY: 0, ColorR: 0.6, ColorG: 0.4, ColorB: 0.2, ColorA: 1},
+		{DstX: float32(imageX), DstY: float32(imageY + 64), SrcX: 0, SrcY: 0, ColorR: 0.6, ColorG: 0.4, ColorB: 0.2, ColorA: 1},
 	}
 	indices := []uint16{0, 1, 2, 0, 2, 3}
 	screen.DrawTriangles(vertices, indices, drawing.WhitePixel, &ebiten.DrawTrianglesOptions{})
@@ -188,7 +188,7 @@ func (mv *MarketView) drawCardPackPrice(screen *ebiten.Image, item *core.MarketI
 	price := item.Price
 	subtracted := mv.GameState.Treasury.Resources.Sub(price)
 
-	// Display each resource type in 60x20
+	// Display each resource type in 120x40
 	resourceTypes := []struct {
 		name  string
 		value int
@@ -203,25 +203,26 @@ func (mv *MarketView) drawCardPackPrice(screen *ebiten.Image, item *core.MarketI
 
 	currentX := x
 	for _, resource := range resourceTypes {
-		if resource.value > 0 && currentX < x+width-60 {
-			// Resource image (20x20) and Price number (40x20)
+		if resource.value > 0 && currentX < x+width-120 {
+			// Resource image (40x40) and Price number (80x40)
 			icon := drawing.Image(resource.name)
 
 			// Resource icon
 			opt := &ebiten.DrawImageOptions{}
+			opt.GeoM.Scale(2.0, 2.0)
 			opt.GeoM.Translate(currentX, y)
 			screen.DrawImage(icon, opt)
 
 			// Price number (red if not purchasable)
 			opt = &ebiten.DrawImageOptions{}
-			opt.GeoM.Translate(currentX+20, y)
+			opt.GeoM.Translate(currentX+40, y)
 			if !canPurchase || resource.red {
 				opt.ColorScale.Scale(1, 0, 0, 1)
 			}
 			priceText := fmt.Sprintf("%d", resource.value)
-			drawing.DrawText(screen, priceText, 12, opt)
+			drawing.DrawText(screen, priceText, 24, opt)
 
-			currentX += 60
+			currentX += 120
 		}
 	}
 }
@@ -257,12 +258,12 @@ func (mv *MarketView) getCardPackPrice(index int) (*core.ResourceQuantity, bool)
 // handleMarketItemClick handles MarketItem clicks
 func (mv *MarketView) handleMarketItemClick(cursorX, cursorY int) {
 	positions := [][4]int{
-		{0, 60, 260, 80},    // Top left
-		{260, 60, 260, 80},  // Top right
-		{0, 140, 260, 80},   // Middle left
-		{260, 140, 260, 80}, // Middle right
-		{0, 220, 260, 80},   // Bottom left
-		{260, 220, 260, 80}, // Bottom right
+		{0, 120, 520, 160},    // Top left
+		{520, 120, 520, 160},  // Top right
+		{0, 280, 520, 160},   // Middle left
+		{520, 280, 520, 160}, // Middle right
+		{0, 440, 520, 160},   // Bottom left
+		{520, 440, 520, 160}, // Bottom right
 	}
 
 	marketItems := mv.getAllMarketItems()

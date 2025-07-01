@@ -51,12 +51,12 @@ func (r *Result) Draw(screen *ebiten.Image) {
 	screen.Fill(color.RGBA{60, 40, 80, 255})
 
 	opt := &ebiten.DrawImageOptions{}
-	opt.GeoM.Translate(20, 180)
-	drawing.DrawText(screen, lang.Text("story-2"), 12, opt)
+	opt.GeoM.Translate(40, 360)
+	drawing.DrawText(screen, lang.Text("story-2"), 24, opt)
 }
 
 func (r *Result) Layout(outsideWidth, outsideHeight int) (int, int) {
-	return 640, 360
+	return 1280, 720
 }
 
 func (r *Result) GetGameHistory() *GameHistory {
