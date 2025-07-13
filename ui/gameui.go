@@ -28,7 +28,7 @@ func NewGameUI(gameState *core.GameState) *GameUI {
 	resourceView := NewResourceView(gameState)
 	calendarView := NewCalendarView(gameState)
 	mainView := NewMainView(gameState)
-	infoView := NewInfoView()
+	infoView := NewInfoView(gameState)
 
 	cardDeckView := NewCardDeckView(gameState.CardDeck)
 
@@ -83,11 +83,6 @@ func (gui *GameUI) setupWidgetConnections() {
 	}
 
 	// Coordination from MainView to InfoView is handled dynamically in Update()
-}
-
-// AddHistoryEvent adds a history event.
-func (gui *GameUI) AddHistoryEvent(event string) {
-	gui.InfoView.AddHistoryEvent(event)
 }
 
 // SetMousePosition updates the mouse position.
@@ -195,7 +190,6 @@ func (gui *GameUI) MoveCardToTerritory() bool {
 		// Add to TerritoryView
 		gui.MainView.Territory.AddStructureCard(structureCard)
 
-		gui.AddHistoryEvent("Card moved to territory")
 		return true
 	}
 
@@ -205,5 +199,4 @@ func (gui *GameUI) MoveCardToTerritory() bool {
 // ReturnCardToDeck returns a card to the CardDeck.
 func (gui *GameUI) ReturnCardToDeck(card interface{}) {
 	gui.CardDeckView.AddCard(card)
-	gui.AddHistoryEvent("Card returned to deck")
 }

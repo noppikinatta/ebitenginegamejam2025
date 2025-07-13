@@ -337,9 +337,21 @@ func (mv *MarketView) PurchaseCardPack(item *core.MarketItem) error {
 	}
 
 	// Purchase processing
+	oldLevel := mv.Nation.GetMarket().Level
 	cardPack, ok := mv.Nation.Purchase(itemIndex, mv.GameState.Treasury)
 	if !ok {
 		return fmt.Errorf("purchase failed")
+	}
+
+	if int(mv.Nation.GetMarket().Level) > int(oldLevel) {
+		mv.GameState.AddHistory(core.History{
+			Turn: mv.GameState.CurrentTurn,
+			Key:  "history-market",
+			Data: map[string]any{
+				"nation": string(mv.Nation.ID()),
+				"level":  int(mv.Nation.GetMarket().Level),
+			},
+		})
 	}
 
 	// Open CardPack and get Cards

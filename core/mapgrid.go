@@ -12,6 +12,7 @@ type BattlePoint interface {
 	Point
 	GetEnemy() *Enemy
 	SetControlled(bool)
+	GetTerrainType() string
 }
 
 // MyNationPoint is a point of the player's nation.
@@ -64,6 +65,10 @@ func (p *WildernessPoint) SetControlled(controlled bool) {
 	p.Controlled = controlled
 }
 
+func (p *WildernessPoint) GetTerrainType() string {
+	return p.TerrainType
+}
+
 // BossPoint is a point of a boss.
 type BossPoint struct {
 	Boss     *Enemy
@@ -84,6 +89,10 @@ func (p *BossPoint) GetEnemy() *Enemy {
 
 func (p *BossPoint) SetControlled(controlled bool) {
 	p.Defeated = controlled
+}
+
+func (p *BossPoint) GetTerrainType() string {
+	return "point-boss"
 }
 
 // MapGrid is the game's map grid.

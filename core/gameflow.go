@@ -6,8 +6,9 @@ type GameState struct {
 	CardDeck      *CardDeck      // Player's card deck
 	MapGrid       *MapGrid       // Map grid
 	Treasury      *Treasury      // Player's treasury
-	CurrentTurn   int            // Current turn number
+	CurrentTurn   Turn           // Current turn number
 	CardGenerator *CardGenerator // Card generator
+	Histories     []History      // History of events
 }
 
 func (g *GameState) GetYield() ResourceQuantity {
@@ -54,4 +55,9 @@ func (g *GameState) CanInteract(x, y int) bool {
 // GetPoint gets the Point at the specified coordinates.
 func (g *GameState) GetPoint(x, y int) Point {
 	return g.MapGrid.GetPoint(x, y)
+}
+
+// AddHistory adds a history event to the game state.
+func (g *GameState) AddHistory(history History) {
+	g.Histories = append(g.Histories, history)
 }

@@ -66,11 +66,6 @@ func (g *InGame) Update() error {
 		return err
 	}
 
-	// For debugging: add a test event with the space key
-	if ebiten.IsKeyPressed(ebiten.KeySpace) {
-		g.gameUI.AddHistoryEvent("Test event triggered")
-	}
-
 	return nil
 }
 

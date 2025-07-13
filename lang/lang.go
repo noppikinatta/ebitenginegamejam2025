@@ -55,7 +55,7 @@ func (p *textProvider) ExecuteTemplate(key string, data map[string]any) string {
 	lang := p.Languages[p.CurrentLanguageIdx]
 	tmpl, ok := p.Templates[lang][key]
 	if !ok {
-		return fmt.Sprintf("TMPL_NOT_FOUND: %s, %v", key, data)
+		return fmt.Sprintf("NO_TMPL: %s, %v", key, data)
 	}
 
 	if data == nil {
@@ -76,7 +76,7 @@ func (c *cachedTemplate) Execute(data map[string]any) string {
 	buf := strings.Builder{}
 	err := t.Execute(&buf, data)
 	if err != nil {
-		return fmt.Sprintf("TXT_ERR: %s, %v", c.Text, data)
+		return fmt.Sprintf("ERR: %s, %v", c.Text, data)
 	}
 
 	return buf.String()
@@ -89,7 +89,7 @@ func (c *cachedTemplate) template() *template.Template {
 
 	t, err := template.New("t").Parse(c.Text)
 	if err != nil {
-		t = template.Must(template.New("fallback").Delims("[[", "]]").Parse("TMPL_PARSE_ERR:" + c.Text))
+		t = template.Must(template.New("fallback").Delims("[[", "]]").Parse("ERR:" + c.Text))
 	}
 	c.tmpl = t
 	return t

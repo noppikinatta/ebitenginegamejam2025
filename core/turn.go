@@ -18,3 +18,9 @@ func (t Turn) String() string {
 	year, month := t.YearMonth()
 	return fmt.Sprintf("Year %d, Month %d", year, month)
 }
+
+type History struct {
+	Turn Turn
+	Key  string
+	Data map[string]any
+}

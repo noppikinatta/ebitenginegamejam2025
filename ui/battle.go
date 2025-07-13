@@ -489,7 +489,27 @@ func (bv *BattleView) Conquer() bool {
 	bv.BattlePoint.SetControlled(true)
 	bv.GameState.MapGrid.UpdateAccesibles()
 
+	bv.GameState.AddHistory(core.History{
+		Turn: bv.GameState.CurrentTurn,
+		Key:  "history-defeat",
+		Data: map[string]any{
+			"enemy":   string(bv.BattlePoint.GetEnemy().EnemyID),
+			"terrain": bv.BattlePoint.GetTerrainType(),
+		},
+	})
+
+	oldLevel := bv.GameState.MyNation.GetMarket().Level
 	bv.GameState.MyNation.AppendLevel(0.5)
+	if int(bv.GameState.MyNation.GetMarket().Level) > int(oldLevel) {
+		bv.GameState.AddHistory(core.History{
+			Turn: bv.GameState.CurrentTurn,
+			Key:  "history-market",
+			Data: map[string]any{
+				"nation": string(bv.GameState.MyNation.ID()),
+				"level":  int(bv.GameState.MyNation.GetMarket().Level),
+			},
+		})
+	}
 	bv.GameState.NextTurn()
 
 	return true

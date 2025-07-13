@@ -1,11 +1,10 @@
 package ui
 
 import (
-	"fmt"
-
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/noppikinatta/ebitenginegamejam2025/core"
 	"github.com/noppikinatta/ebitenginegamejam2025/drawing"
+	"github.com/noppikinatta/ebitenginegamejam2025/lang"
 )
 
 // CalendarView is a widget for displaying the calendar.
@@ -30,11 +29,12 @@ func (cv *CalendarView) HandleInput(input *Input) error {
 // Draw handles drawing.
 func (cv *CalendarView) Draw(screen *ebiten.Image) {
 	// Get year and month from Turn.
-	turn := core.Turn(cv.GameState.CurrentTurn)
+	turn := cv.GameState.CurrentTurn
 	year, month := turn.YearMonth()
+	year += 1023
 
 	// Display in YYYY/MM format.
-	text := fmt.Sprintf("%04d/%02d", year, month)
+	text := lang.ExecuteTemplate("ui-calendar", map[string]any{"year": year, "month": month})
 
 	// Position: (1040,0,240,40).
 	opt := &ebiten.DrawImageOptions{}

@@ -30,32 +30,19 @@ type InfoView struct {
 	SelectedCard  interface{}     // Selected card (BattleCard or StructureCard).
 	SelectedPoint core.Point      // Selected Point.
 	SelectedEnemy *core.Enemy     // Selected Enemy.
-	History       []string        // Event history.
 	GameState     *core.GameState // Game state.
 
 	// Mouse cursor position (set externally).
 	MouseX, MouseY int
+	TmpMap         map[string]any
 }
 
 // NewInfoView creates an InfoView.
-func NewInfoView() *InfoView {
+func NewInfoView(gameState *core.GameState) *InfoView {
 	return &InfoView{
 		CurrentMode: InfoModeHistory, // The default is HistoryView.
-		History:     make([]string, 0),
-	}
-}
-
-// SetGameState sets the game state.
-func (iv *InfoView) SetGameState(gameState *core.GameState) {
-	iv.GameState = gameState
-}
-
-// AddHistoryEvent adds an event to the history.
-func (iv *InfoView) AddHistoryEvent(event string) {
-	iv.History = append(iv.History, event)
-	// Holds up to 14 lines.
-	if len(iv.History) > 14 {
-		iv.History = iv.History[1:]
+		GameState:   gameState,
+		TmpMap:      make(map[string]any),
 	}
 }
 
@@ -133,33 +120,44 @@ func (iv *InfoView) drawBackground(screen *ebiten.Image) {
 func (iv *InfoView) drawHistoryView(screen *ebiten.Image) {
 	// Title.
 	opt := &ebiten.DrawImageOptions{}
-	opt.GeoM.Translate(1050, 50)
+	opt.GeoM.Translate(1050, 40)
 	drawing.DrawText(screen, lang.Text("ui-history"), 24, opt)
 
-	// Event history display (240x40 x 14 lines).
-	for i, event := range iv.History {
-		if i >= 14 { // Maximum 14 lines.
-			break
-		}
-
-		y := 90.0 + float64(i)*36
-		opt = &ebiten.DrawImageOptions{}
-		opt.GeoM.Translate(1050, y)
-
-		// Omit if the text is long.
-		displayText := event
-		if len(displayText) > 15 {
-			displayText = displayText[:12] + "..."
-		}
-
-		drawing.DrawText(screen, displayText, 18, opt)
+	histories := iv.GameState.Histories
+	if len(histories) > 7 {
+		histories = histories[len(histories)-7:]
 	}
 
 	// Display when there is no history.
-	if len(iv.History) == 0 {
+	if len(histories) == 0 {
 		opt = &ebiten.DrawImageOptions{}
-		opt.GeoM.Translate(1050, 100)
+		opt.GeoM.Translate(1050, 80)
 		drawing.DrawText(screen, lang.Text("ui-no-events"), 18, opt)
+		return
+	}
+
+	// Display history events
+	for i, history := range histories {
+		y := 80.0 + float64(i)*70
+		opt = &ebiten.DrawImageOptions{}
+		opt.GeoM.Translate(1050, y)
+		year, month := history.Turn.YearMonth()
+		year += 1023
+		calendarText := lang.ExecuteTemplate("ui-calendar", map[string]any{"year": year, "month": month})
+		drawing.DrawText(screen, calendarText, 18, opt)
+		y += 24
+
+		opt = &ebiten.DrawImageOptions{}
+		opt.GeoM.Translate(1050, y)
+		for k, v := range history.Data {
+			if s, ok := v.(string); ok {
+				iv.TmpMap[k] = lang.Text(s)
+			} else {
+				iv.TmpMap[k] = v
+			}
+		}
+		text := lang.ExecuteTemplate(history.Key, iv.TmpMap)
+		drawing.DrawText(screen, text, 16, opt)
 	}
 }
 
