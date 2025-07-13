@@ -210,8 +210,7 @@ func (bv *BattleView) drawBackButton(screen *ebiten.Image) {
 // drawEnemy draws the enemy image.
 func (bv *BattleView) drawEnemy(screen *ebiten.Image) {
 	// Enemy image background (360,120,320,320).
-	var color [4]float32
-	color = [4]float32{0.8, 0.8, 0.8, 1}
+	color := [4]float32{0.8, 0.8, 0.8, 1}
 
 	vertices := []ebiten.Vertex{
 		{DstX: 360, DstY: 120, SrcX: 0, SrcY: 0, ColorR: color[0], ColorG: color[1], ColorB: color[2], ColorA: color[3]},

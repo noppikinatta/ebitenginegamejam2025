@@ -29,7 +29,7 @@ func LoadGameState() *core.GameState {
 func createMyNation() *core.MyNation {
 	return &core.MyNation{
 		BaseNation: core.BaseNation{
-			NationID: "player",
+			NationID: "nation-mynation",
 		},
 		BasicYield: core.ResourceQuantity{
 			Food:  1,
