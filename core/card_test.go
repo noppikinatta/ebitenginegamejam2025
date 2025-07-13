@@ -186,17 +186,3 @@ func TestCardDatabase_GetCards(t *testing.T) {
 		})
 	}
 }
-
-// Mock implementation for testing
-type mockBattleCardPowerModifier struct {
-	canAffectFunc func(*core.BattleCard) bool
-	modifyFunc    func(*core.BattleCard) float64
-}
-
-func (m *mockBattleCardPowerModifier) CanAffect(battleCard *core.BattleCard) bool {
-	return m.canAffectFunc(battleCard)
-}
-
-func (m *mockBattleCardPowerModifier) Modify(battleCard *core.BattleCard) float64 {
-	return m.modifyFunc(battleCard)
-}
