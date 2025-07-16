@@ -212,8 +212,6 @@ func (c *BattleCardSkillCalculatorSupportPowerMultiplier) Calculate(options *Bat
 	options.SupportPowerMultiplier += c.Multiplier
 }
 
-// TODO: 何かいい設計を思いつきつつあるが、明日考える
-
 type BattleCardSkillCalculatorCondition struct {
 	Condition  func(options *BattleCardSkillCalculationOptions) bool
 	Calculator BattleCardSkillCalculator
@@ -227,160 +225,58 @@ func (c *BattleCardSkillCalculatorCondition) Calculate(options *BattleCardSkillC
 }
 
 type BattleCardSkillCalculatorEffectSelf struct {
-	effect *BattleCardSkillEffect
+	Effect *BattleCardSkillEffect
 }
 
 func (c *BattleCardSkillCalculatorEffectSelf) Calculate(options *BattleCardSkillCalculationOptions) {
-	c.effect.Apply(options.BattleCardPowerModifiers[options.BattleCardIndex])
+	c.Effect.Apply(options.BattleCardPowerModifiers[options.BattleCardIndex])
+}
+
+type BattleCardSkillCalculatorEffectIdxs struct {
+	IdxDeltas []int
+	Effect    *BattleCardSkillEffect
+}
+
+func (c *BattleCardSkillCalculatorEffectIdxs) Calculate(options *BattleCardSkillCalculationOptions) {
+	for _, idxDelta := range c.IdxDeltas {
+		modifierIdx := options.BattleCardIndex + idxDelta
+		if modifierIdx < 0 || modifierIdx >= len(options.BattleCardPowerModifiers) {
+			continue
+		}
+		c.Effect.Apply(options.BattleCardPowerModifiers[modifierIdx])
+	}
 }
 
 type BattleCardSkillCalculatorEffectAll struct {
-	effect *BattleCardSkillEffect
+	Effect *BattleCardSkillEffect
 }
 
 func (c *BattleCardSkillCalculatorEffectAll) Calculate(options *BattleCardSkillCalculationOptions) {
 	for _, m := range options.BattleCardPowerModifiers {
-		c.effect.Apply(m)
+		c.Effect.Apply(m)
 	}
 }
 
 type BattleCardSkillCalculatorEffectAllCondition struct {
-	condition func(idx int, options *BattleCardSkillCalculationOptions) bool
-	effect    *BattleCardSkillEffect
+	Condition func(idx int, options *BattleCardSkillCalculationOptions) bool
+	Effect    *BattleCardSkillEffect
 }
 
 func (c *BattleCardSkillCalculatorEffectAllCondition) Calculate(options *BattleCardSkillCalculationOptions) {
 	for i, m := range options.BattleCardPowerModifiers {
-		if !c.condition(i, options) {
+		if !c.Condition(i, options) {
 			continue
 		}
-		c.effect.Apply(m)
+		c.Effect.Apply(m)
 	}
 }
 
 type BattleCardSkillEffect struct {
-	modifier *BattleCardPowerModifier
+	Modifier *BattleCardPowerModifier
 }
 
 func (e *BattleCardSkillEffect) Apply(modifier *BattleCardPowerModifier) {
-	modifier.Union(e.modifier)
-}
-
-type BattleCardSkillCalculatorEnemyType struct {
-	EnemyType  EnemyType
-	Multiplier float64
-}
-
-func (c *BattleCardSkillCalculatorEnemyType) Calculate(options *BattleCardSkillCalculationOptions) {
-	if options.Enemy.EnemyType == c.EnemyType {
-		options.BattleCardPowerModifiers[options.BattleCardIndex].MultiplicativeBuff += c.Multiplier
-	}
-}
-
-type BattleCardSkillCalculatorBoostBuff struct {
-	BoostBuff float64
-}
-
-func (c *BattleCardSkillCalculatorBoostBuff) Calculate(options *BattleCardSkillCalculationOptions) {
-	modifier := options.BattleCardPowerModifiers[options.BattleCardIndex]
-	modifier.MultiplicativeBuff *= c.BoostBuff
-	modifier.AdditiveBuff *= c.BoostBuff
-}
-
-type BattleCardSkillCalculatorTrailings struct {
-	CardType   BattleCardType
-	Multiplier float64
-}
-
-func (c *BattleCardSkillCalculatorTrailings) Calculate(options *BattleCardSkillCalculationOptions) {
-	for i, card := range options.BattleCards {
-		if i <= options.BattleCardIndex {
-			continue
-		}
-		if c.CardType == "" || card.Type == c.CardType {
-			options.BattleCardPowerModifiers[i].MultiplicativeBuff += c.Multiplier
-		}
-	}
-}
-
-type BattleCardSkillCalculatorAll struct {
-	ModifierFunc func(modifier *BattleCardPowerModifier)
-}
-
-func (c *BattleCardSkillCalculatorAll) Calculate(options *BattleCardSkillCalculationOptions) {
-	for _, modifier := range options.BattleCardPowerModifiers {
-		c.ModifierFunc(modifier)
-	}
-}
-
-var AddingByIndexBattleCardSkillCalculator = BattleCardSkillCalculationFunc(func(options *BattleCardSkillCalculationOptions) {
-	modifier := options.BattleCardPowerModifiers[options.BattleCardIndex]
-	modifier.AdditiveBuff += float64(options.BattleCardIndex)
-})
-
-type BattleCardSkillCalculatorAllByCardType struct {
-	CardType   BattleCardType
-	Multiplier float64
-}
-
-func (c *BattleCardSkillCalculatorAllByCardType) Calculate(options *BattleCardSkillCalculationOptions) {
-	for i, card := range options.BattleCards {
-		if card.Type == c.CardType {
-			options.BattleCardPowerModifiers[i].MultiplicativeBuff += c.Multiplier
-		}
-	}
-}
-
-type BattleCardSkillCalculatorByIdx struct {
-	Index      int
-	Multiplier float64
-}
-
-func (c *BattleCardSkillCalculatorByIdx) Calculate(options *BattleCardSkillCalculationOptions) {
-	if options.BattleCardIndex == c.Index {
-		options.BattleCardPowerModifiers[c.Index].MultiplicativeBuff += c.Multiplier
-	}
-}
-
-type BattleCardSkillCalculatorProofBuff struct {
-	Value float64
-}
-
-func (c *BattleCardSkillCalculatorProofBuff) Calculate(options *BattleCardSkillCalculationOptions) {
-	options.BattleCardPowerModifiers[options.BattleCardIndex].ProtectionFromDebuff += c.Value
-}
-
-type BattleCardSkillCalculatorProofDebufNeighboring struct {
-	Value float64
-}
-
-func (c *BattleCardSkillCalculatorProofDebufNeighboring) Calculate(options *BattleCardSkillCalculationOptions) {
-	leftIdx := options.BattleCardIndex - 1
-	rightIdx := options.BattleCardIndex + 1
-
-	if leftIdx >= 0 {
-		options.BattleCardPowerModifiers[leftIdx].ProtectionFromDebuff += c.Value
-	}
-	if rightIdx < len(options.BattleCards) {
-		options.BattleCardPowerModifiers[rightIdx].ProtectionFromDebuff += c.Value
-	}
-}
-
-type BattleCardSkillCalculatorTwoPlatoon struct {
-	Multiplier float64
-	CardType   BattleCardType
-}
-
-func (c *BattleCardSkillCalculatorTwoPlatoon) Calculate(options *BattleCardSkillCalculationOptions) {
-	rightIdx := options.BattleCardIndex + 1
-	if rightIdx >= len(options.BattleCards) {
-		return
-	}
-
-	if options.BattleCards[rightIdx].Type == c.CardType {
-		options.BattleCardPowerModifiers[options.BattleCardIndex].MultiplicativeBuff += c.Multiplier
-		options.BattleCardPowerModifiers[rightIdx].MultiplicativeBuff += c.Multiplier
-	}
+	modifier.Union(e.Modifier)
 }
 
 // YieldModifier is a skill that modifies the Yield of a Territory.

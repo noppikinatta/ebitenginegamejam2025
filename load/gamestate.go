@@ -556,8 +556,12 @@ func createBattleCards() map[core.CardID]*core.BattleCard {
 			Skill: &core.BattleCardSkill{
 				BattleCardSkillID: "battlecardskill-debug",
 				DescriptionKey:    "battlecardskill-debug-desc",
-				Calculator: &core.BattleCardSkillCalculatorProofBuff{
-					Value: 999.0,
+				Calculator: &core.BattleCardSkillCalculatorEffectSelf{
+					Effect: &core.BattleCardSkillEffect{
+						Modifier: &core.BattleCardPowerModifier{
+							ProtectionFromDebuff: 999.0,
+						},
+					},
 				},
 			},
 			Type: "cardtype-str",
@@ -568,8 +572,12 @@ func createBattleCards() map[core.CardID]*core.BattleCard {
 			Skill: &core.BattleCardSkill{
 				BattleCardSkillID: "battlecardskill-cooperation",
 				DescriptionKey:    "battlecardskill-cooperation-desc",
-				Calculator: &core.BattleCardSkillCalculatorBoostBuff{
-					BoostBuff: 2.0,
+				Calculator: &core.BattleCardSkillCalculatorEffectSelf{
+					Effect: &core.BattleCardSkillEffect{
+						Modifier: &core.BattleCardPowerModifier{
+							BuffBoostedPower: 0.5,
+						},
+					},
 				},
 			},
 			Type: "cardtype-str",
@@ -580,9 +588,17 @@ func createBattleCards() map[core.CardID]*core.BattleCard {
 			Skill: &core.BattleCardSkill{
 				BattleCardSkillID: "battlecardskill-dragon-killer",
 				DescriptionKey:    "battlecardskill-dragon-killer-desc",
-				Calculator: &core.BattleCardSkillCalculatorEnemyType{
-					EnemyType:  "enemy-type-dragon",
-					Multiplier: 2.0,
+				Calculator: &core.BattleCardSkillCalculatorCondition{
+					Condition: func(options *core.BattleCardSkillCalculationOptions) bool {
+						return options.Enemy.EnemyType == "enemy-type-dragon"
+					},
+					Calculator: &core.BattleCardSkillCalculatorEffectSelf{
+						Effect: &core.BattleCardSkillEffect{
+							Modifier: &core.BattleCardPowerModifier{
+								MultiplicativeBuff: 1.0,
+							},
+						},
+					},
 				},
 			},
 			Type: "cardtype-str",
@@ -593,8 +609,15 @@ func createBattleCards() map[core.CardID]*core.BattleCard {
 			Skill: &core.BattleCardSkill{
 				BattleCardSkillID: "battlecardskill-command",
 				DescriptionKey:    "battlecardskill-command-desc",
-				Calculator: &core.BattleCardSkillCalculatorTrailings{
-					Multiplier: 0.2,
+				Calculator: &core.BattleCardSkillCalculatorEffectAllCondition{
+					Condition: func(idx int, options *core.BattleCardSkillCalculationOptions) bool {
+						return idx > options.BattleCardIndex
+					},
+					Effect: &core.BattleCardSkillEffect{
+						Modifier: &core.BattleCardPowerModifier{
+							MultiplicativeBuff: 0.2,
+						},
+					},
 				},
 			},
 			Type: "cardtype-str",
@@ -605,15 +628,21 @@ func createBattleCards() map[core.CardID]*core.BattleCard {
 			Skill: &core.BattleCardSkill{
 				BattleCardSkillID: "battlecardskill-sniper",
 				DescriptionKey:    "battlecardskill-sniper-desc",
-				Calculator: &core.BattleCardSkillCalculatorComposite{
-					Calculators: []core.BattleCardSkillCalculator{
-						&core.BattleCardSkillCalculatorEnemyType{
-							EnemyType:  "enemy-type-animal",
-							Multiplier: 2.0,
-						},
-						&core.BattleCardSkillCalculatorEnemyType{
-							EnemyType:  "enemy-type-flying",
-							Multiplier: 2.0,
+				Calculator: &core.BattleCardSkillCalculatorCondition{
+					Condition: func(options *core.BattleCardSkillCalculationOptions) bool {
+						if options.Enemy.EnemyType == "enemy-type-animal" {
+							return true
+						}
+						if options.Enemy.EnemyType == "enemy-type-flying" {
+							return true
+						}
+						return false
+					},
+					Calculator: &core.BattleCardSkillCalculatorEffectSelf{
+						Effect: &core.BattleCardSkillEffect{
+							Modifier: &core.BattleCardPowerModifier{
+								MultiplicativeBuff: 1.0,
+							},
 						},
 					},
 				},
@@ -626,8 +655,12 @@ func createBattleCards() map[core.CardID]*core.BattleCard {
 			Skill: &core.BattleCardSkill{
 				BattleCardSkillID: "battlecardskill-forecast",
 				DescriptionKey:    "battlecardskill-forecast-desc",
-				Calculator: &core.BattleCardSkillCalculatorProofBuff{
-					Value: 0.2,
+				Calculator: &core.BattleCardSkillCalculatorEffectAll{
+					Effect: &core.BattleCardSkillEffect{
+						Modifier: &core.BattleCardPowerModifier{
+							ProtectionFromDebuff: 0.2,
+						},
+					},
 				},
 			},
 			Type: "cardtype-mag",
@@ -638,7 +671,9 @@ func createBattleCards() map[core.CardID]*core.BattleCard {
 			Skill: &core.BattleCardSkill{
 				BattleCardSkillID: "battlecardskill-long-spell",
 				DescriptionKey:    "battlecardskill-long-spell-desc",
-				Calculator:        core.AddingByIndexBattleCardSkillCalculator,
+				Calculator: core.BattleCardSkillCalculationFunc(func(options *core.BattleCardSkillCalculationOptions) {
+					options.BattleCardPowerModifiers[options.BattleCardIndex].AdditiveBuff = float64(options.BattleCardIndex)
+				}),
 			},
 			Type: "cardtype-mag",
 		},
@@ -648,9 +683,16 @@ func createBattleCards() map[core.CardID]*core.BattleCard {
 			Skill: &core.BattleCardSkill{
 				BattleCardSkillID: "battlecardskill-magic-amplifier",
 				DescriptionKey:    "battlecardskill-magic-amplifier-desc",
-				Calculator: &core.BattleCardSkillCalculatorAllByCardType{
-					CardType:   "cardtype-mag",
-					Multiplier: 0.5,
+				Calculator: &core.BattleCardSkillCalculatorEffectAllCondition{
+					Condition: func(idx int, options *core.BattleCardSkillCalculationOptions) bool {
+						card := options.BattleCards[idx]
+						return card.Type == "cardtype-mag"
+					},
+					Effect: &core.BattleCardSkillEffect{
+						Modifier: &core.BattleCardPowerModifier{
+							MultiplicativeBuff: 0.3,
+						},
+					},
 				},
 			},
 			Type: "cardtype-mag",
@@ -661,9 +703,16 @@ func createBattleCards() map[core.CardID]*core.BattleCard {
 			Skill: &core.BattleCardSkill{
 				BattleCardSkillID: "battlecardskill-weapon-enhancement",
 				DescriptionKey:    "battlecardskill-weapon-enhancement-desc",
-				Calculator: &core.BattleCardSkillCalculatorAllByCardType{
-					CardType:   "cardtype-str",
-					Multiplier: 0.5,
+				Calculator: &core.BattleCardSkillCalculatorEffectAllCondition{
+					Condition: func(idx int, options *core.BattleCardSkillCalculationOptions) bool {
+						card := options.BattleCards[idx]
+						return card.Type == "cardtype-str"
+					},
+					Effect: &core.BattleCardSkillEffect{
+						Modifier: &core.BattleCardPowerModifier{
+							MultiplicativeBuff: 0.3,
+						},
+					},
 				},
 			},
 			Type: "cardtype-str",
@@ -674,9 +723,17 @@ func createBattleCards() map[core.CardID]*core.BattleCard {
 			Skill: &core.BattleCardSkill{
 				BattleCardSkillID: "battlecardskill-bushido",
 				DescriptionKey:    "battlecardskill-bushido-desc",
-				Calculator: &core.BattleCardSkillCalculatorByIdx{
-					Index:      0,
-					Multiplier: 1.0,
+				Calculator: &core.BattleCardSkillCalculatorCondition{
+					Condition: func(options *core.BattleCardSkillCalculationOptions) bool {
+						return options.BattleCardIndex == 0
+					},
+					Calculator: &core.BattleCardSkillCalculatorEffectSelf{
+						Effect: &core.BattleCardSkillEffect{
+							Modifier: &core.BattleCardPowerModifier{
+								MultiplicativeBuff: 1.0,
+							},
+						},
+					},
 				},
 			},
 			Type: "cardtype-str",
@@ -687,8 +744,12 @@ func createBattleCards() map[core.CardID]*core.BattleCard {
 			Skill: &core.BattleCardSkill{
 				BattleCardSkillID: "battlecardskill-stealth",
 				DescriptionKey:    "battlecardskill-stealth-desc",
-				Calculator: &core.BattleCardSkillCalculatorProofBuff{
-					Value: 1.0,
+				Calculator: &core.BattleCardSkillCalculatorEffectSelf{
+					Effect: &core.BattleCardSkillEffect{
+						Modifier: &core.BattleCardPowerModifier{
+							ProtectionFromDebuff: 1.0,
+						},
+					},
 				},
 			},
 			Type: "cardtype-agi",
@@ -699,12 +760,20 @@ func createBattleCards() map[core.CardID]*core.BattleCard {
 			Skill: &core.BattleCardSkill{
 				BattleCardSkillID: "battlecardskill-ki",
 				DescriptionKey:    "battlecardskill-ki-desc",
-				Calculator: &core.BattleCardSkillCalculatorEnemyType{
-					EnemyType:  "enemy-type-undead",
-					Multiplier: 2.0,
+				Calculator: &core.BattleCardSkillCalculatorCondition{
+					Condition: func(options *core.BattleCardSkillCalculationOptions) bool {
+						return options.Enemy.EnemyType == "enemy-type-undead"
+					},
+					Calculator: &core.BattleCardSkillCalculatorEffectSelf{
+						Effect: &core.BattleCardSkillEffect{
+							Modifier: &core.BattleCardPowerModifier{
+								MultiplicativeBuff: 1.0,
+							},
+						},
+					},
 				},
 			},
-			Type: "cardtype-str",
+			Type: "cardtype-mag",
 		},
 		{
 			CardID:    "battlecard-bard",
@@ -712,9 +781,11 @@ func createBattleCards() map[core.CardID]*core.BattleCard {
 			Skill: &core.BattleCardSkill{
 				BattleCardSkillID: "battlecardskill-support",
 				DescriptionKey:    "battlecardskill-support-desc",
-				Calculator: &core.BattleCardSkillCalculatorAll{
-					ModifierFunc: func(modifier *core.BattleCardPowerModifier) {
-						modifier.AdditiveBuff += 1
+				Calculator: &core.BattleCardSkillCalculatorEffectAll{
+					Effect: &core.BattleCardSkillEffect{
+						Modifier: &core.BattleCardPowerModifier{
+							AdditiveBuff: 1,
+						},
 					},
 				},
 			},
@@ -738,8 +809,13 @@ func createBattleCards() map[core.CardID]*core.BattleCard {
 			Skill: &core.BattleCardSkill{
 				BattleCardSkillID: "battlecardskill-viper-master",
 				DescriptionKey:    "battlecardskill-viper-master-desc",
-				Calculator: &core.BattleCardSkillCalculatorProofDebufNeighboring{
-					Value: 1.0,
+				Calculator: &core.BattleCardSkillCalculatorEffectIdxs{
+					IdxDeltas: []int{-1, 1},
+					Effect: &core.BattleCardSkillEffect{
+						Modifier: &core.BattleCardPowerModifier{
+							ProtectionFromDebuff: 1.0,
+						},
+					},
 				},
 			},
 			Type: "cardtype-agi",
@@ -750,9 +826,23 @@ func createBattleCards() map[core.CardID]*core.BattleCard {
 			Skill: &core.BattleCardSkill{
 				BattleCardSkillID: "battlecardskill-two-platoon",
 				DescriptionKey:    "battlecardskill-two-platoon-desc",
-				Calculator: &core.BattleCardSkillCalculatorTwoPlatoon{
-					Multiplier: 1.0,
-					CardType:   "cardtype-str",
+				Calculator: &core.BattleCardSkillCalculatorCondition{
+					Condition: func(options *core.BattleCardSkillCalculationOptions) bool {
+						idx := options.BattleCardIndex + 1
+						if idx < 0 || idx >= len(options.BattleCards) {
+							return false
+						}
+
+						return options.BattleCards[idx].Type == "cardtype-str"
+					},
+					Calculator: &core.BattleCardSkillCalculatorEffectIdxs{
+						IdxDeltas: []int{0, 1},
+						Effect: &core.BattleCardSkillEffect{
+							Modifier: &core.BattleCardPowerModifier{
+								MultiplicativeBuff: 1.0,
+							},
+						},
+					},
 				},
 			},
 			Type: "cardtype-str",
