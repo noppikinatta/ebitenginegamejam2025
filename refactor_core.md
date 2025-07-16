@@ -49,27 +49,74 @@ BattleCardSkillCalculatorはBattleCardSkillTargetとBattleCardSkillEffectに分�
 
 ```
 type BattleCardSkill struct {
-	id     BattleCardSkillID
-	target BattleCardSkillTarget
-	effect BattleCardSkillEffect
+	id         BattleCardSkillID
+	calculator BattleCardSkillCalculator
 }
 ```
 
 ## BattleCardSkillCalculator
 
-BattleCardSkillTargetと、BattleCardSkillEffectに分ける。対象の選定と効果の発揮をBattleCardSkillCalculator１つに入れてしまうと、組み合わせ爆発により多くの実装型ができていた。
+そのまま。
 
-## BattleCardSkillTarget
+## BattleCardSkillCalculatorBuff
+
+新設。BattleCardSkillCalculatorインタフェースを実装する具体型を元に、範囲/条件/効果の3つを指定する構造体を定義する。
+
+```
+type BattleCardSkillCalculatorBuff struct {
+	target    BattleCardSkillCalculatorBuffTarget
+	condition BattleCardSkillCalculatorBuffCondition
+	effect    BattleCardSkillCalculatorBuffEffect
+}
+```
+
+範囲/条件/効果の3つはインタフェース型。
+
+## BattleCardSkillCalculatorBuffTarget
+
+BattleCardSkillCalculatorBuffの対象。
+
+```
+type BattleCardSkillCalculatorBuffTarget interface {
+	IsTarget(idx int, options *BattleCardSkillCalculationOptions) bool
+}
+```
+
+BattleCardSkillCalculationOptions.BattleCardsをループするときに、idxを渡して対象かどうかを判定する。
+
+実装は次の２種類。
+
+```
+type BattleCardSkillCalculatorBuffTargetIndices struct {
+	idxs []int
+}
+```
+
+BattleCardSkillCalculationOptions.BattleCardIndexとidxsを加算し、どれかに当てはまればtrueを返す。
+
+例
+* BattleCardSkillCalculatorBuffTargetIndices.idxs == []int{0} の場合は自分自身。
+* BattleCardSkillCalculatorBuffTargetIndices.idxs == []int{-1,1} の場合は自分の前後のカード。
+
+
+```
+type BattleCardSkillCalculatorBuffTargetAll struct {
+}
+```
+
+常にtrueを返す。
+
+## BattleCardSkillCalculatorBuffCondition
 
 Skillの効果対象を決めるinterface。
 
 ```
-type BattleCardSkillTarget interface {
+type BattleCardSkillCalculatorBuffCondition interface {
     Apply(opt *BattleCardSkillCalculationOptions, effect BattleCardSkillEffect)
 }
 ```
 
-## BattleCardSkillEffect
+## BattleCardSkillCalculatorBuffEffect
 
 ```
 type BattleCardSkillEffect interface {

@@ -96,12 +96,21 @@ func (b *Battlefield) CalculateTotalPower() float64 {
 }
 
 type BattleCardPowerModifier struct {
-	MultiplicativeBuff   float64
-	MultiplicativeDebuff float64
-	BuffBoostedPower     float64
 	AdditiveBuff         float64
+	MultiplicativeBuff   float64
+	BuffBoostedPower     float64
 	AdditiveDebuff       float64
+	MultiplicativeDebuff float64
 	ProtectionFromDebuff float64
+}
+
+func (m *BattleCardPowerModifier) Union(other *BattleCardPowerModifier) {
+	m.AdditiveBuff += other.AdditiveBuff
+	m.MultiplicativeBuff += other.MultiplicativeBuff
+	m.BuffBoostedPower += other.BuffBoostedPower
+	m.AdditiveDebuff += other.AdditiveDebuff
+	m.MultiplicativeDebuff += other.MultiplicativeDebuff
+	m.ProtectionFromDebuff += m.ProtectionFromDebuff
 }
 
 func (m *BattleCardPowerModifier) Calculate(power float64) float64 {

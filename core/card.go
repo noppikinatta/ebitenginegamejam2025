@@ -212,6 +212,60 @@ func (c *BattleCardSkillCalculatorSupportPowerMultiplier) Calculate(options *Bat
 	options.SupportPowerMultiplier += c.Multiplier
 }
 
+// TODO: 何かいい設計を思いつきつつあるが、明日考える
+
+type BattleCardSkillCalculatorCondition struct {
+	Condition  func(options *BattleCardSkillCalculationOptions) bool
+	Calculator BattleCardSkillCalculator
+}
+
+func (c *BattleCardSkillCalculatorCondition) Calculate(options *BattleCardSkillCalculationOptions) {
+	if !c.Condition(options) {
+		return
+	}
+	c.Calculator.Calculate(options)
+}
+
+type BattleCardSkillCalculatorEffectSelf struct {
+	effect *BattleCardSkillEffect
+}
+
+func (c *BattleCardSkillCalculatorEffectSelf) Calculate(options *BattleCardSkillCalculationOptions) {
+	c.effect.Apply(options.BattleCardPowerModifiers[options.BattleCardIndex])
+}
+
+type BattleCardSkillCalculatorEffectAll struct {
+	effect *BattleCardSkillEffect
+}
+
+func (c *BattleCardSkillCalculatorEffectAll) Calculate(options *BattleCardSkillCalculationOptions) {
+	for _, m := range options.BattleCardPowerModifiers {
+		c.effect.Apply(m)
+	}
+}
+
+type BattleCardSkillCalculatorEffectAllCondition struct {
+	condition func(idx int, options *BattleCardSkillCalculationOptions) bool
+	effect    *BattleCardSkillEffect
+}
+
+func (c *BattleCardSkillCalculatorEffectAllCondition) Calculate(options *BattleCardSkillCalculationOptions) {
+	for i, m := range options.BattleCardPowerModifiers {
+		if !c.condition(i, options) {
+			continue
+		}
+		c.effect.Apply(m)
+	}
+}
+
+type BattleCardSkillEffect struct {
+	modifier *BattleCardPowerModifier
+}
+
+func (e *BattleCardSkillEffect) Apply(modifier *BattleCardPowerModifier) {
+	modifier.Union(e.modifier)
+}
+
 type BattleCardSkillCalculatorEnemyType struct {
 	EnemyType  EnemyType
 	Multiplier float64
