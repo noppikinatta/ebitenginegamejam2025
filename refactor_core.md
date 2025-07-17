@@ -36,13 +36,12 @@ BattleCardを複数枚購入したとき、Experienceが増えるのではなく
 type BattleCard struct {
 	id       CardID
 	power    float64  
-	skillID  BattleCardSkillID
+	skill    *BattleCardSkill
 	type     BattleCardType
 }
 ```
 
 BattleCardはimmutableになった。IDなどのフィールドの情報を取得するメソッドを追加すべき。
-BattleCardSkillのポインタを持つのをやめ、BattleCardSkillIDを持たせる。これは将来的に外部ファイルから読み込みを行うとき、各オブジェクトを独立させておいた方が処理しやすいため。
 
 ## BattleCardSkill
 
@@ -75,4 +74,8 @@ type StructureCard struct {
 	supportCardSlot     int
 }
 ```
+
+## Enemy
+
+Questionは削除する。表示にしか関係ないため。
 
