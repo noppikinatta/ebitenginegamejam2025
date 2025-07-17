@@ -33,8 +33,6 @@ func (s *BaseEnemySkill) ID() EnemySkillID {
 }
 
 type EnemySkillCalculationOptions struct {
-	BaseEnemySkill
-	SupportPowerMultiplier   float64
 	BattleCards              []*BattleCard
 	BattleCardPowerModifiers []*BattleCardPowerModifier
 	Enemy                    *Enemy
