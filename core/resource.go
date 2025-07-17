@@ -41,3 +41,25 @@ func (rq ResourceQuantity) CanPurchase(price ResourceQuantity) bool {
 		rq.Iron >= price.Iron &&
 		rq.Mana >= price.Mana
 }
+
+type ResourceModifier struct {
+	Money float64
+	Food  float64
+	Wood  float64
+	Iron  float64
+	Mana  float64
+}
+
+func (m ResourceModifier) Modify(quantity ResourceQuantity) ResourceQuantity {
+	return ResourceQuantity{
+		Money: m.multiply(quantity.Money, m.Money),
+		Food:  m.multiply(quantity.Food, m.Food),
+		Wood:  m.multiply(quantity.Wood, m.Wood),
+		Iron:  m.multiply(quantity.Iron, m.Iron),
+		Mana:  m.multiply(quantity.Mana, m.Mana),
+	}
+}
+
+func (m ResourceModifier) multiply(value int, modifier float64) int {
+	return int(float64(value) * (modifier + 1))
+}
