@@ -6,6 +6,8 @@
 ## 全体的に
 
 FieldがPublicになっているものが多い。カプセル化の試みとして、可能な限りFieldをpackage private (小文字始まり) にしていく。
+他のパッケージから設定しているものは、コンストラクタ(New+型名の関数)を追加する。おそらくloadパッケージのみ使うだろう。一部は新設するflowパッケージ(Usecaseレイヤー)で使う。
+uiパッケージから参照しているものは、新設するinfoパッケージ(Presenterレイヤー)にプロキシ型を通じて取得する予定。
 
 ## CardDeck
 
@@ -56,5 +58,21 @@ type BattleCardSkill struct {
 
 ## BattleCardSkillCalculator
 
-そのまま。いくつかの型を追加。
+そのまま。具象型群もそのままでいい。FieldだけPackage Privateを目指す。
+そのため、具象型のコンストラクタ関数が大量にできるかもしれない。
+
+## StructureCard
+
+YieldModifierやBattlefieldModifierで抽象化していたが、過度の抽象化なのでやめる。
+DescriptionKeyは表示にしか関係ない。coreの責務ではないので削除する。
+
+```
+type StructureCard struct {
+	cardID              CardID
+	yieldAdditiveValue  ResourceQuantity
+	yieldModifier       ResourceModifier
+	supportPower        float64
+	supportCardSlot     int
+}
+```
 
