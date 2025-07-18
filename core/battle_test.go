@@ -108,39 +108,6 @@ func TestBattlefield_CanBeat(t *testing.T) {
 	}
 }
 
-func TestBattlefield_Beat(t *testing.T) {
-	enemy := &core.Enemy{
-		EnemyID:        "test_enemy",
-		EnemyType:      "orc",
-		Power:          20.0,
-		BattleCardSlot: 2,
-		Skills:         []core.EnemySkill{},
-	}
-
-	card := &core.BattleCard{
-		CardID:    "test_card",
-		BasePower: 25.0,
-		Type:      "warrior",
-	}
-
-	battlefield := &core.Battlefield{
-		Enemy:            enemy,
-		BattleCards:      []*core.BattleCard{card},
-		BaseSupportPower: 0.0,
-	}
-
-	// Check if it's possible to win
-	if !battlefield.CanBeat() {
-		t.Fatal("Expected to be able to beat enemy")
-	}
-
-	// Call Beat() method
-	battlefield.Beat()
-
-	// Beat() returns nothing on success, so check that no error occurs
-	// It may return battle results or logs in the future
-}
-
 func TestBattlefield_PowerCalculation(t *testing.T) {
 	enemy := &core.Enemy{
 		EnemyID:        "calc_test_enemy",

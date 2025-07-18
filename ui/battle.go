@@ -479,9 +479,6 @@ func (bv *BattleView) Conquer() bool {
 		return false
 	}
 
-	// Battle victory process
-	bv.Battlefield.Beat()
-
 	// Return all placed BattleCards to the CardDeck
 	bv.GameState.CardDeck.Add(&core.Cards{BattleCards: bv.Battlefield.BattleCards})
 

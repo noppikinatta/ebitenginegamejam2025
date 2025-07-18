@@ -1,17 +1,11 @@
 package core
 
-// BattlefieldEffect represents an effect on the battlefield.
-type BattlefieldEffect interface {
-	// TODO: Add logic for battlefield effects.
-}
-
 // Battlefield represents a battle instance, created when starting a battle in an unconquered Wilderness.
 type Battlefield struct {
-	Enemy            *Enemy              // Enemy is the opponent in the battle.
-	Effects          []BattlefieldEffect // Effects is a slice of battlefield effects.
-	BaseSupportPower float64             // BaseSupportPower is the power gained from StructureCards in adjacent Territories.
-	BattleCards      []*BattleCard       // BattleCards is a collection of BattleCards played during the battle.
-	CardSlot         int                 // CardSlot is the maximum number of BattleCards that can be placed.
+	Enemy            *Enemy        // Enemy is the opponent in the battle.
+	BaseSupportPower float64       // BaseSupportPower is the power gained from StructureCards in adjacent Territories.
+	BattleCards      []*BattleCard // BattleCards is a collection of BattleCards played during the battle.
+	CardSlot         int           // CardSlot is the maximum number of BattleCards that can be placed.
 }
 
 // CanBeat returns true if the player's power is enough to defeat the enemy.
@@ -20,17 +14,10 @@ func (b *Battlefield) CanBeat() bool {
 	return totalPower >= b.Enemy.Power
 }
 
-// Beat handles the logic for winning a battle.
-func (b *Battlefield) Beat() {
-	// Currently, only the victory process is implemented.
-	// In the future, this might include processing battle results, granting rewards, etc.
-}
-
 // NewBattlefield creates a new Battlefield instance.
 func NewBattlefield(enemy *Enemy, supportPower float64) *Battlefield {
 	return &Battlefield{
 		Enemy:            enemy,
-		Effects:          make([]BattlefieldEffect, 0),
 		BaseSupportPower: supportPower,
 		BattleCards:      make([]*BattleCard, 0, enemy.BattleCardSlot),
 		CardSlot:         enemy.BattleCardSlot,
