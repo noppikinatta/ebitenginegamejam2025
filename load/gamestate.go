@@ -977,108 +977,134 @@ func createStructureCards() map[core.CardID]*core.StructureCard {
 
 func createEvasionSkill() core.EnemySkill {
 	// Strength type card power -2
-	return &core.EnemySkillCardTypeAdditiveDebuff{
-		BaseEnemySkill: core.BaseEnemySkill{
-			IDField: "enemy-skill-evasion",
+	return &core.EnemySkillImpl{
+		IDField: "enemy-skill-evasion",
+		Condition: func(idx int, options *core.EnemySkillCalculationOptions) bool {
+			card := options.BattleCards[idx]
+			return card.Type == "cardtype-str"
 		},
-		CardType: "cardtype-str",
-		Value:    2.0,
+		Modifier: &core.BattleCardPowerModifier{
+			AdditiveDebuff: 2.0,
+		},
 	}
 }
 
 func createSoftSkill() core.EnemySkill {
 	// Non-Magic type card power -50%
-	return &core.EnemySkillCardTypeExceptMultiplicativeDebuff{
-		BaseEnemySkill: core.BaseEnemySkill{
-			IDField: "enemy-skill-soft",
+	return &core.EnemySkillImpl{
+		IDField: "enemy-skill-soft",
+		Condition: func(idx int, options *core.EnemySkillCalculationOptions) bool {
+			card := options.BattleCards[idx]
+			return card.Type != "cardtype-mag"
 		},
-		CardType: "cardtype-mag",
-		Value:    0.5,
+		Modifier: &core.BattleCardPowerModifier{
+			MultiplicativeDebuff: 0.5,
+		},
 	}
 }
 
 func createLongbowSkill() core.EnemySkill {
 	// Rearmost card power -100%
-	return &core.EnemySkillIndexBackwardMultiplicativeDebuff{
-		BaseEnemySkill: core.BaseEnemySkill{
-			IDField: "enemy-skill-longbow",
+	return &core.EnemySkillImpl{
+		IDField: "enemy-skill-longbow",
+		Condition: func(idx int, options *core.EnemySkillCalculationOptions) bool {
+			return idx == len(options.BattleCards)-1
 		},
-		NumOfCards: 1,
-		Value:      1.0,
+		Modifier: &core.BattleCardPowerModifier{
+			MultiplicativeDebuff: 1.0,
+		},
 	}
 }
 
 func createIncorporealitySkill() core.EnemySkill {
 	// Non-Magic type card power -100%
-	return &core.EnemySkillCardTypeExceptMultiplicativeDebuff{
-		BaseEnemySkill: core.BaseEnemySkill{
-			IDField: "enemy-skill-incorporeality",
+	return &core.EnemySkillImpl{
+		IDField: "enemy-skill-incorporeality",
+		Condition: func(idx int, options *core.EnemySkillCalculationOptions) bool {
+			card := options.BattleCards[idx]
+			return card.Type != "cardtype-mag"
 		},
-		CardType: "cardtype-mag",
-		Value:    1.0,
+		Modifier: &core.BattleCardPowerModifier{
+			MultiplicativeDebuff: 1.0,
+		},
 	}
 }
 
 func createPressureSkill() core.EnemySkill {
 	// All card power -1
-	return &core.EnemySkillAdditiveDebuff{
-		BaseEnemySkill: core.BaseEnemySkill{
-			IDField: "enemy-skill-pressure",
+	return &core.EnemySkillImpl{
+		IDField: "enemy-skill-pressure",
+		Condition: func(idx int, options *core.EnemySkillCalculationOptions) bool {
+			return true
 		},
-		Value: 1.0,
+		Modifier: &core.BattleCardPowerModifier{
+			AdditiveDebuff: 1.0,
+		},
 	}
 }
 
 func createCharmSkill() core.EnemySkill {
 	// First 3 cards power -100%
-	return &core.EnemySkillIndexForwardMultiplicativeDebuff{
-		BaseEnemySkill: core.BaseEnemySkill{
-			IDField: "enemy-skill-charm",
+	return &core.EnemySkillImpl{
+		IDField: "enemy-skill-charm",
+		Condition: func(idx int, options *core.EnemySkillCalculationOptions) bool {
+			return idx < 3
 		},
-		NumOfCards: 3,
-		Value:      1.0,
+		Modifier: &core.BattleCardPowerModifier{
+			MultiplicativeDebuff: 1.0,
+		},
 	}
 }
 
 func createMagicBarrierSkill() core.EnemySkill {
 	// Magic type card power -100%
-	return &core.EnemySkillCardTypeMultiplicativeDebuff{
-		BaseEnemySkill: core.BaseEnemySkill{
-			IDField: "enemy-skill-magic-barrier",
+	return &core.EnemySkillImpl{
+		IDField: "enemy-skill-magic-barrier",
+		Condition: func(idx int, options *core.EnemySkillCalculationOptions) bool {
+			card := options.BattleCards[idx]
+			return card.Type == "cardtype-mag"
 		},
-		CardType: "cardtype-mag",
-		Value:    1.0,
+		Modifier: &core.BattleCardPowerModifier{
+			MultiplicativeDebuff: 1.0,
+		},
 	}
 }
 
 func createLaserSkill() core.EnemySkill {
 	// Last 3 cards power -100%
-	return &core.EnemySkillIndexBackwardMultiplicativeDebuff{
-		BaseEnemySkill: core.BaseEnemySkill{
-			IDField: "enemy-skill-laser",
+	return &core.EnemySkillImpl{
+		IDField: "enemy-skill-laser",
+		Condition: func(idx int, options *core.EnemySkillCalculationOptions) bool {
+			return idx >= len(options.BattleCards)-3
 		},
-		NumOfCards: 3,
-		Value:      1.0,
+		Modifier: &core.BattleCardPowerModifier{
+			MultiplicativeDebuff: 1.0,
+		},
 	}
 }
 
 func createSideAttackSkill() core.EnemySkill {
 	// First 5 cards power -50%
-	return &core.EnemySkillIndexForwardMultiplicativeDebuff{
-		BaseEnemySkill: core.BaseEnemySkill{
-			IDField: "enemy-skill-side-attack",
+	return &core.EnemySkillImpl{
+		IDField: "enemy-skill-side-attack",
+		Condition: func(idx int, options *core.EnemySkillCalculationOptions) bool {
+			return idx < 5
 		},
-		NumOfCards: 5,
-		Value:      0.5,
+		Modifier: &core.BattleCardPowerModifier{
+			MultiplicativeDebuff: 0.5,
+		},
 	}
 }
 
 func createWaveSkill() core.EnemySkill {
 	// All card power -2
-	return &core.EnemySkillAdditiveDebuff{
-		BaseEnemySkill: core.BaseEnemySkill{
-			IDField: "enemy-skill-wave",
+	return &core.EnemySkillImpl{
+		IDField: "enemy-skill-wave",
+		Condition: func(idx int, options *core.EnemySkillCalculationOptions) bool {
+			return true
 		},
-		Value: 2.0,
+		Modifier: &core.BattleCardPowerModifier{
+			AdditiveDebuff: 2.0,
+		},
 	}
 }

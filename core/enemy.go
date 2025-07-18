@@ -24,97 +24,28 @@ type EnemySkill interface {
 	Calculate(options *EnemySkillCalculationOptions)
 }
 
-type BaseEnemySkill struct {
-	IDField EnemySkillID
+type EnemySkillImpl struct {
+	IDField   EnemySkillID
+	Condition func(idx int, options *EnemySkillCalculationOptions) bool
+	Modifier  *BattleCardPowerModifier
 }
 
-func (s *BaseEnemySkill) ID() EnemySkillID {
+func (s *EnemySkillImpl) ID() EnemySkillID {
 	return s.IDField
+}
+
+func (s *EnemySkillImpl) Calculate(options *EnemySkillCalculationOptions) {
+	for i := range options.BattleCards {
+		if !s.Condition(i, options) {
+			continue
+		}
+		modifier := options.BattleCardPowerModifiers[i]
+		modifier.Union(s.Modifier)
+	}
 }
 
 type EnemySkillCalculationOptions struct {
 	BattleCards              []*BattleCard
 	BattleCardPowerModifiers []*BattleCardPowerModifier
 	Enemy                    *Enemy
-}
-
-type EnemySkillAdditiveDebuff struct {
-	BaseEnemySkill
-	Value float64
-}
-
-func (s *EnemySkillAdditiveDebuff) Calculate(options *EnemySkillCalculationOptions) {
-	for i := range options.BattleCards {
-		options.BattleCardPowerModifiers[i].AdditiveDebuff += s.Value
-	}
-}
-
-type EnemySkillCardTypeAdditiveDebuff struct {
-	BaseEnemySkill
-	CardType BattleCardType
-	Value    float64
-}
-
-func (s *EnemySkillCardTypeAdditiveDebuff) Calculate(options *EnemySkillCalculationOptions) {
-	for i, card := range options.BattleCards {
-		if card.Type == s.CardType {
-			options.BattleCardPowerModifiers[i].AdditiveDebuff += s.Value
-		}
-	}
-}
-
-type EnemySkillCardTypeMultiplicativeDebuff struct {
-	BaseEnemySkill
-	CardType BattleCardType
-	Value    float64
-}
-
-func (s *EnemySkillCardTypeMultiplicativeDebuff) Calculate(options *EnemySkillCalculationOptions) {
-	for i, card := range options.BattleCards {
-		if card.Type == s.CardType {
-			options.BattleCardPowerModifiers[i].MultiplicativeDebuff += s.Value
-		}
-	}
-}
-
-type EnemySkillCardTypeExceptMultiplicativeDebuff struct {
-	BaseEnemySkill
-	CardType BattleCardType
-	Value    float64
-}
-
-func (s *EnemySkillCardTypeExceptMultiplicativeDebuff) Calculate(options *EnemySkillCalculationOptions) {
-	for i, card := range options.BattleCards {
-		if card.Type != s.CardType {
-			options.BattleCardPowerModifiers[i].MultiplicativeDebuff += s.Value
-		}
-	}
-}
-
-type EnemySkillIndexForwardMultiplicativeDebuff struct {
-	BaseEnemySkill
-	NumOfCards int
-	Value      float64
-}
-
-func (s *EnemySkillIndexForwardMultiplicativeDebuff) Calculate(options *EnemySkillCalculationOptions) {
-	for i := range options.BattleCards {
-		if i < s.NumOfCards {
-			options.BattleCardPowerModifiers[i].MultiplicativeDebuff += s.Value
-		}
-	}
-}
-
-type EnemySkillIndexBackwardMultiplicativeDebuff struct {
-	BaseEnemySkill
-	NumOfCards int
-	Value      float64
-}
-
-func (s *EnemySkillIndexBackwardMultiplicativeDebuff) Calculate(options *EnemySkillCalculationOptions) {
-	for i := range options.BattleCards {
-		if i >= len(options.BattleCards)-s.NumOfCards {
-			options.BattleCardPowerModifiers[i].MultiplicativeDebuff += s.Value
-		}
-	}
 }
