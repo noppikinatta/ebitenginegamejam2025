@@ -79,3 +79,12 @@ type StructureCard struct {
 
 Questionは削除する。表示にしか関係ないため。
 
+## EnemySkill, EnemySkillImpl
+
+EnemySkillをinterfaceにしたのは過度の抽象化だった。
+EnemySkillImplをEnemySkillとして、structで再定義すべき。
+
+## Battlefield
+
+CalculateTotalPowerとは別に、個々のBattleCardの計算されたPowerを取得できるようにする。表示に使うため。
+同じように、計算されたSupportPowerも表示のために必要になる。
