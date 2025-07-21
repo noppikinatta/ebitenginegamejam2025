@@ -179,14 +179,18 @@ Pointは、MapGridViewから開く子画面(BattleView, TerritotyView, MarketVie
 type Point interface {
 	PointType() PointType
 	Passible() bool
-	AsBattlePoint() BattlePoint
-
+	AsBattlePoint() (BattlePoint, bool)
+	AsTerritoryPoint() (TerritoryPoint, bool)
+	AsMarketPoint() (MarketPoint, bool)
 }
 ```
 
+> 直接の型キャストではなくメソッドを定義することで、意図があって型変換していることを示す。
+
+// TODO:なんだかおかしい。もっと別の表現方法があるのでは？
+
 ```
 type BattlePoint interface {
-	Point
 	Enemy() *Enemy
 	Conquer()
 }
