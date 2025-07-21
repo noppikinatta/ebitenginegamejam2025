@@ -88,3 +88,21 @@ EnemySkillImplをEnemySkillとして、structで再定義すべき。
 
 CalculateTotalPowerとは別に、個々のBattleCardの計算されたPowerを取得できるようにする。表示に使うため。
 同じように、計算されたSupportPowerも表示のために必要になる。
+
+## Nation
+
+VisibleMarketItemsは意味がなかった。なぜなら、利用できないMarketItemが見えないよりも、見えるようにしてアンロック条件を表示した方がプレイヤーにとっては有益なためである。
+
+結局各所ではGetMarketを使っている。
+
+## OtherNation
+
+購入時にMarket.Levelを0.5上げているが、これはやめたい。Marketに購入時の変化を持たせるように変更する。
+
+## Market, MarketItem
+
+MarketItemにLevelEffectの項目を設け、購入時にMarket.Levelに加算する。
+
+MarketItem.CardPackはnilを許容するかもしれない。それは、LevelEffectを多く持たせ、投資のような性質のMarketItemを作るためである。
+
+MarketItem.ResourceQuantityを追加するかもしれない。これは、資源の取引を表す。
