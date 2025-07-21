@@ -106,3 +106,47 @@ MarketItemにLevelEffectの項目を設け、購入時にMarket.Levelに加算�
 MarketItem.CardPackはnilを許容するかもしれない。それは、LevelEffectを多く持たせ、投資のような性質のMarketItemを作るためである。
 
 MarketItem.ResourceQuantityを追加するかもしれない。これは、資源の取引を表す。
+
+## Treasury
+
+国庫を表す概念なのでMyNationの一部のような気がする。
+
+## Territory
+
+一部の情報を新設するTerrainにうつす。
+
+```
+type Territory struct {
+	id      TerritoryID
+	terrain *Terrain
+	cards   []*StructureCard
+}
+```
+
+## ConstructionPlan
+
+ui.TerritoryView表示時に作る。またはcardsをクリアする。
+ui.BattleView表示時に作られるBattlefieldのような役割。
+Territoryのcardsの変更計画であって、ui.TerritoryViewで計画をコミットするとき、cardsの内容をTerriroryに複写するようにしたい。
+
+**TerritoryとConstructionPlanでcardsのSliceのメモリを共有してしまわないように注意する。**
+
+```
+type ConstructionPlan struct {
+	cards   []*StructureCard
+}
+```
+
+## Terrain
+
+地形の情報。immutable。
+
+```
+type Terrain struct {
+	id        TerrainID
+	baseYield ResourceQuantity
+	cardSlot  int
+}
+```
+
+## MapGrid
