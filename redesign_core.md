@@ -173,4 +173,36 @@ const (
 )
 ```
 
-Pointは、中間的なインタフェースとしてBattlePoint, ConstructionPoint, MarketPointの３種類を定義する。これは、MapGridViewから開く子画面(BattleView, TerritotyView, MarketView)に対応する。
+Pointは、MapGridViewから開く子画面(BattleView, TerritotyView, MarketView)に対応する情報を返せる必要がある。
+
+```
+type Point interface {
+	PointType() PointType
+	Passible() bool
+	AsBattlePoint() BattlePoint
+
+}
+```
+
+```
+type BattlePoint interface {
+	Point
+	Enemy() *Enemy
+	Conquer()
+}
+```
+
+```
+type TerriroryPoint interface {
+	Yield() ResourceQuantity
+	Terrain() *Terrain
+	CardSlot() int
+	Cards() []*StructureCard
+}
+```
+
+```
+type MarketPoint interface {
+	Nation() Nation
+}
+```
