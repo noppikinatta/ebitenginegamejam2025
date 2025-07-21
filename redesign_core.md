@@ -7,7 +7,7 @@
 
 FieldがPublicになっているものが多い。カプセル化の試みとして、可能な限りFieldをpackage private (小文字始まり) にしていく。
 他のパッケージから設定しているものは、コンストラクタ(New+型名の関数)を追加する。おそらくloadパッケージのみ使うだろう。一部は新設するflowパッケージ(Usecaseレイヤー)で使う。
-uiパッケージから参照しているものは、新設するinfoパッケージ(Presenterレイヤー)にプロキシ型を通じて取得する予定。
+uiパッケージから参照しているものは、新設するviewmodelパッケージ(Presenterレイヤー)にプロキシ型を通じて取得する予定。
 
 ## CardDeck
 
@@ -150,3 +150,27 @@ type Terrain struct {
 ```
 
 ## MapGrid
+
+
+
+## Point
+
+Pointの具体型はMyNationPoint,OtherNationPoint,WildernessPoint,BossPointの4種。
+ui packageでPointをこの具体型にキャストして処理を分岐しているが、これはあまり良くない。
+
+この処理を分岐している原因は、Pointの種類によって、MapGridView画面から開く画面の種類や必要なデータが異なるからである。
+
+Pointは、IsMyNationの代わりにPointTypeを持ち、次のように定義するPointType型の値を返す。
+
+```
+type PointType int
+const (
+	PointTypeUnknown PointType = iota
+	PointTypeMyNation
+	PointTypeOtherNation
+	PointTypeWilderness
+	PointTypeBoss
+)
+```
+
+Pointは、中間的なインタフェースとしてBattlePoint, ConstructionPoint, MarketPointの３種類を定義する。これは、MapGridViewから開く子画面(BattleView, TerritotyView, MarketView)に対応する。
