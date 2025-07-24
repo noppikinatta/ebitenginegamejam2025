@@ -151,8 +151,6 @@ type Terrain struct {
 
 ## MapGrid
 
-
-
 ## Point
 
 Pointの具体型はMyNationPoint,OtherNationPoint,WildernessPoint,BossPointの4種。

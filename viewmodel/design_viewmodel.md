@@ -18,7 +18,7 @@ type BattleViewModel struct {
     CanBeat() bool
     TotalPower() float64
     NumCards() int
-    CardViewModel(idx int) *BattleCardViewModel
+    Card(idx int) *BattleCardViewModel
 }
 ```
 
@@ -28,8 +28,8 @@ type BattleViewModel struct {
 type CardDeckViewModel struct {
     NumBattleCards() int
     NumStructureCards() int
-    BattleCardViewModel(idx int) *BattleCardViewModel
-    StructureCardViewModel(idx int) *StructureCardViewModel
+    BattleCard(idx int) *BattleCardViewModel
+    StructureCard(idx int) *StructureCardViewModel
 }
 ```
 
@@ -61,7 +61,7 @@ type StructureCardViewModel struct {
 ```
 type MapGridViewModel struct {
     Size() core.MapGridSize
-    PointViewModel(x,y int) *PointViewModel
+    Point(x,y int) *PointViewModel
     ShouldDrawLineToRight(x,y int) bool
     ShouldDrawLineToUpper(x,y int) bool
 }
@@ -78,4 +78,78 @@ type PointViewModel struct {
 
 ## MarketViewModel
 
+```
+type MarketViewModel struct {
+    Title() string
+    Level() float64
+    NumItems() int
+    Item(idx int) *MarketItemViewModel
+}
+```
+
+```
+type MarketItemViewModel struct {
+    ItemName() string
+    RequiredLevel() int
+    Unlocked() bool
+    CanPurchase() bool
+    Price() core.ResourceQuantity
+}
+```
+
+```
+type ResouceSufficiency struct {
+	Money bool
+	Food  bool
+	Wood  bool
+	Iron  bool
+	Mana  bool
+}
+```
+
 ## TerritoryViewModel
+
+```
+type TerriroryViewModel struct {
+    Title() string
+    CardSlot() int
+    NumCards() int
+    Card(idx int) *StructureCardViewModel
+    Yield() ResourceQuantity
+    SupportPower() float64
+    SupportCardSlot() int
+}
+```
+
+## ResourceViewModel
+
+```
+type ResourceViewModel struct {
+    Quantity() core.ResourceQuantity
+}
+```
+
+## CalendarViewModel
+
+```
+type CalendarViewModel struct {
+    YearMonth() string
+}
+```
+
+## HistoryViewModel
+
+```
+type HistoryViewModel struct {
+    Title() string
+    NumEvents() int
+    Events(idx int) *HistoryEventViewModel
+}
+```
+
+```
+type HistoryEventViewModel struct {
+    YearMonth() string
+    Text() string
+}
+```
