@@ -10,11 +10,9 @@ func LoadGameState() *core.GameState {
 	treasury := createTreasury()
 	cardGenerator := createCardGenerator()
 	cardDeck := createCardDeck(cardGenerator)
-	mapGrid := createMapGrid(myNation)
-
-	// Note: Market functionality is temporarily unavailable due to architecture changes
-	// Markets were previously managed by individual nations but are now handled separately
-	// This will be restored in a future update
+	cardPacks, cardPackPrices := createCardPacksAndPrices()
+	markets := createMarkets(cardPacks, cardPackPrices)
+	mapGrid := createMapGrid(myNation, cardPacks, cardPackPrices)
 
 	gs := &core.GameState{
 		MyNation:      myNation,
@@ -23,6 +21,7 @@ func LoadGameState() *core.GameState {
 		Treasury:      treasury,
 		CurrentTurn:   0,
 		CardGenerator: cardGenerator,
+		Markets:       markets,
 	}
 
 	return gs
@@ -47,10 +46,7 @@ func createCardDeck(cardGenerator *core.CardGenerator) *core.CardDeck {
 	return deck
 }
 
-func createMapGrid(myNation *core.MyNation) *core.MapGrid {
-	size := core.MapGridSize{X: 5, Y: 5}
-	points := make([]core.Point, size.Length())
-
+func createCardPacksAndPrices() (map[string]*core.CardPack, map[string]core.ResourceQuantity) {
 	cardPacks := map[string]*core.CardPack{
 		"cardpack-free": {
 			CardPackID: "cardpack-free",
@@ -237,36 +233,13 @@ func createMapGrid(myNation *core.MyNation) *core.MapGrid {
 		"cardpack-mountain":   {Food: 5, Wood: 5},
 	}
 
-	myNation.Market = &core.Market{
-		Level: 1.0,
-		Items: []*core.MarketItem{
-			{
-				CardPack:      cardPacks["cardpack-free"],
-				Price:         cardPackPrices["cardpack-free"],
-				RequiredLevel: 1,
-			},
-			{
-				CardPack:      cardPacks["cardpack-soldiers"],
-				Price:         cardPackPrices["cardpack-soldiers"],
-				RequiredLevel: 1,
-			},
-			{
-				CardPack:      cardPacks["cardpack-politics"],
-				Price:         cardPackPrices["cardpack-politics"],
-				RequiredLevel: 2,
-			},
-			{
-				CardPack:      cardPacks["cardpack-knights"],
-				Price:         cardPackPrices["cardpack-knights"],
-				RequiredLevel: 3,
-			},
-			{
-				CardPack:      cardPacks["cardpack-war"],
-				Price:         cardPackPrices["cardpack-war"],
-				RequiredLevel: 5,
-			},
-		},
-	}
+	return cardPacks, cardPackPrices
+}
+
+func createMapGrid(myNation *core.MyNation, cardPacks map[string]*core.CardPack, cardPackPrices map[string]core.ResourceQuantity) *core.MapGrid {
+	size := core.MapGridSize{X: 5, Y: 5}
+	points := make([]core.Point, size.Length())
+
 	points[size.Index(0, 0)] = &core.MyNationPoint{MyNation: myNation}
 
 	// Nations
@@ -305,29 +278,29 @@ func createMapGrid(myNation *core.MyNation) *core.MapGrid {
 		enemyType   core.EnemyType
 		power       float64
 		cardSlot    int
-		skills      []core.EnemySkill
+		skills      []*core.EnemySkill
 		terrainType string
 		baseYield   core.ResourceQuantity
 	}{
-		{1, 0, "enemy-goblin", "enemy-type-demonic", 3, 3, []core.EnemySkill{}, "terrain-forest", core.ResourceQuantity{Wood: 2}},
-		{0, 1, "enemy-sabrelouse", "enemy-type-animal", 4, 3, []core.EnemySkill{}, "terrain-mountain", core.ResourceQuantity{Iron: 2}},
-		{1, 1, "enemy-rattlesnake", "enemy-type-dragon", 6, 3, []core.EnemySkill{}, "terrain-plain", core.ResourceQuantity{Food: 2}},
-		{2, 1, "enemy-condor", "enemy-type-flying", 6, 3, []core.EnemySkill{createEvasionSkill()}, "terrain-desert", core.ResourceQuantity{}},
-		{1, 2, "enemy-slime", "enemy-type-unknown", 6, 3, []core.EnemySkill{createSoftSkill()}, "terrain-desert", core.ResourceQuantity{}},
-		{0, 3, "enemy-crocodile", "enemy-type-dragon", 10, 4, []core.EnemySkill{}, "terrain-mountain", core.ResourceQuantity{Iron: 2}},
-		{3, 0, "enemy-grizzly", "enemy-type-animal", 12, 4, []core.EnemySkill{}, "terrain-forest", core.ResourceQuantity{Wood: 2}},
-		{1, 3, "enemy-skeleton", "enemy-type-undead", 12, 4, []core.EnemySkill{createLongbowSkill()}, "terrain-mana-node", core.ResourceQuantity{Mana: 3}},
-		{3, 1, "enemy-elemental", "enemy-type-unknown", 20, 5, []core.EnemySkill{createIncorporealitySkill()}, "terrain-mountain", core.ResourceQuantity{Iron: 2}},
-		{1, 4, "enemy-dragon", "enemy-type-dragon", 30, 6, []core.EnemySkill{createPressureSkill()}, "terrain-plain", core.ResourceQuantity{Food: 2}},
-		{4, 1, "enemy-griffin", "enemy-type-flying", 25, 5, []core.EnemySkill{createEvasionSkill()}, "terrain-plain", core.ResourceQuantity{Food: 2}},
-		{2, 3, "enemy-vampire", "enemy-type-undead", 30, 7, []core.EnemySkill{createCharmSkill()}, "terrain-forest", core.ResourceQuantity{Wood: 2}},
-		{3, 2, "enemy-living-armor", "enemy-type-unknown", 50, 7, []core.EnemySkill{}, "terrain-mana-node", core.ResourceQuantity{Mana: 3}},
-		{3, 4, "enemy-arc-demon", "enemy-type-demonic", 40, 8, []core.EnemySkill{createMagicBarrierSkill()}, "terrain-forest", core.ResourceQuantity{Wood: 2}},
-		{4, 3, "enemy-durendal", "enemy-type-undead", 40, 8, []core.EnemySkill{createSideAttackSkill()}, "terrain-mountain", core.ResourceQuantity{Iron: 2}},
-		{3, 3, "enemy-obelisk", "enemy-type-unknown", 40, 8, []core.EnemySkill{createLaserSkill()}, "terrain-mana-node", core.ResourceQuantity{Mana: 3}},
+		{1, 0, "enemy-goblin", "enemy-type-demonic", 3, 3, []*core.EnemySkill{}, "terrain-forest", core.ResourceQuantity{Wood: 2}},
+		{0, 1, "enemy-sabrelouse", "enemy-type-animal", 4, 3, []*core.EnemySkill{}, "terrain-mountain", core.ResourceQuantity{Iron: 2}},
+		{1, 1, "enemy-rattlesnake", "enemy-type-dragon", 6, 3, []*core.EnemySkill{}, "terrain-plain", core.ResourceQuantity{Food: 2}},
+		{2, 1, "enemy-condor", "enemy-type-flying", 6, 3, []*core.EnemySkill{createEvasionSkill()}, "terrain-desert", core.ResourceQuantity{}},
+		{1, 2, "enemy-slime", "enemy-type-unknown", 6, 3, []*core.EnemySkill{createSoftSkill()}, "terrain-desert", core.ResourceQuantity{}},
+		{0, 3, "enemy-crocodile", "enemy-type-dragon", 10, 4, []*core.EnemySkill{}, "terrain-mountain", core.ResourceQuantity{Iron: 2}},
+		{3, 0, "enemy-grizzly", "enemy-type-animal", 12, 4, []*core.EnemySkill{}, "terrain-forest", core.ResourceQuantity{Wood: 2}},
+		{1, 3, "enemy-skeleton", "enemy-type-undead", 12, 4, []*core.EnemySkill{createLongbowSkill()}, "terrain-mana-node", core.ResourceQuantity{Mana: 3}},
+		{3, 1, "enemy-elemental", "enemy-type-unknown", 20, 5, []*core.EnemySkill{createIncorporealitySkill()}, "terrain-mountain", core.ResourceQuantity{Iron: 2}},
+		{1, 4, "enemy-dragon", "enemy-type-dragon", 30, 6, []*core.EnemySkill{createPressureSkill()}, "terrain-plain", core.ResourceQuantity{Food: 2}},
+		{4, 1, "enemy-griffin", "enemy-type-flying", 25, 5, []*core.EnemySkill{createEvasionSkill()}, "terrain-plain", core.ResourceQuantity{Food: 2}},
+		{2, 3, "enemy-vampire", "enemy-type-undead", 30, 7, []*core.EnemySkill{createCharmSkill()}, "terrain-forest", core.ResourceQuantity{Wood: 2}},
+		{3, 2, "enemy-living-armor", "enemy-type-unknown", 50, 7, []*core.EnemySkill{}, "terrain-mana-node", core.ResourceQuantity{Mana: 3}},
+		{3, 4, "enemy-arc-demon", "enemy-type-demonic", 40, 8, []*core.EnemySkill{createMagicBarrierSkill()}, "terrain-forest", core.ResourceQuantity{Wood: 2}},
+		{4, 3, "enemy-durendal", "enemy-type-undead", 40, 8, []*core.EnemySkill{createSideAttackSkill()}, "terrain-mountain", core.ResourceQuantity{Iron: 2}},
+		{3, 3, "enemy-obelisk", "enemy-type-unknown", 40, 8, []*core.EnemySkill{createLaserSkill()}, "terrain-mana-node", core.ResourceQuantity{Mana: 3}},
 	}
 
-	for i, config := range wildernessConfigs {
+	for _, config := range wildernessConfigs {
 		enemy := core.NewEnemy(
 			core.EnemyID(config.enemyID),
 			core.EnemyType(config.enemyType),
