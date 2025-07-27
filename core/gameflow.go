@@ -12,12 +12,14 @@ type GameState struct {
 }
 
 func (g *GameState) GetYield() ResourceQuantity {
-	totalYield := g.MyNation.BasicYield
+	totalYield := ResourceQuantity{} // Start with zero yield
 
 	// Add the Yield of the Territory of the controlled WildernessPoint
 	for _, point := range g.MapGrid.Points {
-		if wilderness, ok := point.(*WildernessPoint); ok && wilderness.Controlled {
-			totalYield = totalYield.Add(wilderness.Territory.Yield())
+		if wilderness, ok := point.(*WildernessPoint); ok && wilderness.controlled {
+			if wilderness.territory != nil {
+				totalYield = totalYield.Add(wilderness.territory.Yield())
+			}
 		}
 	}
 
@@ -39,7 +41,7 @@ func (g *GameState) NextTurn() {
 func (g *GameState) IsVictory() bool {
 	for _, point := range g.MapGrid.Points {
 		if bossPoint, ok := point.(*BossPoint); ok {
-			if !bossPoint.Defeated {
+			if !bossPoint.defeated {
 				return false // A non-defeated Boss exists
 			}
 		}

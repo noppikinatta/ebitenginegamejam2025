@@ -7,24 +7,18 @@ import (
 )
 
 func TestEnemy_Basic(t *testing.T) {
-	enemy := &core.Enemy{
-		EnemyID:        "test_enemy_1",
-		EnemyType:      "orc",
-		Power:          25.0,
-		BattleCardSlot: 3,
-		Skills:         []core.EnemySkill{},
-	}
+	enemy := core.NewEnemy("test_enemy_1", "orc", 25.0, []*core.EnemySkill{}, 3)
 
-	if enemy.EnemyID != "test_enemy_1" {
-		t.Errorf("EnemyID = %v, want %v", enemy.EnemyID, "test_enemy_1")
+	if enemy.ID() != "test_enemy_1" {
+		t.Errorf("ID() = %v, want %v", enemy.ID(), "test_enemy_1")
 	}
-	if enemy.EnemyType != "orc" {
-		t.Errorf("EnemyType = %v, want %v", enemy.EnemyType, "orc")
+	if enemy.Type() != "orc" {
+		t.Errorf("Type() = %v, want %v", enemy.Type(), "orc")
 	}
-	if enemy.Power != 25.0 {
-		t.Errorf("Power = %v, want %v", enemy.Power, 25.0)
+	if enemy.Power() != 25.0 {
+		t.Errorf("Power() = %v, want %v", enemy.Power(), 25.0)
 	}
-	if enemy.BattleCardSlot != 3 {
-		t.Errorf("BattleCardSlot = %v, want %v", enemy.BattleCardSlot, 3)
+	if enemy.BattleCardSlot() != 3 {
+		t.Errorf("BattleCardSlot() = %v, want %v", enemy.BattleCardSlot(), 3)
 	}
 }

@@ -68,31 +68,70 @@ type BattleCardType string
 
 // BattleCard is a card played on the Battlefield during combat. This struct is immutable.
 type BattleCard struct {
-	CardID     CardID
-	Experience int
-	BasePower  BattleCardPower  // BasePower is the combat power of the card.
-	Skill      *BattleCardSkill // Skill is the skill the card possesses.
-	Type       BattleCardType   // Type is the card type, such as warrior, mage, or animal. Used to determine the target of a skill's effect.
+	CardID    CardID
+	BasePower BattleCardPower  // BasePower is the combat power of the card.
+	Skill     *BattleCardSkill // Skill is the skill the card possesses.
+	Type      BattleCardType   // Type is the card type, such as warrior, mage, or animal. Used to determine the target of a skill's effect.
 }
 
-func (c *BattleCard) Level() int {
-	return 1 + c.Experience/100
+// NewBattleCard creates a new BattleCard instance.
+func NewBattleCard(cardID CardID, basePower BattleCardPower, skill *BattleCardSkill, cardType BattleCardType) *BattleCard {
+	return &BattleCard{
+		CardID:    cardID,
+		BasePower: basePower,
+		Skill:     skill,
+		Type:      cardType,
+	}
 }
 
-func (c *BattleCard) Experiment() {
-	c.Experience += (100 / c.Level())
-}
-
+// Power returns the combat power of the card.
 func (c *BattleCard) Power() BattleCardPower {
-	return c.BasePower * (1 + 0.1*BattleCardPower(c.Level()-1))
+	return c.BasePower
 }
 
 // StructureCard is a card placed in a Territory. This struct is immutable.
 type StructureCard struct {
-	CardID              CardID
-	DescriptionKey      string
-	YieldModifier       YieldModifier       // YieldModifier is a skill that modifies the Yield of a Territory.
-	BattlefieldModifier BattlefieldModifier // BattlefieldModifier is a skill that modifies the state of the Battlefield.
+	cardID              CardID
+	yieldAdditiveValue  ResourceQuantity // Direct additive yield bonus
+	yieldModifier       ResourceModifier // Multiplicative yield modifier  
+	supportPower        float64          // Support power provided to battlefield
+	supportCardSlot     int              // Additional card slots provided to battlefield
+}
+
+// NewStructureCard creates a new StructureCard instance.
+func NewStructureCard(cardID CardID, yieldAdditiveValue ResourceQuantity, yieldModifier ResourceModifier, supportPower float64, supportCardSlot int) *StructureCard {
+	return &StructureCard{
+		cardID:              cardID,
+		yieldAdditiveValue:  yieldAdditiveValue,
+		yieldModifier:       yieldModifier,
+		supportPower:        supportPower,
+		supportCardSlot:     supportCardSlot,
+	}
+}
+
+// ID returns the card ID.
+func (c *StructureCard) ID() CardID {
+	return c.cardID
+}
+
+// YieldAdditiveValue returns the direct additive yield bonus.
+func (c *StructureCard) YieldAdditiveValue() ResourceQuantity {
+	return c.yieldAdditiveValue
+}
+
+// YieldModifier returns the multiplicative yield modifier.
+func (c *StructureCard) YieldModifier() ResourceModifier {
+	return c.yieldModifier
+}
+
+// SupportPower returns the support power provided to battlefield.
+func (c *StructureCard) SupportPower() float64 {
+	return c.supportPower
+}
+
+// SupportCardSlot returns the additional card slots provided to battlefield.
+func (c *StructureCard) SupportCardSlot() int {
+	return c.supportCardSlot
 }
 
 // CardGenerator is a struct for generating cards.
@@ -134,30 +173,57 @@ func (g *CardGenerator) Generate(cardIDs []CardID) (*Cards, bool) {
 
 // CardDeck is the player's card deck.
 type CardDeck struct {
-	Cards // Embedded struct
+	hand map[CardID]int
 }
 
-// Add adds the given Cards to the CardDeck.
-func (cd *CardDeck) Add(cards *Cards) {
-	if cards == nil {
-		return
+// NewCardDeck creates a new CardDeck instance.
+func NewCardDeck() *CardDeck {
+	return &CardDeck{
+		hand: make(map[CardID]int),
 	}
+}
 
-	for _, card := range cards.BattleCards {
-		found := false
-		for _, cardInDeck := range cd.BattleCards {
-			if cardInDeck.CardID == card.CardID {
-				cardInDeck.Experiment()
-				found = true
-				break
-			}
-		}
-		if !found {
-			cd.BattleCards = append(cd.BattleCards, card)
+// Add adds a card to the deck by CardID.
+func (cd *CardDeck) Add(cardID CardID) {
+	cd.hand[cardID]++
+}
+
+// Remove removes a card from the deck by CardID.
+// Returns true if the card was successfully removed, false if the card doesn't exist.
+func (cd *CardDeck) Remove(cardID CardID) bool {
+	if cd.hand[cardID] <= 0 {
+		return false
+	}
+	cd.hand[cardID]--
+	if cd.hand[cardID] == 0 {
+		delete(cd.hand, cardID)
+	}
+	return true
+}
+
+// Count returns the number of cards with the given CardID in the deck.
+func (cd *CardDeck) Count(cardID CardID) int {
+	return cd.hand[cardID]
+}
+
+// GetAllCardIDs returns all CardIDs in the deck, with duplicates for multiple copies.
+func (cd *CardDeck) GetAllCardIDs() []CardID {
+	var cardIDs []CardID
+	for cardID, count := range cd.hand {
+		for i := 0; i < count; i++ {
+			cardIDs = append(cardIDs, cardID)
 		}
 	}
+	return cardIDs
+}
 
-	cd.StructureCards = append(cd.StructureCards, cards.StructureCards...)
+// GetAllCardCounts returns a copy of the internal card count map.
+func (cd *CardDeck) GetAllCardCounts() map[CardID]int {
+	result := make(map[CardID]int)
+	for cardID, count := range cd.hand {
+		result[cardID] = count
+	}
+	return result
 }
 
 // BattleCardSkillID is the identifier for a battle card skill.
@@ -279,60 +345,4 @@ func (e *BattleCardSkillEffect) Apply(modifier *BattleCardPowerModifier) {
 	modifier.Union(e.Modifier)
 }
 
-// YieldModifier is a skill that modifies the Yield of a Territory.
-type YieldModifier interface {
-	Modify(quantity ResourceQuantity) ResourceQuantity // Modifies the argument quantity.
-}
 
-// AddYieldModifier adds to the resource quantity.
-type AddYieldModifier struct {
-	ResourceQuantity ResourceQuantity
-}
-
-func (m *AddYieldModifier) Modify(quantity ResourceQuantity) ResourceQuantity {
-	return quantity.Add(m.ResourceQuantity)
-}
-
-// MultiplyYieldModifier multiplies the resource quantity.
-type MultiplyYieldModifier struct {
-	FoodMultiply  float64
-	MoneyMultiply float64
-	WoodMultiply  float64
-	IronMultiply  float64
-	ManaMultiply  float64
-}
-
-func (m *MultiplyYieldModifier) Modify(quantity ResourceQuantity) ResourceQuantity {
-	return ResourceQuantity{
-		Food:  int(float64(quantity.Food) * (1.0 + m.FoodMultiply)),
-		Money: int(float64(quantity.Money) * (1.0 + m.MoneyMultiply)),
-		Wood:  int(float64(quantity.Wood) * (1.0 + m.WoodMultiply)),
-		Iron:  int(float64(quantity.Iron) * (1.0 + m.IronMultiply)),
-		Mana:  int(float64(quantity.Mana) * (1.0 + m.ManaMultiply)),
-	}
-}
-
-// BattlefieldModifier is a skill that modifies the state of the Battlefield.
-type BattlefieldModifier interface {
-	Modify(battlefield *Battlefield) *Battlefield // Modifies the argument battlefield.
-}
-
-// CardSlotBattlefieldModifier modifies the number of card slots.
-type CardSlotBattlefieldModifier struct {
-	Value int
-}
-
-func (m *CardSlotBattlefieldModifier) Modify(battlefield *Battlefield) *Battlefield {
-	battlefield.CardSlot += m.Value
-	return battlefield
-}
-
-// SupportPowerBattlefieldModifier modifies the support power.
-type SupportPowerBattlefieldModifier struct {
-	Value float64
-}
-
-func (m *SupportPowerBattlefieldModifier) Modify(battlefield *Battlefield) *Battlefield {
-	battlefield.BaseSupportPower += m.Value
-	return battlefield
-}

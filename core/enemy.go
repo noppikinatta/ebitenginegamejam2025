@@ -11,36 +11,80 @@ type EnemySkillID string
 
 // Enemy represents an enemy.
 type Enemy struct {
-	EnemyID        EnemyID
-	EnemyType      EnemyType
-	Power          float64
-	Skills         []EnemySkill
-	BattleCardSlot int // The number of BattleCards a player can play in a battle against this Enemy.
-	Question       string
+	id             EnemyID
+	enemyType      EnemyType
+	power          float64
+	skills         []*EnemySkill
+	battleCardSlot int // The number of BattleCards a player can play in a battle against this Enemy.
 }
 
-type EnemySkill interface {
-	ID() EnemySkillID
-	Calculate(options *EnemySkillCalculationOptions)
+// NewEnemy creates a new Enemy instance.
+func NewEnemy(id EnemyID, enemyType EnemyType, power float64, skills []*EnemySkill, battleCardSlot int) *Enemy {
+	return &Enemy{
+		id:             id,
+		enemyType:      enemyType,
+		power:          power,
+		skills:         skills,
+		battleCardSlot: battleCardSlot,
+	}
 }
 
-type EnemySkillImpl struct {
-	IDField   EnemySkillID
-	Condition func(idx int, options *EnemySkillCalculationOptions) bool
-	Modifier  *BattleCardPowerModifier
+// ID returns the enemy ID.
+func (e *Enemy) ID() EnemyID {
+	return e.id
 }
 
-func (s *EnemySkillImpl) ID() EnemySkillID {
-	return s.IDField
+// Type returns the enemy type.
+func (e *Enemy) Type() EnemyType {
+	return e.enemyType
 }
 
-func (s *EnemySkillImpl) Calculate(options *EnemySkillCalculationOptions) {
+// Power returns the enemy power.
+func (e *Enemy) Power() float64 {
+	return e.power
+}
+
+// Skills returns a copy of the enemy skills.
+func (e *Enemy) Skills() []*EnemySkill {
+	result := make([]*EnemySkill, len(e.skills))
+	copy(result, e.skills)
+	return result
+}
+
+// BattleCardSlot returns the number of BattleCards a player can play in a battle against this Enemy.
+func (e *Enemy) BattleCardSlot() int {
+	return e.battleCardSlot
+}
+
+// EnemySkill represents an enemy skill.
+type EnemySkill struct {
+	id        EnemySkillID
+	condition func(idx int, options *EnemySkillCalculationOptions) bool
+	modifier  *BattleCardPowerModifier
+}
+
+// NewEnemySkill creates a new EnemySkill instance.
+func NewEnemySkill(id EnemySkillID, condition func(idx int, options *EnemySkillCalculationOptions) bool, modifier *BattleCardPowerModifier) *EnemySkill {
+	return &EnemySkill{
+		id:        id,
+		condition: condition,
+		modifier:  modifier,
+	}
+}
+
+// ID returns the enemy skill ID.
+func (s *EnemySkill) ID() EnemySkillID {
+	return s.id
+}
+
+// Calculate applies the enemy skill effects.
+func (s *EnemySkill) Calculate(options *EnemySkillCalculationOptions) {
 	for i := range options.BattleCards {
-		if !s.Condition(i, options) {
+		if !s.condition(i, options) {
 			continue
 		}
 		modifier := options.BattleCardPowerModifiers[i]
-		modifier.Union(s.Modifier)
+		modifier.Union(s.modifier)
 	}
 }
 

@@ -11,7 +11,7 @@ type Battlefield struct {
 // CanBeat returns true if the player's power is enough to defeat the enemy.
 func (b *Battlefield) CanBeat() bool {
 	totalPower := b.CalculateTotalPower()
-	return totalPower >= b.Enemy.Power
+	return totalPower >= b.Enemy.Power()
 }
 
 // NewBattlefield creates a new Battlefield instance.
@@ -19,8 +19,8 @@ func NewBattlefield(enemy *Enemy, supportPower float64) *Battlefield {
 	return &Battlefield{
 		Enemy:            enemy,
 		BaseSupportPower: supportPower,
-		BattleCards:      make([]*BattleCard, 0, enemy.BattleCardSlot),
-		CardSlot:         enemy.BattleCardSlot,
+		BattleCards:      make([]*BattleCard, 0, enemy.BattleCardSlot()),
+		CardSlot:         enemy.BattleCardSlot(),
 	}
 }
 
@@ -69,7 +69,7 @@ func (b *Battlefield) CalculateTotalPower() float64 {
 		Enemy:                    b.Enemy,
 	}
 
-	for _, skill := range b.Enemy.Skills {
+	for _, skill := range b.Enemy.Skills() {
 		skill.Calculate(enemyCalcOptions)
 	}
 

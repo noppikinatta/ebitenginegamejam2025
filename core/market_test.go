@@ -25,13 +25,9 @@ func TestMarketItem_CanPurchase(t *testing.T) {
 	}{
 		{
 			name: "Sufficient resources",
-			item: &core.MarketItem{
-				CardPack: cardPack,
-				Price: core.ResourceQuantity{
-					Money: 100, Food: 50, Wood: 30, Iron: 20, Mana: 10,
-				},
-				RequiredLevel: 1.0,
-			},
+			item: core.NewMarketItem(cardPack, core.ResourceQuantity{
+				Money: 100, Food: 50, Wood: 30, Iron: 20, Mana: 10,
+			}, 1.0, 0.0),
 			treasury: &core.Treasury{
 				Resources: core.ResourceQuantity{
 					Money: 150, Food: 80, Wood: 50, Iron: 30, Mana: 20,
@@ -41,13 +37,9 @@ func TestMarketItem_CanPurchase(t *testing.T) {
 		},
 		{
 			name: "Exactly the same amount of resources",
-			item: &core.MarketItem{
-				CardPack: cardPack,
-				Price: core.ResourceQuantity{
-					Money: 100, Food: 50, Wood: 30, Iron: 20, Mana: 10,
-				},
-				RequiredLevel: 1.0,
-			},
+			item: core.NewMarketItem(cardPack, core.ResourceQuantity{
+				Money: 100, Food: 50, Wood: 30, Iron: 20, Mana: 10,
+			}, 1.0, 0.0),
 			treasury: &core.Treasury{
 				Resources: core.ResourceQuantity{
 					Money: 100, Food: 50, Wood: 30, Iron: 20, Mana: 10,
@@ -57,13 +49,9 @@ func TestMarketItem_CanPurchase(t *testing.T) {
 		},
 		{
 			name: "Insufficient resources",
-			item: &core.MarketItem{
-				CardPack: cardPack,
-				Price: core.ResourceQuantity{
-					Money: 100, Food: 50, Wood: 30, Iron: 20, Mana: 10,
-				},
-				RequiredLevel: 1.0,
-			},
+			item: core.NewMarketItem(cardPack, core.ResourceQuantity{
+				Money: 100, Food: 50, Wood: 30, Iron: 20, Mana: 10,
+			}, 1.0, 0.0),
 			treasury: &core.Treasury{
 				Resources: core.ResourceQuantity{
 					Money: 50, Food: 30, Wood: 20, Iron: 10, Mana: 5,
@@ -73,13 +61,9 @@ func TestMarketItem_CanPurchase(t *testing.T) {
 		},
 		{
 			name: "Insufficient partial resources",
-			item: &core.MarketItem{
-				CardPack: cardPack,
-				Price: core.ResourceQuantity{
-					Money: 100, Food: 50, Wood: 30, Iron: 20, Mana: 10,
-				},
-				RequiredLevel: 1.0,
-			},
+			item: core.NewMarketItem(cardPack, core.ResourceQuantity{
+				Money: 100, Food: 50, Wood: 30, Iron: 20, Mana: 10,
+			}, 1.0, 0.0),
 			treasury: &core.Treasury{
 				Resources: core.ResourceQuantity{
 					Money: 150, Food: 30, Wood: 50, Iron: 30, Mana: 20, // Insufficient Food
@@ -130,27 +114,9 @@ func TestMarket_VisibleCardPacks(t *testing.T) {
 
 	// Market items for testing
 	items := []*core.MarketItem{
-		{
-			CardPack: pack1,
-			Price: core.ResourceQuantity{
-				Money: 50,
-			},
-			RequiredLevel: 1.0,
-		},
-		{
-			CardPack: pack2,
-			Price: core.ResourceQuantity{
-				Money: 100,
-			},
-			RequiredLevel: 2.0,
-		},
-		{
-			CardPack: pack3,
-			Price: core.ResourceQuantity{
-				Money: 200,
-			},
-			RequiredLevel: 3.0,
-		},
+		core.NewMarketItem(pack1, core.ResourceQuantity{Money: 50}, 1.0, 0.0),
+		core.NewMarketItem(pack2, core.ResourceQuantity{Money: 100}, 2.0, 0.0),
+		core.NewMarketItem(pack3, core.ResourceQuantity{Money: 200}, 3.0, 0.0),
 	}
 
 	tests := []struct {
@@ -207,11 +173,11 @@ func TestMarket_VisibleCardPacks(t *testing.T) {
 			// Check if the expected CardPackIDs are included
 			for i, item := range result {
 				if i >= len(tt.expectedPacks) {
-					t.Errorf("Unexpected pack at index %d: %v", i, item.CardPack.CardPackID)
+					t.Errorf("Unexpected pack at index %d: %v", i, item.CardPack().CardPackID)
 					continue
 				}
-				if string(item.CardPack.CardPackID) != tt.expectedPacks[i] {
-					t.Errorf("VisibleCardPacks()[%d] = %v, want %v", i, item.CardPack.CardPackID, tt.expectedPacks[i])
+				if string(item.CardPack().CardPackID) != tt.expectedPacks[i] {
+					t.Errorf("VisibleCardPacks()[%d] = %v, want %v", i, item.CardPack().CardPackID, tt.expectedPacks[i])
 				}
 			}
 		})
@@ -230,20 +196,8 @@ func TestMarket_CanPurchase(t *testing.T) {
 
 	// Market items for testing
 	items := []*core.MarketItem{
-		{
-			CardPack: pack,
-			Price: core.ResourceQuantity{
-				Money: 100,
-			},
-			RequiredLevel: 1.0,
-		},
-		{
-			CardPack: pack,
-			Price: core.ResourceQuantity{
-				Money: 200,
-			},
-			RequiredLevel: 2.0,
-		},
+		core.NewMarketItem(pack, core.ResourceQuantity{Money: 100}, 1.0, 0.0),
+		core.NewMarketItem(pack, core.ResourceQuantity{Money: 200}, 2.0, 0.0),
 	}
 
 	market := &core.Market{
@@ -313,13 +267,7 @@ func TestMarket_Purchase(t *testing.T) {
 
 	// Market items for testing
 	items := []*core.MarketItem{
-		{
-			CardPack: pack,
-			Price: core.ResourceQuantity{
-				Money: 100, Food: 50,
-			},
-			RequiredLevel: 1.0,
-		},
+		core.NewMarketItem(pack, core.ResourceQuantity{Money: 100, Food: 50}, 1.0, 0.0),
 	}
 
 	market := &core.Market{

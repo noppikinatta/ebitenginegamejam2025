@@ -14,7 +14,7 @@ func (m *Market) VisibleMarketItems() []*MarketItem {
 	var visibleItems []*MarketItem
 
 	for _, item := range m.Items {
-		if m.Level >= item.RequiredLevel {
+		if m.Level >= item.RequiredLevel() {
 			visibleItems = append(visibleItems, item)
 		}
 	}
@@ -22,7 +22,7 @@ func (m *Market) VisibleMarketItems() []*MarketItem {
 	return visibleItems
 }
 
-// CanPurchase returns whether the card pack at the given index can be purchased.
+// CanPurchase returns whether the item at the given index can be purchased.
 func (m *Market) CanPurchase(index int, treasury *Treasury) bool {
 	if index < 0 || index >= len(m.Items) {
 		return false
@@ -31,7 +31,7 @@ func (m *Market) CanPurchase(index int, treasury *Treasury) bool {
 	item := m.Items[index]
 
 	// Market level check
-	if m.Level < item.RequiredLevel {
+	if m.Level < item.RequiredLevel() {
 		return false
 	}
 
@@ -39,7 +39,7 @@ func (m *Market) CanPurchase(index int, treasury *Treasury) bool {
 	return item.CanPurchase(treasury)
 }
 
-// Purchase buys the card pack at the given index. Returns false if the treasury is insufficient.
+// Purchase buys the item at the given index. Returns the card pack if applicable, false if purchase failed.
 func (m *Market) Purchase(index int, treasury *Treasury) (*CardPack, bool) {
 	if !m.CanPurchase(index, treasury) {
 		return nil, false
@@ -48,23 +48,79 @@ func (m *Market) Purchase(index int, treasury *Treasury) (*CardPack, bool) {
 	item := m.Items[index]
 
 	// Subtract the price from the treasury
-	if !treasury.Sub(item.Price) {
+	if !treasury.Sub(item.Price()) {
 		return nil, false
 	}
 
-	return item.CardPack, true
+	// Apply level effect automatically
+	m.Level += item.LevelEffect()
+
+	// Handle resource trading
+	if item.ResourceQuantity() != nil {
+		treasury.Add(*item.ResourceQuantity())
+	}
+
+	return item.CardPack(), true
 }
 
-// MarketItem represents a card pack.
+// MarketItem represents a card pack or investment item.
 type MarketItem struct {
-	CardPack      *CardPack
-	Price         ResourceQuantity // The price of the card pack.
-	RequiredLevel MarketLevel      // The Market level required to purchase the card pack.
+	cardPack         *CardPack        // The card pack (nil for investment items)
+	price            ResourceQuantity // The price of the item
+	requiredLevel    MarketLevel      // The Market level required to purchase the item
+	levelEffect      MarketLevel      // The level effect applied to market when purchased
+	resourceQuantity *ResourceQuantity // Resource quantity given when purchased (nil if none)
 }
 
-// CanPurchase returns whether the card pack can be purchased with the given treasury.
+// NewMarketItem creates a new MarketItem instance.
+func NewMarketItem(cardPack *CardPack, price ResourceQuantity, requiredLevel MarketLevel, levelEffect MarketLevel) *MarketItem {
+	return &MarketItem{
+		cardPack:      cardPack,
+		price:         price,
+		requiredLevel: requiredLevel,
+		levelEffect:   levelEffect,
+	}
+}
+
+// NewMarketItemWithResources creates a new MarketItem with resource trading functionality.
+func NewMarketItemWithResources(cardPack *CardPack, price ResourceQuantity, requiredLevel MarketLevel, levelEffect MarketLevel, resourceQuantity ResourceQuantity) *MarketItem {
+	return &MarketItem{
+		cardPack:         cardPack,
+		price:            price,
+		requiredLevel:    requiredLevel,
+		levelEffect:      levelEffect,
+		resourceQuantity: &resourceQuantity,
+	}
+}
+
+// CardPack returns the card pack (may be nil for investment items).
+func (mi *MarketItem) CardPack() *CardPack {
+	return mi.cardPack
+}
+
+// Price returns the price of the item.
+func (mi *MarketItem) Price() ResourceQuantity {
+	return mi.price
+}
+
+// RequiredLevel returns the required market level.
+func (mi *MarketItem) RequiredLevel() MarketLevel {
+	return mi.requiredLevel
+}
+
+// LevelEffect returns the level effect applied when purchased.
+func (mi *MarketItem) LevelEffect() MarketLevel {
+	return mi.levelEffect
+}
+
+// ResourceQuantity returns the resource quantity given when purchased (may be nil).
+func (mi *MarketItem) ResourceQuantity() *ResourceQuantity {
+	return mi.resourceQuantity
+}
+
+// CanPurchase returns whether the item can be purchased with the given treasury.
 func (mi *MarketItem) CanPurchase(treasury *Treasury) bool {
-	return treasury.Resources.CanPurchase(mi.Price)
+	return treasury.Resources.CanPurchase(mi.price)
 }
 
 // Treasury represents the treasury.

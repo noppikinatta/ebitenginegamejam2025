@@ -1,8 +1,6 @@
 package load
 
 import (
-	"fmt"
-
 	"github.com/noppikinatta/ebitenginegamejam2025/core"
 )
 
@@ -13,6 +11,10 @@ func LoadGameState() *core.GameState {
 	cardGenerator := createCardGenerator()
 	cardDeck := createCardDeck(cardGenerator)
 	mapGrid := createMapGrid(myNation)
+
+	// Note: Market functionality is temporarily unavailable due to architecture changes
+	// Markets were previously managed by individual nations but are now handled separately
+	// This will be restored in a future update
 
 	gs := &core.GameState{
 		MyNation:      myNation,
@@ -27,18 +29,7 @@ func LoadGameState() *core.GameState {
 }
 
 func createMyNation() *core.MyNation {
-	return &core.MyNation{
-		BaseNation: core.BaseNation{
-			NationID: "nation-mynation",
-		},
-		BasicYield: core.ResourceQuantity{
-			Food:  1,
-			Wood:  1,
-			Money: 1,
-			Iron:  0,
-			Mana:  0,
-		},
-	}
+	return core.NewMyNation("nation-mynation", "My Nation")
 }
 
 func createTreasury() *core.Treasury {
@@ -46,16 +37,14 @@ func createTreasury() *core.Treasury {
 }
 
 func createCardDeck(cardGenerator *core.CardGenerator) *core.CardDeck {
-	firstCards, _ := cardGenerator.Generate([]core.CardID{
-		"battlecard-soldier",
-		"battlecard-archer",
-		//"battlecard-debug",
-	})
+	deck := core.NewCardDeck()
 
-	deck := core.CardDeck{}
-	deck.Add(firstCards)
+	// Add initial cards
+	deck.Add("battlecard-soldier")
+	deck.Add("battlecard-archer")
+	// deck.Add("battlecard-debug") // commented out
 
-	return &deck
+	return deck
 }
 
 func createMapGrid(myNation *core.MyNation) *core.MapGrid {
@@ -282,188 +271,31 @@ func createMapGrid(myNation *core.MyNation) *core.MapGrid {
 
 	// Nations
 	points[size.Index(0, 2)] = &core.OtherNationPoint{ // Forest Nation
-		OtherNation: &core.OtherNation{
-			BaseNation: core.BaseNation{
-				NationID: "nation-forest",
-				Market: &core.Market{
-					Level: 1.0,
-					Items: []*core.MarketItem{
-						{
-							CardPack:      cardPacks["cardpack-forest"],
-							Price:         cardPackPrices["cardpack-forest"],
-							RequiredLevel: 1,
-						},
-						{
-							CardPack:      cardPacks["cardpack-politics"],
-							Price:         cardPackPrices["cardpack-politics"],
-							RequiredLevel: 2,
-						},
-						{
-							CardPack:      cardPacks["cardpack-magic"],
-							Price:         cardPackPrices["cardpack-magic"],
-							RequiredLevel: 4,
-						},
-					},
-				},
-			},
-		},
+		OtherNation: core.NewOtherNation("nation-forest", "Forest Nation"),
 	}
+
 	points[size.Index(2, 0)] = &core.OtherNationPoint{ // Mountain Nation
-		OtherNation: &core.OtherNation{
-			BaseNation: core.BaseNation{
-				NationID: "nation-mountain",
-				Market: &core.Market{
-					Level: 1.0,
-					Items: []*core.MarketItem{
-						{
-							CardPack:      cardPacks["cardpack-mountain"],
-							Price:         cardPackPrices["cardpack-mountain"],
-							RequiredLevel: 1,
-						},
-						{
-							CardPack:      cardPacks["cardpack-mineral"],
-							Price:         cardPackPrices["cardpack-mineral"],
-							RequiredLevel: 2,
-						},
-						{
-							CardPack:      cardPacks["cardpack-siege"],
-							Price:         cardPackPrices["cardpack-siege"],
-							RequiredLevel: 4,
-						},
-					},
-				},
-			},
-		},
+		OtherNation: core.NewOtherNation("nation-mountain", "Mountain Nation"),
 	}
+
 	points[size.Index(2, 2)] = &core.OtherNationPoint{ // Desert Nation
-		OtherNation: &core.OtherNation{
-			BaseNation: core.BaseNation{
-				NationID: "nation-desert",
-				Market: &core.Market{
-					Level: 1.0,
-					Items: []*core.MarketItem{
-						{
-							CardPack:      cardPacks["cardpack-desert"],
-							Price:         cardPackPrices["cardpack-desert"],
-							RequiredLevel: 1,
-						},
-						{
-							CardPack:      cardPacks["cardpack-politics"],
-							Price:         cardPackPrices["cardpack-politics"],
-							RequiredLevel: 1,
-						},
-						{
-							CardPack:      cardPacks["cardpack-finance"],
-							Price:         cardPackPrices["cardpack-finance"],
-							RequiredLevel: 3,
-						},
-						{
-							CardPack:      cardPacks["cardpack-building"],
-							Price:         cardPackPrices["cardpack-building"],
-							RequiredLevel: 5,
-						},
-					},
-				},
-			},
-		},
+		OtherNation: core.NewOtherNation("nation-desert", "Desert Nation"),
 	}
+
 	points[size.Index(0, 4)] = &core.OtherNationPoint{ // Samurai Nation
-		OtherNation: &core.OtherNation{
-			BaseNation: core.BaseNation{
-				NationID: "nation-samurai",
-				Market: &core.Market{
-					Level: 1.0,
-					Items: []*core.MarketItem{
-						{
-							CardPack:      cardPacks["cardpack-samurai"],
-							Price:         cardPackPrices["cardpack-samurai"],
-							RequiredLevel: 1,
-						},
-						{
-							CardPack:      cardPacks["cardpack-mineral"],
-							Price:         cardPackPrices["cardpack-mineral"],
-							RequiredLevel: 3,
-						},
-						{
-							CardPack:      cardPacks["cardpack-war"],
-							Price:         cardPackPrices["cardpack-war"],
-							RequiredLevel: 4,
-						},
-					},
-				},
-			},
-		},
+		OtherNation: core.NewOtherNation("nation-samurai", "Samurai Nation"),
 	}
+
 	points[size.Index(4, 0)] = &core.OtherNationPoint{ // Magical Nation
-		OtherNation: &core.OtherNation{
-			BaseNation: core.BaseNation{
-				NationID: "nation-magical",
-				Market: &core.Market{
-					Level: 1.0,
-					Items: []*core.MarketItem{
-						{
-							CardPack:      cardPacks["cardpack-magic"],
-							Price:         cardPackPrices["cardpack-magic"],
-							RequiredLevel: 1,
-						},
-						{
-							CardPack:      cardPacks["cardpack-mystic"],
-							Price:         cardPackPrices["cardpack-mystic"],
-							RequiredLevel: 3,
-						},
-					},
-				},
-			},
-		},
+		OtherNation: core.NewOtherNation("nation-magical", "Magical Nation"),
 	}
+
 	points[size.Index(2, 4)] = &core.OtherNationPoint{ // Mechanical Nation
-		OtherNation: &core.OtherNation{
-			BaseNation: core.BaseNation{
-				NationID: "nation-mechanical",
-				Market: &core.Market{
-					Level: 1.0,
-					Items: []*core.MarketItem{
-						{
-							CardPack:      cardPacks["cardpack-mechanical"],
-							Price:         cardPackPrices["cardpack-mechanical"],
-							RequiredLevel: 1,
-						},
-						{
-							CardPack:      cardPacks["cardpack-siege"],
-							Price:         cardPackPrices["cardpack-siege"],
-							RequiredLevel: 3,
-						},
-						{
-							CardPack:      cardPacks["cardpack-building"],
-							Price:         cardPackPrices["cardpack-building"],
-							RequiredLevel: 4,
-						},
-					},
-				},
-			},
-		},
+		OtherNation: core.NewOtherNation("nation-mechanical", "Mechanical Nation"),
 	}
+
 	points[size.Index(4, 2)] = &core.OtherNationPoint{ // Carnival Nation
-		OtherNation: &core.OtherNation{
-			BaseNation: core.BaseNation{
-				NationID: "nation-carnival",
-				Market: &core.Market{
-					Level: 1.0,
-					Items: []*core.MarketItem{
-						{
-							CardPack:      cardPacks["cardpack-fancy"],
-							Price:         cardPackPrices["cardpack-fancy"],
-							RequiredLevel: 1,
-						},
-						{
-							CardPack:      cardPacks["cardpack-finance"],
-							Price:         cardPackPrices["cardpack-finance"],
-							RequiredLevel: 2,
-						},
-					},
-				},
-			},
-		},
+		OtherNation: core.NewOtherNation("nation-carnival", "Carnival Nation"),
 	}
 
 	// Place WildernessPoint and BossPoint
@@ -496,41 +328,44 @@ func createMapGrid(myNation *core.MyNation) *core.MapGrid {
 	}
 
 	for i, config := range wildernessConfigs {
-		enemy := &core.Enemy{
-			EnemyID:        config.enemyID,
-			EnemyType:      config.enemyType,
-			Power:          config.power,
-			Skills:         config.skills,
-			BattleCardSlot: config.cardSlot,
-			Question:       fmt.Sprintf("question-%d", i+1),
-		}
+		enemy := core.NewEnemy(
+			core.EnemyID(config.enemyID),
+			core.EnemyType(config.enemyType),
+			config.power,
+			config.skills,
+			config.cardSlot,
+		)
 
-		territory := &core.Territory{
-			BaseYield: config.baseYield,
-			CardSlot:  3, // Set all to 3
-		}
+		terrain := core.NewTerrain(
+			core.TerrainID(config.terrainType),
+			config.baseYield,
+			3, // Set all to 3
+		)
+		territory := core.NewTerritory(
+			core.TerritoryID("territory-"+config.enemyID),
+			terrain,
+		)
 
-		points[size.Index(config.x, config.y)] = &core.WildernessPoint{
-			TerrainType: config.terrainType,
-			Controlled:  false,
-			Enemy:       enemy,
-			Territory:   territory,
-		}
+		wilderness := &core.WildernessPoint{}
+		wilderness.SetControlledForTest(false)
+		wilderness.SetEnemyForTest(enemy)
+		wilderness.SetTerritoryForTest(territory)
+
+		points[size.Index(config.x, config.y)] = wilderness
 	}
 
 	// Boss Point (4,4)
-	boss := &core.Enemy{
-		EnemyID:        "enemy-final-boss",
-		EnemyType:      "enemy-type-demonic",
-		Power:          60,
-		Skills:         []core.EnemySkill{createWaveSkill()},
-		BattleCardSlot: 9,
-		Question:       "question-boss",
-	}
-	points[size.Index(4, 4)] = &core.BossPoint{
-		Boss:     boss,
-		Defeated: false,
-	}
+	boss := core.NewEnemy(
+		"enemy-final-boss",
+		"enemy-type-demonic",
+		60,
+		[]*core.EnemySkill{createWaveSkill()},
+		9,
+	)
+	bossPoint := &core.BossPoint{}
+	bossPoint.SetBossForTest(boss)
+	bossPoint.SetDefeatedForTest(false)
+	points[size.Index(4, 4)] = bossPoint
 
 	mapGrid := &core.MapGrid{
 		Size:   size,
@@ -539,6 +374,93 @@ func createMapGrid(myNation *core.MyNation) *core.MapGrid {
 	mapGrid.UpdateAccesibles()
 
 	return mapGrid
+}
+
+func createMarkets(cardPacks map[string]*core.CardPack, cardPackPrices map[string]core.ResourceQuantity) map[core.NationID]*core.Market {
+	markets := make(map[core.NationID]*core.Market)
+
+	// MyNation Market
+	markets["nation-mynation"] = &core.Market{
+		Level: 1.0,
+		Items: []*core.MarketItem{
+			core.NewMarketItem(cardPacks["cardpack-free"], cardPackPrices["cardpack-free"], 1, 0),
+			core.NewMarketItem(cardPacks["cardpack-soldiers"], cardPackPrices["cardpack-soldiers"], 1, 0),
+			core.NewMarketItem(cardPacks["cardpack-politics"], cardPackPrices["cardpack-politics"], 2, 0),
+			core.NewMarketItem(cardPacks["cardpack-knights"], cardPackPrices["cardpack-knights"], 3, 0),
+			core.NewMarketItem(cardPacks["cardpack-war"], cardPackPrices["cardpack-war"], 5, 0),
+		},
+	}
+
+	// Forest Nation Market
+	markets["nation-forest"] = &core.Market{
+		Level: 1.0,
+		Items: []*core.MarketItem{
+			core.NewMarketItem(cardPacks["cardpack-forest"], cardPackPrices["cardpack-forest"], 1, 0),
+			core.NewMarketItem(cardPacks["cardpack-politics"], cardPackPrices["cardpack-politics"], 2, 0),
+			core.NewMarketItem(cardPacks["cardpack-magic"], cardPackPrices["cardpack-magic"], 4, 0),
+		},
+	}
+
+	// Mountain Nation Market
+	markets["nation-mountain"] = &core.Market{
+		Level: 1.0,
+		Items: []*core.MarketItem{
+			core.NewMarketItem(cardPacks["cardpack-mountain"], cardPackPrices["cardpack-mountain"], 1, 0),
+			core.NewMarketItem(cardPacks["cardpack-mineral"], cardPackPrices["cardpack-mineral"], 2, 0),
+			core.NewMarketItem(cardPacks["cardpack-siege"], cardPackPrices["cardpack-siege"], 4, 0),
+		},
+	}
+
+	// Desert Nation Market
+	markets["nation-desert"] = &core.Market{
+		Level: 1.0,
+		Items: []*core.MarketItem{
+			core.NewMarketItem(cardPacks["cardpack-desert"], cardPackPrices["cardpack-desert"], 1, 0),
+			core.NewMarketItem(cardPacks["cardpack-politics"], cardPackPrices["cardpack-politics"], 1, 0),
+			core.NewMarketItem(cardPacks["cardpack-finance"], cardPackPrices["cardpack-finance"], 3, 0),
+			core.NewMarketItem(cardPacks["cardpack-building"], cardPackPrices["cardpack-building"], 5, 0),
+		},
+	}
+
+	// Samurai Nation Market
+	markets["nation-samurai"] = &core.Market{
+		Level: 1.0,
+		Items: []*core.MarketItem{
+			core.NewMarketItem(cardPacks["cardpack-samurai"], cardPackPrices["cardpack-samurai"], 1, 0),
+			core.NewMarketItem(cardPacks["cardpack-mineral"], cardPackPrices["cardpack-mineral"], 3, 0),
+			core.NewMarketItem(cardPacks["cardpack-war"], cardPackPrices["cardpack-war"], 4, 0),
+		},
+	}
+
+	// Magical Nation Market
+	markets["nation-magical"] = &core.Market{
+		Level: 1.0,
+		Items: []*core.MarketItem{
+			core.NewMarketItem(cardPacks["cardpack-magic"], cardPackPrices["cardpack-magic"], 1, 0),
+			core.NewMarketItem(cardPacks["cardpack-mystic"], cardPackPrices["cardpack-mystic"], 3, 0),
+		},
+	}
+
+	// Mechanical Nation Market
+	markets["nation-mechanical"] = &core.Market{
+		Level: 1.0,
+		Items: []*core.MarketItem{
+			core.NewMarketItem(cardPacks["cardpack-mechanical"], cardPackPrices["cardpack-mechanical"], 1, 0),
+			core.NewMarketItem(cardPacks["cardpack-siege"], cardPackPrices["cardpack-siege"], 3, 0),
+			core.NewMarketItem(cardPacks["cardpack-building"], cardPackPrices["cardpack-building"], 4, 0),
+		},
+	}
+
+	// Carnival Nation Market
+	markets["nation-carnival"] = &core.Market{
+		Level: 1.0,
+		Items: []*core.MarketItem{
+			core.NewMarketItem(cardPacks["cardpack-fancy"], cardPackPrices["cardpack-fancy"], 1, 0),
+			core.NewMarketItem(cardPacks["cardpack-finance"], cardPackPrices["cardpack-finance"], 2, 0),
+		},
+	}
+
+	return markets
 }
 
 func createCardGenerator() *core.CardGenerator {
@@ -590,7 +512,7 @@ func createBattleCards() map[core.CardID]*core.BattleCard {
 				DescriptionKey:    "battlecardskill-dragon-killer-desc",
 				Calculator: &core.BattleCardSkillCalculatorCondition{
 					Condition: func(options *core.BattleCardSkillCalculationOptions) bool {
-						return options.Enemy.EnemyType == "enemy-type-dragon"
+						return options.Enemy.Type() == "enemy-type-dragon"
 					},
 					Calculator: &core.BattleCardSkillCalculatorEffectSelf{
 						Effect: &core.BattleCardSkillEffect{
@@ -630,10 +552,10 @@ func createBattleCards() map[core.CardID]*core.BattleCard {
 				DescriptionKey:    "battlecardskill-sniper-desc",
 				Calculator: &core.BattleCardSkillCalculatorCondition{
 					Condition: func(options *core.BattleCardSkillCalculationOptions) bool {
-						if options.Enemy.EnemyType == "enemy-type-animal" {
+						if options.Enemy.Type() == "enemy-type-animal" {
 							return true
 						}
-						if options.Enemy.EnemyType == "enemy-type-flying" {
+						if options.Enemy.Type() == "enemy-type-flying" {
 							return true
 						}
 						return false
@@ -762,7 +684,7 @@ func createBattleCards() map[core.CardID]*core.BattleCard {
 				DescriptionKey:    "battlecardskill-ki-desc",
 				Calculator: &core.BattleCardSkillCalculatorCondition{
 					Condition: func(options *core.BattleCardSkillCalculationOptions) bool {
-						return options.Enemy.EnemyType == "enemy-type-undead"
+						return options.Enemy.Type() == "enemy-type-undead"
 					},
 					Calculator: &core.BattleCardSkillCalculatorEffectSelf{
 						Effect: &core.BattleCardSkillEffect{
@@ -864,247 +786,224 @@ func createBattleCards() map[core.CardID]*core.BattleCard {
 
 func createStructureCards() map[core.CardID]*core.StructureCard {
 	cards := []*core.StructureCard{
-		{
-			CardID:         "structurecard-farm",
-			DescriptionKey: "structurecard-farm-desc",
-			YieldModifier: &core.AddYieldModifier{
-				ResourceQuantity: core.ResourceQuantity{
-					Food: 2,
-				},
-			},
-		},
-		{
-			CardID:         "structurecard-woodcutter",
-			DescriptionKey: "structurecard-woodcutter-desc",
-			YieldModifier: &core.AddYieldModifier{
-				ResourceQuantity: core.ResourceQuantity{
-					Wood: 2,
-				},
-			},
-		},
-		{
-			CardID:         "structurecard-tunnel",
-			DescriptionKey: "structurecard-tunnel-desc",
-			YieldModifier: &core.AddYieldModifier{
-				ResourceQuantity: core.ResourceQuantity{
-					Iron: 2,
-				},
-			},
-		},
-		{
-			CardID:         "structurecard-market",
-			DescriptionKey: "structurecard-market-desc",
-			YieldModifier: &core.AddYieldModifier{
-				ResourceQuantity: core.ResourceQuantity{
-					Money: 5,
-				},
-			},
-		},
-		{
-			CardID:         "structurecard-shrine",
-			DescriptionKey: "structurecard-shrine-desc",
-			YieldModifier: &core.AddYieldModifier{
-				ResourceQuantity: core.ResourceQuantity{
-					Mana: 2,
-				},
-			},
-		},
-		{
-			CardID:         "structurecard-granary",
-			DescriptionKey: "structurecard-granary-desc",
-			YieldModifier: &core.MultiplyYieldModifier{
-				FoodMultiply: 0.5,
-			},
-		},
-		{
-			CardID:         "structurecard-sawmill",
-			DescriptionKey: "structurecard-sawmill-desc",
-			YieldModifier: &core.MultiplyYieldModifier{
-				WoodMultiply: 0.5,
-			},
-		},
-		{
-			CardID:         "structurecard-smelter",
-			DescriptionKey: "structurecard-smelter-desc",
-			YieldModifier: &core.MultiplyYieldModifier{
-				IronMultiply: 0.5,
-			},
-		},
-		{
-			CardID:         "structurecard-mint",
-			DescriptionKey: "structurecard-mint-desc",
-			YieldModifier: &core.MultiplyYieldModifier{
-				MoneyMultiply: 0.5,
-			},
-		},
-		{
-			CardID:         "structurecard-temple",
-			DescriptionKey: "structurecard-temple-desc",
-			YieldModifier: &core.MultiplyYieldModifier{
-				ManaMultiply: 0.5,
-			},
-		},
-		{
-			CardID:              "structurecard-camp",
-			DescriptionKey:      "structurecard-camp-desc",
-			BattlefieldModifier: &core.CardSlotBattlefieldModifier{Value: 1},
-		},
-		{
-			CardID:              "structurecard-catapult",
-			DescriptionKey:      "structurecard-catapult-desc",
-			BattlefieldModifier: &core.SupportPowerBattlefieldModifier{Value: 3},
-		},
-		{
-			CardID:              "structurecard-ballista",
-			DescriptionKey:      "structurecard-ballista-desc",
-			BattlefieldModifier: &core.SupportPowerBattlefieldModifier{Value: 5},
-		},
-		{
-			CardID:              "structurecard-orban-cannon",
-			DescriptionKey:      "structurecard-orban-cannon-desc",
-			BattlefieldModifier: &core.SupportPowerBattlefieldModifier{Value: 8},
-		},
+		// Yield Additive系
+		core.NewStructureCard(
+			"structurecard-farm",
+			core.ResourceQuantity{Food: 2},
+			core.NewResourceModifier(),
+			0.0, 0),
+		core.NewStructureCard(
+			"structurecard-woodcutter",
+			core.ResourceQuantity{Wood: 2},
+			core.NewResourceModifier(),
+			0.0, 0),
+		core.NewStructureCard(
+			"structurecard-tunnel",
+			core.ResourceQuantity{Iron: 2},
+			core.NewResourceModifier(),
+			0.0, 0),
+		core.NewStructureCard(
+			"structurecard-market",
+			core.ResourceQuantity{Money: 5},
+			core.NewResourceModifier(),
+			0.0, 0),
+		core.NewStructureCard(
+			"structurecard-shrine",
+			core.ResourceQuantity{Mana: 2},
+			core.NewResourceModifier(),
+			0.0, 0),
+
+		// Yield Multiplicative系
+		core.NewStructureCard(
+			"structurecard-granary",
+			core.ResourceQuantity{},
+			core.ResourceModifier{Food: 0.5},
+			0.0, 0),
+		core.NewStructureCard(
+			"structurecard-sawmill",
+			core.ResourceQuantity{},
+			core.ResourceModifier{Wood: 0.5},
+			0.0, 0),
+		core.NewStructureCard(
+			"structurecard-smelter",
+			core.ResourceQuantity{},
+			core.ResourceModifier{Iron: 0.5},
+			0.0, 0),
+		core.NewStructureCard(
+			"structurecard-mint",
+			core.ResourceQuantity{},
+			core.ResourceModifier{Money: 0.5},
+			0.0, 0),
+		core.NewStructureCard(
+			"structurecard-temple",
+			core.ResourceQuantity{},
+			core.ResourceModifier{Mana: 0.5},
+			0.0, 0),
+
+		// Support CardSlot系
+		core.NewStructureCard(
+			"structurecard-camp",
+			core.ResourceQuantity{},
+			core.NewResourceModifier(),
+			0.0, 1),
+
+		// Support Power系
+		core.NewStructureCard(
+			"structurecard-catapult",
+			core.ResourceQuantity{},
+			core.NewResourceModifier(),
+			3.0, 0),
+		core.NewStructureCard(
+			"structurecard-ballista",
+			core.ResourceQuantity{},
+			core.NewResourceModifier(),
+			5.0, 0),
+		core.NewStructureCard(
+			"structurecard-orban-cannon",
+			core.ResourceQuantity{},
+			core.NewResourceModifier(),
+			8.0, 0),
 	}
 
 	cardMap := make(map[core.CardID]*core.StructureCard)
 	for _, card := range cards {
-		cardMap[card.CardID] = card
+		cardMap[card.ID()] = card
 	}
 	return cardMap
 }
 
 // Helper functions for generating enemy skills
 
-func createEvasionSkill() core.EnemySkill {
+func createEvasionSkill() *core.EnemySkill {
 	// Strength type card power -2
-	return &core.EnemySkillImpl{
-		IDField: "enemy-skill-evasion",
-		Condition: func(idx int, options *core.EnemySkillCalculationOptions) bool {
+	return core.NewEnemySkill(
+		"enemy-skill-evasion",
+		func(idx int, options *core.EnemySkillCalculationOptions) bool {
 			card := options.BattleCards[idx]
 			return card.Type == "cardtype-str"
 		},
-		Modifier: &core.BattleCardPowerModifier{
+		&core.BattleCardPowerModifier{
 			AdditiveDebuff: 2.0,
 		},
-	}
+	)
 }
 
-func createSoftSkill() core.EnemySkill {
+func createSoftSkill() *core.EnemySkill {
 	// Non-Magic type card power -50%
-	return &core.EnemySkillImpl{
-		IDField: "enemy-skill-soft",
-		Condition: func(idx int, options *core.EnemySkillCalculationOptions) bool {
+	return core.NewEnemySkill(
+		"enemy-skill-soft",
+		func(idx int, options *core.EnemySkillCalculationOptions) bool {
 			card := options.BattleCards[idx]
 			return card.Type != "cardtype-mag"
 		},
-		Modifier: &core.BattleCardPowerModifier{
+		&core.BattleCardPowerModifier{
 			MultiplicativeDebuff: 0.5,
 		},
-	}
+	)
 }
 
-func createLongbowSkill() core.EnemySkill {
+func createLongbowSkill() *core.EnemySkill {
 	// Rearmost card power -100%
-	return &core.EnemySkillImpl{
-		IDField: "enemy-skill-longbow",
-		Condition: func(idx int, options *core.EnemySkillCalculationOptions) bool {
+	return core.NewEnemySkill(
+		"enemy-skill-longbow",
+		func(idx int, options *core.EnemySkillCalculationOptions) bool {
 			return idx == len(options.BattleCards)-1
 		},
-		Modifier: &core.BattleCardPowerModifier{
+		&core.BattleCardPowerModifier{
 			MultiplicativeDebuff: 1.0,
 		},
-	}
+	)
 }
 
-func createIncorporealitySkill() core.EnemySkill {
+func createIncorporealitySkill() *core.EnemySkill {
 	// Non-Magic type card power -100%
-	return &core.EnemySkillImpl{
-		IDField: "enemy-skill-incorporeality",
-		Condition: func(idx int, options *core.EnemySkillCalculationOptions) bool {
+	return core.NewEnemySkill(
+		"enemy-skill-incorporeality",
+		func(idx int, options *core.EnemySkillCalculationOptions) bool {
 			card := options.BattleCards[idx]
 			return card.Type != "cardtype-mag"
 		},
-		Modifier: &core.BattleCardPowerModifier{
+		&core.BattleCardPowerModifier{
 			MultiplicativeDebuff: 1.0,
 		},
-	}
+	)
 }
 
-func createPressureSkill() core.EnemySkill {
+func createPressureSkill() *core.EnemySkill {
 	// All card power -1
-	return &core.EnemySkillImpl{
-		IDField: "enemy-skill-pressure",
-		Condition: func(idx int, options *core.EnemySkillCalculationOptions) bool {
+	return core.NewEnemySkill(
+		"enemy-skill-pressure",
+		func(idx int, options *core.EnemySkillCalculationOptions) bool {
 			return true
 		},
-		Modifier: &core.BattleCardPowerModifier{
+		&core.BattleCardPowerModifier{
 			AdditiveDebuff: 1.0,
 		},
-	}
+	)
 }
 
-func createCharmSkill() core.EnemySkill {
+func createCharmSkill() *core.EnemySkill {
 	// First 3 cards power -100%
-	return &core.EnemySkillImpl{
-		IDField: "enemy-skill-charm",
-		Condition: func(idx int, options *core.EnemySkillCalculationOptions) bool {
+	return core.NewEnemySkill(
+		"enemy-skill-charm",
+		func(idx int, options *core.EnemySkillCalculationOptions) bool {
 			return idx < 3
 		},
-		Modifier: &core.BattleCardPowerModifier{
+		&core.BattleCardPowerModifier{
 			MultiplicativeDebuff: 1.0,
 		},
-	}
+	)
 }
 
-func createMagicBarrierSkill() core.EnemySkill {
+func createMagicBarrierSkill() *core.EnemySkill {
 	// Magic type card power -100%
-	return &core.EnemySkillImpl{
-		IDField: "enemy-skill-magic-barrier",
-		Condition: func(idx int, options *core.EnemySkillCalculationOptions) bool {
+	return core.NewEnemySkill(
+		"enemy-skill-magic-barrier",
+		func(idx int, options *core.EnemySkillCalculationOptions) bool {
 			card := options.BattleCards[idx]
 			return card.Type == "cardtype-mag"
 		},
-		Modifier: &core.BattleCardPowerModifier{
+		&core.BattleCardPowerModifier{
 			MultiplicativeDebuff: 1.0,
 		},
-	}
+	)
 }
 
-func createLaserSkill() core.EnemySkill {
+func createLaserSkill() *core.EnemySkill {
 	// Last 3 cards power -100%
-	return &core.EnemySkillImpl{
-		IDField: "enemy-skill-laser",
-		Condition: func(idx int, options *core.EnemySkillCalculationOptions) bool {
+	return core.NewEnemySkill(
+		"enemy-skill-laser",
+		func(idx int, options *core.EnemySkillCalculationOptions) bool {
 			return idx >= len(options.BattleCards)-3
 		},
-		Modifier: &core.BattleCardPowerModifier{
+		&core.BattleCardPowerModifier{
 			MultiplicativeDebuff: 1.0,
 		},
-	}
+	)
 }
 
-func createSideAttackSkill() core.EnemySkill {
+func createSideAttackSkill() *core.EnemySkill {
 	// First 5 cards power -50%
-	return &core.EnemySkillImpl{
-		IDField: "enemy-skill-side-attack",
-		Condition: func(idx int, options *core.EnemySkillCalculationOptions) bool {
+	return core.NewEnemySkill(
+		"enemy-skill-side-attack",
+		func(idx int, options *core.EnemySkillCalculationOptions) bool {
 			return idx < 5
 		},
-		Modifier: &core.BattleCardPowerModifier{
+		&core.BattleCardPowerModifier{
 			MultiplicativeDebuff: 0.5,
 		},
-	}
+	)
 }
 
-func createWaveSkill() core.EnemySkill {
+func createWaveSkill() *core.EnemySkill {
 	// All card power -2
-	return &core.EnemySkillImpl{
-		IDField: "enemy-skill-wave",
-		Condition: func(idx int, options *core.EnemySkillCalculationOptions) bool {
+	return core.NewEnemySkill(
+		"enemy-skill-wave",
+		func(idx int, options *core.EnemySkillCalculationOptions) bool {
 			return true
 		},
-		Modifier: &core.BattleCardPowerModifier{
+		&core.BattleCardPowerModifier{
 			AdditiveDebuff: 2.0,
 		},
-	}
+	)
 }

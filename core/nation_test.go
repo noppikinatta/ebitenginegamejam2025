@@ -126,16 +126,8 @@ func TestNation_VisibleCardPacks(t *testing.T) {
 
 	// Market item for testing
 	items := []*core.MarketItem{
-		{
-			CardPack:      pack1,
-			Price:         core.ResourceQuantity{Money: 50},
-			RequiredLevel: 1.0,
-		},
-		{
-			CardPack:      pack2,
-			Price:         core.ResourceQuantity{Money: 100},
-			RequiredLevel: 2.0,
-		},
+		core.NewMarketItem(pack1, core.ResourceQuantity{Money: 50}, 1.0, 0.0),
+		core.NewMarketItem(pack2, core.ResourceQuantity{Money: 100}, 2.0, 0.0),
 	}
 
 	market := &core.Market{
@@ -143,12 +135,8 @@ func TestNation_VisibleCardPacks(t *testing.T) {
 		Items: items,
 	}
 
-	nation := &core.BaseNation{
-		NationID: "test_nation",
-		Market:   market,
-	}
-
-	visibleMarketItems := nation.VisibleMarketItems()
+	// Test Market directly since BaseNation no longer exists
+	visibleMarketItems := market.VisibleMarketItems()
 
 	// With level 1.5, only the basic pack with RequiredLevel 1.0 is visible
 	if len(visibleMarketItems) != 1 {
@@ -156,8 +144,8 @@ func TestNation_VisibleCardPacks(t *testing.T) {
 		return
 	}
 
-	if visibleMarketItems[0].CardPack.CardPackID != "basic_pack" {
-		t.Errorf("VisibleMarketItems()[0] = %v, want basic_pack", visibleMarketItems[0].CardPack.CardPackID)
+	if visibleMarketItems[0].CardPack().CardPackID != "basic_pack" {
+		t.Errorf("VisibleMarketItems()[0] = %v, want basic_pack", visibleMarketItems[0].CardPack().CardPackID)
 	}
 }
 
@@ -173,11 +161,7 @@ func TestNation_CanPurchase(t *testing.T) {
 
 	// Market item for testing
 	items := []*core.MarketItem{
-		{
-			CardPack:      pack,
-			Price:         core.ResourceQuantity{Money: 100},
-			RequiredLevel: 1.0,
-		},
+		core.NewMarketItem(pack, core.ResourceQuantity{Money: 100}, 1.0, 0.0),
 	}
 
 	market := &core.Market{
@@ -185,11 +169,7 @@ func TestNation_CanPurchase(t *testing.T) {
 		Items: items,
 	}
 
-	nation := &core.BaseNation{
-		NationID: "test_nation",
-		Market:   market,
-	}
-
+	// Test Market directly since BaseNation no longer exists
 	tests := []struct {
 		name     string
 		index    int
@@ -224,7 +204,7 @@ func TestNation_CanPurchase(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := nation.CanPurchase(tt.index, tt.treasury)
+			result := market.CanPurchase(tt.index, tt.treasury)
 			if result != tt.expected {
 				t.Errorf("CanPurchase() = %v, want %v", result, tt.expected)
 			}
@@ -244,11 +224,7 @@ func TestNation_Purchase(t *testing.T) {
 
 	// Market item for testing
 	items := []*core.MarketItem{
-		{
-			CardPack:      pack,
-			Price:         core.ResourceQuantity{Money: 100, Food: 50},
-			RequiredLevel: 1.0,
-		},
+		core.NewMarketItem(pack, core.ResourceQuantity{Money: 100, Food: 50}, 1.0, 0.0),
 	}
 
 	market := &core.Market{
@@ -256,11 +232,7 @@ func TestNation_Purchase(t *testing.T) {
 		Items: items,
 	}
 
-	nation := &core.BaseNation{
-		NationID: "test_nation",
-		Market:   market,
-	}
-
+	// Test Market directly since BaseNation no longer exists
 	tests := []struct {
 		name            string
 		index           int
@@ -298,7 +270,7 @@ func TestNation_Purchase(t *testing.T) {
 				Resources: tt.initialTreasury,
 			}
 
-			cardPack, ok := nation.Purchase(tt.index, treasury)
+			cardPack, ok := market.Purchase(tt.index, treasury)
 
 			if ok != tt.expectedOk {
 				t.Errorf("Purchase() ok = %v, want %v", ok, tt.expectedOk)
@@ -319,106 +291,45 @@ func TestNation_Purchase(t *testing.T) {
 	}
 }
 
-func TestMyNation_AppendMarketItem(t *testing.T) {
-	// Card pack for testing
-	pack := &core.CardPack{
-		CardPackID: "new_pack",
-		Ratios: map[core.CardID]int{
-			"card_new": 100,
-		},
-		NumPerOpen: 1,
+func TestMyNation_Basic(t *testing.T) {
+	// Test basic MyNation functionality
+	myNation := core.NewMyNation("my_nation", "My Nation")
+
+	if myNation.ID() != "my_nation" {
+		t.Errorf("ID() = %v, want %v", myNation.ID(), "my_nation")
 	}
 
-	newItem := &core.MarketItem{
-		CardPack:      pack,
-		Price:         core.ResourceQuantity{Money: 150},
-		RequiredLevel: 2.0,
-	}
-
-	market := &core.Market{
-		Level: 2.0,
-		Items: []*core.MarketItem{},
-	}
-
-	myNation := &core.MyNation{
-		BaseNation: core.BaseNation{
-			NationID: "my_nation",
-			Market:   market,
-		},
-		BasicYield: core.ResourceQuantity{Money: 10, Food: 5},
-	}
-
-	// Check initial state
-	if len(myNation.Market.Items) != 0 {
-		t.Errorf("Initial market items = %d, want 0", len(myNation.Market.Items))
-	}
-
-	// Add item
-	myNation.AppendMarketItem(newItem)
-
-	// Check after addition
-	if len(myNation.Market.Items) != 1 {
-		t.Errorf("Market items after append = %d, want 1", len(myNation.Market.Items))
-		return
-	}
-
-	if myNation.Market.Items[0] != newItem {
-		t.Errorf("Appended item = %v, want %v", myNation.Market.Items[0], newItem)
+	if myNation.Name() != "My Nation" {
+		t.Errorf("Name() = %v, want %v", myNation.Name(), "My Nation")
 	}
 }
 
-func TestMyNation_AppendLevel(t *testing.T) {
-	market := &core.Market{
-		Level: 1.0,
-		Items: []*core.MarketItem{},
+func TestOtherNation_Basic(t *testing.T) {
+	// Test basic OtherNation functionality
+	otherNation := core.NewOtherNation("other_nation", "Other Nation")
+
+	if otherNation.ID() != "other_nation" {
+		t.Errorf("ID() = %v, want %v", otherNation.ID(), "other_nation")
 	}
 
-	myNation := &core.MyNation{
-		BaseNation: core.BaseNation{
-			NationID: "my_nation",
-			Market:   market,
-		},
-		BasicYield: core.ResourceQuantity{Money: 10, Food: 5},
-	}
-
-	// Check initial level
-	if myNation.Market.Level != 1.0 {
-		t.Errorf("Initial market level = %v, want 1.0", myNation.Market.Level)
-	}
-
-	// Add level
-	myNation.AppendLevel(0.5)
-
-	// Check after addition
-	if myNation.Market.Level != 1.5 {
-		t.Errorf("Market level after append = %v, want 1.5", myNation.Market.Level)
-	}
-
-	// Add more
-	myNation.AppendLevel(1.0)
-
-	if myNation.Market.Level != 2.5 {
-		t.Errorf("Market level after second append = %v, want 2.5", myNation.Market.Level)
+	if otherNation.Name() != "Other Nation" {
+		t.Errorf("Name() = %v, want %v", otherNation.Name(), "Other Nation")
 	}
 }
 
-func TestOtherNation_Purchase(t *testing.T) {
-	// Card pack for testing
+func TestMarket_Purchase_WithLevelEffect(t *testing.T) {
+	// Test Market with level effect (previously tested in OtherNation)
 	pack := &core.CardPack{
-		CardPackID: "other_pack",
+		CardPackID: "level_effect_pack",
 		Ratios: map[core.CardID]int{
 			"card_a": 100,
 		},
 		NumPerOpen: 1,
 	}
 
-	// Market item for testing
+	// Market item with level effect
 	items := []*core.MarketItem{
-		{
-			CardPack:      pack,
-			Price:         core.ResourceQuantity{Money: 100},
-			RequiredLevel: 1.0,
-		},
+		core.NewMarketItem(pack, core.ResourceQuantity{Money: 100}, 1.0, 0.5), // 0.5 level effect
 	}
 
 	market := &core.Market{
@@ -426,22 +337,15 @@ func TestOtherNation_Purchase(t *testing.T) {
 		Items: items,
 	}
 
-	otherNation := &core.OtherNation{
-		BaseNation: core.BaseNation{
-			NationID: "other_nation",
-			Market:   market,
-		},
-	}
-
 	treasury := &core.Treasury{
 		Resources: core.ResourceQuantity{Money: 150},
 	}
 
 	// Market level before purchase
-	initialLevel := otherNation.Market.Level
+	initialLevel := market.Level
 
 	// Execute purchase
-	cardPack, ok := otherNation.Purchase(0, treasury)
+	cardPack, ok := market.Purchase(0, treasury)
 
 	// Confirm purchase is successful
 	if !ok {
@@ -458,9 +362,9 @@ func TestOtherNation_Purchase(t *testing.T) {
 		t.Errorf("Treasury after purchase = %v, want %v", treasury.Resources, expectedTreasury)
 	}
 
-	// Confirm OtherNation's special feature: Market.Level is increased by 0.5
+	// Confirm level effect: Market.Level is increased by 0.5
 	expectedLevel := initialLevel + 0.5
-	if otherNation.Market.Level != expectedLevel {
-		t.Errorf("Market level after purchase = %v, want %v", otherNation.Market.Level, expectedLevel)
+	if market.Level != expectedLevel {
+		t.Errorf("Market level after purchase = %v, want %v", market.Level, expectedLevel)
 	}
 }

@@ -8,63 +8,36 @@ import (
 
 func TestMapGrid_CanInteract(t *testing.T) {
 	// MyNation for testing
-	myNation := &core.MyNation{
-		BaseNation: core.BaseNation{
-			NationID: "player",
-			Market:   &core.Market{Level: 1.0, Items: []*core.MarketItem{}},
-		},
-		BasicYield: core.ResourceQuantity{Money: 10},
-	}
+	myNation := core.NewMyNation("player", "Player Nation")
 
 	// OtherNation for testing
-	otherNation := &core.OtherNation{
-		BaseNation: core.BaseNation{
-			NationID: "ally",
-			Market:   &core.Market{Level: 1.0, Items: []*core.MarketItem{}},
-		},
-	}
+	otherNation := core.NewOtherNation("ally", "Ally Nation")
 
 	// Enemy for testing
-	enemy := &core.Enemy{
-		EnemyID:        "test_orc",
-		EnemyType:      "orc",
-		Power:          15.0,
-		BattleCardSlot: 2,
-		Skills:         []core.EnemySkill{},
-	}
+	enemy := core.NewEnemy("test_orc", "orc", 15.0, []*core.EnemySkill{}, 2)
 
 	// Boss for testing
-	boss := &core.Enemy{
-		EnemyID:        "dragon_boss",
-		EnemyType:      "dragon",
-		Power:          100.0,
-		BattleCardSlot: 4,
-		Skills:         []core.EnemySkill{},
-	}
+	boss := core.NewEnemy("dragon_boss", "dragon", 100.0, []*core.EnemySkill{}, 4)
+
+	// Terrain for territories
+	controlledTerrain := core.NewTerrain("controlled_terrain", core.ResourceQuantity{Money: 5}, 2)
+	uncontrolledTerrain := core.NewTerrain("uncontrolled_terrain", core.ResourceQuantity{Money: 5}, 2)
+
+	// Territory for testing
+	controlledTerritory := core.NewTerritory("controlled_territory", controlledTerrain)
+	uncontrolledTerritory := core.NewTerritory("uncontrolled_territory", uncontrolledTerrain)
 
 	// WildernessPoint for testing (controlled)
-	controlledWilderness := &core.WildernessPoint{
-		Controlled: true,
-		Enemy:      enemy,
-		Territory: &core.Territory{
-			TerritoryID: "controlled_territory",
-			Cards:       []*core.StructureCard{},
-			CardSlot:    2,
-			BaseYield:   core.ResourceQuantity{Money: 5},
-		},
-	}
+	controlledWilderness := &core.WildernessPoint{}
+	controlledWilderness.SetControlledForTest(true)
+	controlledWilderness.SetEnemyForTest(enemy)
+	controlledWilderness.SetTerritoryForTest(controlledTerritory)
 
 	// WildernessPoint for testing (uncontrolled)
-	uncontrolledWilderness := &core.WildernessPoint{
-		Controlled: false,
-		Enemy:      enemy,
-		Territory: &core.Territory{
-			TerritoryID: "uncontrolled_territory",
-			Cards:       []*core.StructureCard{},
-			CardSlot:    2,
-			BaseYield:   core.ResourceQuantity{Money: 5},
-		},
-	}
+	uncontrolledWilderness := &core.WildernessPoint{}
+	uncontrolledWilderness.SetControlledForTest(false)
+	uncontrolledWilderness.SetEnemyForTest(enemy)
+	uncontrolledWilderness.SetTerritoryForTest(uncontrolledTerritory)
 
 	points := []core.Point{
 		// Row 0
@@ -96,7 +69,11 @@ func TestMapGrid_CanInteract(t *testing.T) {
 		uncontrolledWilderness,
 		&core.OtherNationPoint{OtherNation: otherNation},
 		uncontrolledWilderness,
-		&core.BossPoint{Boss: boss},
+		func() *core.BossPoint {
+			bp := &core.BossPoint{}
+			bp.SetBossForTest(boss)
+			return bp
+		}(),
 	}
 
 	mapGrid := &core.MapGrid{
@@ -186,13 +163,7 @@ func TestMapGrid_CanInteract(t *testing.T) {
 }
 
 func TestMyNationPoint_Location(t *testing.T) {
-	myNation := &core.MyNation{
-		BaseNation: core.BaseNation{
-			NationID: "player",
-			Market:   &core.Market{Level: 1.0, Items: []*core.MarketItem{}},
-		},
-		BasicYield: core.ResourceQuantity{Money: 10},
-	}
+	myNation := core.NewMyNation("player", "Player Nation")
 
 	point := &core.MyNationPoint{MyNation: myNation}
 
@@ -203,12 +174,7 @@ func TestMyNationPoint_Location(t *testing.T) {
 }
 
 func TestOtherNationPoint_Location(t *testing.T) {
-	otherNation := &core.OtherNation{
-		BaseNation: core.BaseNation{
-			NationID: "ally",
-			Market:   &core.Market{Level: 1.0, Items: []*core.MarketItem{}},
-		},
-	}
+	otherNation := core.NewOtherNation("ally", "Ally Nation")
 
 	point := &core.OtherNationPoint{OtherNation: otherNation}
 
@@ -219,20 +185,10 @@ func TestOtherNationPoint_Location(t *testing.T) {
 }
 
 func TestWildernessPoint_Basic(t *testing.T) {
-	enemy := &core.Enemy{
-		EnemyID:        "test_goblin",
-		EnemyType:      "goblin",
-		Power:          10.0,
-		BattleCardSlot: 1,
-		Skills:         []core.EnemySkill{},
-	}
+	enemy := core.NewEnemy("test_goblin", "goblin", 10.0, []*core.EnemySkill{}, 1)
 
-	territory := &core.Territory{
-		TerritoryID: "wilderness_territory",
-		Cards:       []*core.StructureCard{},
-		CardSlot:    3,
-		BaseYield:   core.ResourceQuantity{Money: 8, Food: 4},
-	}
+	terrain := core.NewTerrain("wilderness_terrain", core.ResourceQuantity{Money: 8, Food: 4}, 3)
+	territory := core.NewTerritory("wilderness_territory", terrain)
 
 	tests := []struct {
 		name       string
@@ -250,50 +206,38 @@ func TestWildernessPoint_Basic(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			point := &core.WildernessPoint{
-				Controlled: tt.controlled,
-				Enemy:      enemy,
-				Territory:  territory,
-			}
+			point := &core.WildernessPoint{}
+			point.SetControlledForTest(tt.controlled)
+			point.SetEnemyForTest(enemy)
+			point.SetTerritoryForTest(territory)
 
-			if point.Controlled != tt.controlled {
-				t.Errorf("WildernessPoint.Controlled = %v, want %v", point.Controlled, tt.controlled)
+			if point.Controlled() != tt.controlled {
+				t.Errorf("WildernessPoint.Controlled() = %v, want %v", point.Controlled(), tt.controlled)
 			}
-			if point.Enemy != enemy {
-				t.Errorf("WildernessPoint.Enemy = %v, want %v", point.Enemy, enemy)
+			if point.Enemy() != enemy {
+				t.Errorf("WildernessPoint.Enemy() = %v, want %v", point.Enemy(), enemy)
 			}
-			if point.Territory != territory {
-				t.Errorf("WildernessPoint.Territory = %v, want %v", point.Territory, territory)
+			if point.Territory() != territory {
+				t.Errorf("WildernessPoint.Territory() = %v, want %v", point.Territory(), territory)
 			}
 		})
 	}
 }
 
 func TestBossPoint_Basic(t *testing.T) {
-	boss := &core.Enemy{
-		EnemyID:        "final_boss",
-		EnemyType:      "ancient_dragon",
-		Power:          200.0,
-		BattleCardSlot: 5,
-		Skills:         []core.EnemySkill{},
-	}
+	boss := core.NewEnemy("final_boss", "ancient_dragon", 200.0, []*core.EnemySkill{}, 5)
 
-	point := &core.BossPoint{Boss: boss}
+	point := &core.BossPoint{}
+	point.SetBossForTest(boss)
 
-	if point.Boss != boss {
-		t.Errorf("BossPoint.Boss = %v, want %v", point.Boss, boss)
+	if point.Boss() != boss {
+		t.Errorf("BossPoint.Boss() = %v, want %v", point.Boss(), boss)
 	}
 }
 
 func TestMapGrid_GetPoint(t *testing.T) {
 	// Points for testing
-	myNation := &core.MyNation{
-		BaseNation: core.BaseNation{
-			NationID: "player",
-			Market:   &core.Market{Level: 1.0, Items: []*core.MarketItem{}},
-		},
-		BasicYield: core.ResourceQuantity{Money: 10},
-	}
+	myNation := core.NewMyNation("player", "Player Nation")
 
 	myNationPoint := &core.MyNationPoint{MyNation: myNation}
 

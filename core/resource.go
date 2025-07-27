@@ -50,6 +50,17 @@ type ResourceModifier struct {
 	Mana  float64
 }
 
+// NewResourceModifier creates a new ResourceModifier with no modification (all values 0.0).
+func NewResourceModifier() ResourceModifier {
+	return ResourceModifier{
+		Money: 0.0,
+		Food:  0.0,
+		Wood:  0.0,
+		Iron:  0.0,
+		Mana:  0.0,
+	}
+}
+
 func (m ResourceModifier) Modify(quantity ResourceQuantity) ResourceQuantity {
 	return ResourceQuantity{
 		Money: m.multiply(quantity.Money, m.Money),

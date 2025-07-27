@@ -8,34 +8,12 @@ import (
 
 func TestBattlefield_CanBeat(t *testing.T) {
 	// Test enemy
-	weakEnemy := &core.Enemy{
-		EnemyID:        "weak_orc",
-		EnemyType:      "orc",
-		Power:          10.0,
-		BattleCardSlot: 2,
-		Skills:         []core.EnemySkill{},
-	}
-
-	strongEnemy := &core.Enemy{
-		EnemyID:        "strong_dragon",
-		EnemyType:      "dragon",
-		Power:          50.0,
-		BattleCardSlot: 3,
-		Skills:         []core.EnemySkill{},
-	}
+	weakEnemy := core.NewEnemy("weak_orc", "orc", 10.0, []*core.EnemySkill{}, 2)
+	strongEnemy := core.NewEnemy("strong_dragon", "dragon", 50.0, []*core.EnemySkill{}, 3)
 
 	// Test battle card
-	weakCard := &core.BattleCard{
-		CardID:    "weak_warrior",
-		BasePower: 5.0,
-		Type:      "warrior",
-	}
-
-	strongCard := &core.BattleCard{
-		CardID:    "strong_mage",
-		BasePower: 30.0,
-		Type:      "mage",
-	}
+	weakCard := core.NewBattleCard("weak_warrior", 5.0, nil, "warrior")
+	strongCard := core.NewBattleCard("strong_mage", 30.0, nil, "mage")
 
 	tests := []struct {
 		name        string
@@ -109,31 +87,11 @@ func TestBattlefield_CanBeat(t *testing.T) {
 }
 
 func TestBattlefield_PowerCalculation(t *testing.T) {
-	enemy := &core.Enemy{
-		EnemyID:        "calc_test_enemy",
-		EnemyType:      "goblin",
-		Power:          25.0,
-		BattleCardSlot: 3,
-		Skills:         []core.EnemySkill{},
-	}
+	enemy := core.NewEnemy("calc_test_enemy", "goblin", 25.0, []*core.EnemySkill{}, 3)
 
-	card1 := &core.BattleCard{
-		CardID:    "card1",
-		BasePower: 10.0,
-		Type:      "warrior",
-	}
-
-	card2 := &core.BattleCard{
-		CardID:    "card2",
-		BasePower: 8.0,
-		Type:      "mage",
-	}
-
-	card3 := &core.BattleCard{
-		CardID:    "card3",
-		BasePower: 7.5,
-		Type:      "beast",
-	}
+	card1 := core.NewBattleCard("card1", 10.0, nil, "warrior")
+	card2 := core.NewBattleCard("card2", 8.0, nil, "mage")
+	card3 := core.NewBattleCard("card3", 7.5, nil, "beast")
 
 	tests := []struct {
 		name         string

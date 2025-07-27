@@ -2,17 +2,43 @@ package core
 
 // Implementation related to MapGrid (old specification comments have been deleted and replaced with implementation)
 
+// PointType represents the type of a point on the MapGrid.
+type PointType int
+
+const (
+	PointTypeUnknown PointType = iota
+	PointTypeMyNation
+	PointTypeOtherNation
+	PointTypeWilderness
+	PointTypeBoss
+)
+
 // Point is an interface representing a point on the MapGrid.
 type Point interface {
+	PointType() PointType
 	Passable() bool
-	IsMyNation() bool
+	AsBattlePoint() (BattlePoint, bool)
+	AsTerritoryPoint() (TerritoryPoint, bool)
+	AsMarketPoint() (MarketPoint, bool)
 }
 
+// BattlePoint represents a point where battles can occur.
 type BattlePoint interface {
-	Point
-	GetEnemy() *Enemy
-	SetControlled(bool)
-	GetTerrainType() string
+	Enemy() *Enemy
+	Conquer()
+}
+
+// TerritoryPoint represents a point that provides territory functionality.
+type TerritoryPoint interface {
+	Yield() ResourceQuantity
+	Terrain() *Terrain
+	CardSlot() int
+	Cards() []*StructureCard
+}
+
+// MarketPoint represents a point that provides market functionality.
+type MarketPoint interface {
+	Nation() Nation
 }
 
 // MyNationPoint is a point of the player's nation.
@@ -20,12 +46,28 @@ type MyNationPoint struct {
 	MyNation *MyNation
 }
 
+func (p *MyNationPoint) PointType() PointType {
+	return PointTypeMyNation
+}
+
 func (p *MyNationPoint) Passable() bool {
 	return true
 }
 
-func (p *MyNationPoint) IsMyNation() bool {
-	return true
+func (p *MyNationPoint) AsBattlePoint() (BattlePoint, bool) {
+	return nil, false
+}
+
+func (p *MyNationPoint) AsTerritoryPoint() (TerritoryPoint, bool) {
+	return nil, false
+}
+
+func (p *MyNationPoint) AsMarketPoint() (MarketPoint, bool) {
+	return p, true
+}
+
+func (p *MyNationPoint) Nation() Nation {
+	return p.MyNation
 }
 
 // OtherNationPoint is a point of an NPC nation.
@@ -33,66 +75,178 @@ type OtherNationPoint struct {
 	OtherNation *OtherNation
 }
 
+func (p *OtherNationPoint) PointType() PointType {
+	return PointTypeOtherNation
+}
+
 func (p *OtherNationPoint) Passable() bool {
 	return true
 }
 
-func (p *OtherNationPoint) IsMyNation() bool {
-	return false
+func (p *OtherNationPoint) AsBattlePoint() (BattlePoint, bool) {
+	return nil, false
+}
+
+func (p *OtherNationPoint) AsTerritoryPoint() (TerritoryPoint, bool) {
+	return nil, false
+}
+
+func (p *OtherNationPoint) AsMarketPoint() (MarketPoint, bool) {
+	return p, true
+}
+
+func (p *OtherNationPoint) Nation() Nation {
+	return p.OtherNation
 }
 
 // WildernessPoint is a conquerable wild point.
 type WildernessPoint struct {
-	TerrainType string
-	Controlled  bool       // Whether it is controlled
-	Enemy       *Enemy     // The Enemy guarding it
-	Territory   *Territory // The Territory after conquest
+	terrainType string
+	controlled  bool       // Whether it is controlled
+	enemy       *Enemy     // The Enemy guarding it
+	territory   *Territory // The Territory after conquest
+}
+
+func (p *WildernessPoint) PointType() PointType {
+	return PointTypeWilderness
 }
 
 func (p *WildernessPoint) Passable() bool {
-	return p.Controlled
+	return p.controlled
 }
 
-func (p *WildernessPoint) IsMyNation() bool {
-	return false
+func (p *WildernessPoint) AsBattlePoint() (BattlePoint, bool) {
+	if !p.controlled && p.enemy != nil {
+		return p, true
+	}
+	return nil, false
 }
 
-func (p *WildernessPoint) GetEnemy() *Enemy {
-	return p.Enemy
+func (p *WildernessPoint) AsTerritoryPoint() (TerritoryPoint, bool) {
+	if p.controlled && p.territory != nil {
+		return p, true
+	}
+	return nil, false
 }
 
-func (p *WildernessPoint) SetControlled(controlled bool) {
-	p.Controlled = controlled
+func (p *WildernessPoint) AsMarketPoint() (MarketPoint, bool) {
+	return nil, false
 }
 
-func (p *WildernessPoint) GetTerrainType() string {
-	return p.TerrainType
+// BattlePoint interface implementation
+func (p *WildernessPoint) Enemy() *Enemy {
+	return p.enemy
+}
+
+func (p *WildernessPoint) Conquer() {
+	p.controlled = true
+}
+
+// TerritoryPoint interface implementation
+func (p *WildernessPoint) Yield() ResourceQuantity {
+	if p.territory != nil {
+		return p.territory.Yield()
+	}
+	return ResourceQuantity{}
+}
+
+func (p *WildernessPoint) Terrain() *Terrain {
+	if p.territory != nil {
+		return p.territory.Terrain()
+	}
+	return nil
+}
+
+func (p *WildernessPoint) CardSlot() int {
+	if p.territory != nil {
+		return p.territory.Terrain().CardSlot()
+	}
+	return 0
+}
+
+func (p *WildernessPoint) Cards() []*StructureCard {
+	if p.territory != nil {
+		return p.territory.Cards()
+	}
+	return []*StructureCard{}
+}
+
+// SetControlledForTest sets the controlled status for testing purposes.
+func (p *WildernessPoint) SetControlledForTest(controlled bool) {
+	p.controlled = controlled
+}
+
+// SetTerritoryForTest sets the territory for testing purposes.
+func (p *WildernessPoint) SetTerritoryForTest(territory *Territory) {
+	p.territory = territory
+}
+
+// SetEnemyForTest sets the enemy for testing purposes.
+func (p *WildernessPoint) SetEnemyForTest(enemy *Enemy) {
+	p.enemy = enemy
+}
+
+// Controlled returns the controlled status.
+func (p *WildernessPoint) Controlled() bool {
+	return p.controlled
+}
+
+// Territory returns the territory.
+func (p *WildernessPoint) Territory() *Territory {
+	return p.territory
 }
 
 // BossPoint is a point of a boss.
 type BossPoint struct {
-	Boss     *Enemy
-	Defeated bool // Whether the boss has been defeated
+	boss     *Enemy
+	defeated bool // Whether the boss has been defeated
+}
+
+func (p *BossPoint) PointType() PointType {
+	return PointTypeBoss
 }
 
 func (p *BossPoint) Passable() bool {
 	return false
 }
 
-func (p *BossPoint) IsMyNation() bool {
-	return false
+func (p *BossPoint) AsBattlePoint() (BattlePoint, bool) {
+	if !p.defeated && p.boss != nil {
+		return p, true
+	}
+	return nil, false
 }
 
-func (p *BossPoint) GetEnemy() *Enemy {
-	return p.Boss
+func (p *BossPoint) AsTerritoryPoint() (TerritoryPoint, bool) {
+	return nil, false
 }
 
-func (p *BossPoint) SetControlled(controlled bool) {
-	p.Defeated = controlled
+func (p *BossPoint) AsMarketPoint() (MarketPoint, bool) {
+	return nil, false
 }
 
-func (p *BossPoint) GetTerrainType() string {
-	return "point-boss"
+// BattlePoint interface implementation
+func (p *BossPoint) Enemy() *Enemy {
+	return p.boss
+}
+
+func (p *BossPoint) Conquer() {
+	p.defeated = true
+}
+
+// SetBossForTest sets the boss for testing purposes.
+func (p *BossPoint) SetBossForTest(boss *Enemy) {
+	p.boss = boss
+}
+
+// SetDefeatedForTest sets the defeated status for testing purposes.
+func (p *BossPoint) SetDefeatedForTest(defeated bool) {
+	p.defeated = defeated
+}
+
+// Boss returns the boss enemy.
+func (p *BossPoint) Boss() *Enemy {
+	return p.boss
 }
 
 // MapGrid is the game's map grid.
@@ -145,8 +299,8 @@ func (m *MapGrid) UpdateAccesibles() {
 	}
 
 	for i, p := range m.Points {
-		m.accesibles[i] = p.IsMyNation()
-		if p.IsMyNation() {
+		m.accesibles[i] = p.PointType() == PointTypeMyNation
+		if p.PointType() == PointTypeMyNation {
 			remainingIdxs = append(remainingIdxs, i)
 		}
 	}

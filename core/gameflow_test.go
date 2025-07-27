@@ -7,49 +7,32 @@ import (
 )
 
 func TestGameState_AddYield(t *testing.T) {
-	// Territories for testing
-	territory1 := &core.Territory{
-		TerritoryID: "territory_1",
-		Cards:       []*core.StructureCard{},
-		CardSlot:    2,
-		BaseYield:   core.ResourceQuantity{Money: 10, Food: 5},
-	}
+	// Terrains for testing
+	terrain1 := core.NewTerrain("terrain_1", core.ResourceQuantity{Money: 10, Food: 5}, 2)
+	terrain2 := core.NewTerrain("terrain_2", core.ResourceQuantity{Money: 8, Food: 4, Wood: 3}, 3)
 
-	territory2 := &core.Territory{
-		TerritoryID: "territory_2",
-		Cards:       []*core.StructureCard{},
-		CardSlot:    3,
-		BaseYield:   core.ResourceQuantity{Money: 8, Food: 4, Wood: 3},
-	}
+	// Territories for testing
+	territory1 := core.NewTerritory("territory_1", terrain1)
+	territory2 := core.NewTerritory("territory_2", terrain2)
 
 	// WildernessPoint for testing (controlled)
-	wilderness1 := &core.WildernessPoint{
-		Controlled: true,
-		Territory:  territory1,
-	}
+	wilderness1 := &core.WildernessPoint{}
+	wilderness1.SetControlledForTest(true)
+	wilderness1.SetTerritoryForTest(territory1)
 
-	wilderness2 := &core.WildernessPoint{
-		Controlled: true,
-		Territory:  territory2,
-	}
+	wilderness2 := &core.WildernessPoint{}
+	wilderness2.SetControlledForTest(true) 
+	wilderness2.SetTerritoryForTest(territory2)
 
 	// WildernessPoint for testing (uncontrolled)
-	uncontrolledWilderness := &core.WildernessPoint{
-		Controlled: false,
-		Territory: &core.Territory{
-			TerritoryID: "uncontrolled",
-			BaseYield:   core.ResourceQuantity{Money: 100}, // No income as it is not controlled
-		},
-	}
+	uncontrolledTerrain := core.NewTerrain("uncontrolled", core.ResourceQuantity{Money: 100}, 1)
+	uncontrolledTerritory := core.NewTerritory("uncontrolled", uncontrolledTerrain)
+	uncontrolledWilderness := &core.WildernessPoint{}
+	uncontrolledWilderness.SetControlledForTest(false)
+	uncontrolledWilderness.SetTerritoryForTest(uncontrolledTerritory)
 
 	// MyNation for testing
-	myNation := &core.MyNation{
-		BaseNation: core.BaseNation{
-			NationID: "player",
-			Market:   &core.Market{Level: 1.0, Items: []*core.MarketItem{}},
-		},
-		BasicYield: core.ResourceQuantity{Money: 5, Food: 2, Mana: 1},
-	}
+	myNation := core.NewMyNation("player", "My Nation")
 
 	// MapGrid for testing
 	points := []core.Point{
@@ -79,10 +62,8 @@ func TestGameState_AddYield(t *testing.T) {
 	// Execute AddYield
 	gameState.AddYield()
 
-	// Expected result: BasicYield + Yield of controlled Territories
-	expectedYield := myNation.BasicYield.
-		Add(territory1.Yield()).
-		Add(territory2.Yield())
+	// Expected result: Yield of controlled Territories only (no BasicYield)
+	expectedYield := territory1.Yield().Add(territory2.Yield())
 
 	expectedTreasury := initialTreasury.Add(expectedYield)
 
@@ -92,13 +73,7 @@ func TestGameState_AddYield(t *testing.T) {
 }
 
 func TestGameState_NextTurn(t *testing.T) {
-	myNation := &core.MyNation{
-		BaseNation: core.BaseNation{
-			NationID: "player",
-			Market:   &core.Market{Level: 1.0, Items: []*core.MarketItem{}},
-		},
-		BasicYield: core.ResourceQuantity{Money: 5},
-	}
+	myNation := core.NewMyNation("player", "My Nation")
 
 	gameState := &core.GameState{
 		MyNation: myNation,
@@ -121,7 +96,7 @@ func TestGameState_NextTurn(t *testing.T) {
 	}
 
 	// Check if Yield has been added
-	expectedTreasury := initialTreasury.Add(myNation.BasicYield)
+	expectedTreasury := initialTreasury.Add(core.ResourceQuantity{})
 	if gameState.Treasury.Resources != expectedTreasury {
 		t.Errorf("NextTurn() treasury = %v, want %v", gameState.Treasury.Resources, expectedTreasury)
 	}
@@ -129,13 +104,7 @@ func TestGameState_NextTurn(t *testing.T) {
 
 func TestGameState_IsVictory(t *testing.T) {
 	// Boss for testing
-	boss := &core.Enemy{
-		EnemyID:        "final_boss",
-		EnemyType:      "dragon",
-		Power:          100.0,
-		BattleCardSlot: 4,
-		Skills:         []core.EnemySkill{},
-	}
+	boss := core.NewEnemy("final_boss", "dragon", 100.0, []*core.EnemySkill{}, 4)
 
 	tests := []struct {
 		name     string
@@ -156,18 +125,11 @@ func TestGameState_IsVictory(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			bossPoint := &core.BossPoint{
-				Boss:     boss,
-				Defeated: tt.defeated,
-			}
+			bossPoint := &core.BossPoint{}
+			bossPoint.SetBossForTest(boss)
+			bossPoint.SetDefeatedForTest(tt.defeated)
 
-			myNation := &core.MyNation{
-				BaseNation: core.BaseNation{
-					NationID: "player",
-					Market:   &core.Market{Level: 1.0, Items: []*core.MarketItem{}},
-				},
-				BasicYield: core.ResourceQuantity{Money: 5},
-			}
+			myNation := core.NewMyNation("player", "Player Nation")
 
 			mapGrid := &core.MapGrid{
 				Size:   core.MapGridSize{X: 1, Y: 1},
@@ -190,54 +152,56 @@ func TestGameState_IsVictory(t *testing.T) {
 }
 
 func TestGameState_CanInteract(t *testing.T) {
-	myNation := &core.MyNation{
-		BaseNation: core.BaseNation{
-			NationID: "player",
-			Market:   &core.Market{Level: 1.0, Items: []*core.MarketItem{}},
-		},
-		BasicYield: core.ResourceQuantity{Money: 5},
-	}
+	myNation := core.NewMyNation("player", "Player Nation")
+
+	// Create terrains and territories for testing
+	controlledTerrain := core.NewTerrain("controlled_terrain", core.ResourceQuantity{Money: 5}, 1)
+	controlledTerritory := core.NewTerritory("controlled", controlledTerrain)
+	
+	uncontrolledTerrain := core.NewTerrain("uncontrolled_terrain", core.ResourceQuantity{Money: 5}, 1)
+	uncontrolledTerritory := core.NewTerritory("uncontrolled", uncontrolledTerrain)
+	
+	// Create other nation
+	otherNation := core.NewOtherNation("other", "Other Nation")
+	
+	// Create enemy for boss point
+	bossEnemy := core.NewEnemy("boss", "dragon", 100.0, []*core.EnemySkill{}, 4)
+
+	// Create wilderness points
+	controlledWilderness1 := &core.WildernessPoint{}
+	controlledWilderness1.SetControlledForTest(true)
+	controlledWilderness1.SetTerritoryForTest(controlledTerritory)
+	
+	uncontrolledWilderness1 := &core.WildernessPoint{}
+	uncontrolledWilderness1.SetControlledForTest(false)
+	uncontrolledWilderness1.SetTerritoryForTest(uncontrolledTerritory)
+	
+	uncontrolledWilderness2 := &core.WildernessPoint{}
+	uncontrolledWilderness2.SetControlledForTest(false)
+	uncontrolledWilderness2.SetTerritoryForTest(uncontrolledTerritory)
+	
+	controlledWilderness2 := &core.WildernessPoint{}
+	controlledWilderness2.SetControlledForTest(true)
+	controlledWilderness2.SetTerritoryForTest(controlledTerritory)
+	
+	controlledWilderness3 := &core.WildernessPoint{}
+	controlledWilderness3.SetControlledForTest(true)
+	controlledWilderness3.SetTerritoryForTest(controlledTerritory)
+	
+	// Create boss point
+	bossPoint := &core.BossPoint{}
+	bossPoint.SetBossForTest(bossEnemy)
 
 	points := []core.Point{
 		&core.MyNationPoint{MyNation: myNation},
-		&core.WildernessPoint{
-			Controlled: true,
-			Territory: &core.Territory{
-				TerritoryID: "controlled",
-				BaseYield:   core.ResourceQuantity{Money: 5},
-			},
-		},
-		&core.OtherNationPoint{OtherNation: &core.OtherNation{}},
-		&core.WildernessPoint{
-			Controlled: false,
-			Territory: &core.Territory{
-				TerritoryID: "uncontrolled",
-				BaseYield:   core.ResourceQuantity{Money: 5},
-			},
-		},
-		&core.WildernessPoint{
-			Controlled: false,
-			Territory: &core.Territory{
-				TerritoryID: "uncontrolled",
-				BaseYield:   core.ResourceQuantity{Money: 5},
-			},
-		},
-		&core.WildernessPoint{
-			Controlled: true,
-			Territory: &core.Territory{
-				TerritoryID: "controlled",
-				BaseYield:   core.ResourceQuantity{Money: 5},
-			},
-		},
-		&core.BossPoint{Boss: &core.Enemy{}},
-		&core.WildernessPoint{
-			Controlled: true,
-			Territory: &core.Territory{
-				TerritoryID: "controlled",
-				BaseYield:   core.ResourceQuantity{Money: 5},
-			},
-		},
-		&core.OtherNationPoint{OtherNation: &core.OtherNation{}},
+		controlledWilderness1,
+		&core.OtherNationPoint{OtherNation: otherNation},
+		uncontrolledWilderness1,
+		uncontrolledWilderness2,
+		controlledWilderness2,
+		bossPoint,
+		controlledWilderness3,
+		&core.OtherNationPoint{OtherNation: otherNation},
 	}
 
 	mapGrid := &core.MapGrid{
@@ -294,13 +258,7 @@ func TestGameState_CanInteract(t *testing.T) {
 }
 
 func TestGameState_GetPoint(t *testing.T) {
-	myNation := &core.MyNation{
-		BaseNation: core.BaseNation{
-			NationID: "player",
-			Market:   &core.Market{Level: 1.0, Items: []*core.MarketItem{}},
-		},
-		BasicYield: core.ResourceQuantity{Money: 5},
-	}
+	myNation := core.NewMyNation("player", "Player Nation")
 
 	myNationPoint := &core.MyNationPoint{MyNation: myNation}
 

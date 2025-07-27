@@ -7,26 +7,14 @@ import (
 )
 
 func TestTerritory_AppendCard(t *testing.T) {
-	territory := &core.Territory{
-		TerritoryID: "test_territory",
-		Cards:       []*core.StructureCard{},
-		CardSlot:    2,
-		BaseYield: core.ResourceQuantity{
-			Money: 10, Food: 5, Wood: 3, Iron: 2, Mana: 1,
-		},
-	}
+	terrain := core.NewTerrain("test_terrain", core.ResourceQuantity{
+		Money: 10, Food: 5, Wood: 3, Iron: 2, Mana: 1,
+	}, 2)
+	territory := core.NewTerritory("test_territory", terrain)
 
-	card1 := &core.StructureCard{
-		CardID: "structure_1",
-	}
-
-	card2 := &core.StructureCard{
-		CardID: "structure_2",
-	}
-
-	card3 := &core.StructureCard{
-		CardID: "structure_3",
-	}
+	card1 := core.NewStructureCard("structure_1", core.ResourceQuantity{}, core.NewResourceModifier(), 0.0, 0)
+	card2 := core.NewStructureCard("structure_2", core.ResourceQuantity{}, core.NewResourceModifier(), 0.0, 0)
+	card3 := core.NewStructureCard("structure_3", core.ResourceQuantity{}, core.NewResourceModifier(), 0.0, 0)
 
 	tests := []struct {
 		name     string
@@ -60,28 +48,23 @@ func TestTerritory_AppendCard(t *testing.T) {
 	}
 
 	// Check number of cards
-	if len(territory.Cards) != 2 {
-		t.Errorf("Cards length = %v, want %v", len(territory.Cards), 2)
+	if len(territory.Cards()) != 2 {
+		t.Errorf("Cards length = %v, want %v", len(territory.Cards()), 2)
 	}
 }
 
 func TestTerritory_RemoveCard(t *testing.T) {
-	card1 := &core.StructureCard{
-		CardID: "structure_1",
-	}
+	card1 := core.NewStructureCard("structure_1", core.ResourceQuantity{}, core.NewResourceModifier(), 0.0, 0)
+	card2 := core.NewStructureCard("structure_2", core.ResourceQuantity{}, core.NewResourceModifier(), 0.0, 0)
 
-	card2 := &core.StructureCard{
-		CardID: "structure_2",
-	}
+	terrain := core.NewTerrain("test_terrain", core.ResourceQuantity{
+		Money: 10, Food: 5, Wood: 3, Iron: 2, Mana: 1,
+	}, 3)
+	territory := core.NewTerritory("test_territory", terrain)
 
-	territory := &core.Territory{
-		TerritoryID: "test_territory",
-		Cards:       []*core.StructureCard{card1, card2},
-		CardSlot:    3,
-		BaseYield: core.ResourceQuantity{
-			Money: 10, Food: 5, Wood: 3, Iron: 2, Mana: 1,
-		},
-	}
+	// Add cards to territory
+	territory.AppendCard(card1)
+	territory.AppendCard(card2)
 
 	tests := []struct {
 		name         string
@@ -123,8 +106,8 @@ func TestTerritory_RemoveCard(t *testing.T) {
 	if card != card1 {
 		t.Errorf("RemoveCard(0) card = %v, want %v", card, card1)
 	}
-	if len(territory.Cards) != 1 {
-		t.Errorf("Cards length after removal = %v, want %v", len(territory.Cards), 1)
+	if len(territory.Cards()) != 1 {
+		t.Errorf("Cards length after removal = %v, want %v", len(territory.Cards()), 1)
 	}
 
 	// Remaining tests
@@ -155,38 +138,25 @@ func TestTerritory_RemoveCard(t *testing.T) {
 }
 
 func TestTerritory_Yield(t *testing.T) {
-	// mock implementation for YieldModifier for testing
-	doubleMoneyModifier := &mockYieldModifier{
-		modifyFunc: func(quantity core.ResourceQuantity) core.ResourceQuantity {
-			quantity.Money *= 2
-			return quantity
-		},
-	}
-
-	addResourceModifier := &mockYieldModifier{
-		modifyFunc: func(quantity core.ResourceQuantity) core.ResourceQuantity {
-			return quantity.Add(core.ResourceQuantity{
-				Money: 5, Food: 3, Wood: 2, Iron: 1, Mana: 1,
-			})
-		},
+	// ResourceModifiers for testing
+	doubleMoneyModifier := core.ResourceModifier{
+		Money: 1.0, // 100% increase = double
+		Food:  0.0,
+		Wood:  0.0,
+		Iron:  0.0,
+		Mana:  0.0,
 	}
 
 	// StructureCard without modifier
-	simpleCard := &core.StructureCard{
-		CardID:        "simple_card",
-		YieldModifier: nil,
-	}
+	simpleCard := core.NewStructureCard("simple_card", core.ResourceQuantity{}, core.NewResourceModifier(), 0.0, 0)
 
-	// StructureCard with modifier
-	bonusCard := &core.StructureCard{
-		CardID:        "bonus_card",
-		YieldModifier: doubleMoneyModifier,
-	}
+	// StructureCard with multiplicative modifier
+	bonusCard := core.NewStructureCard("bonus_card", core.ResourceQuantity{}, doubleMoneyModifier, 0.0, 0)
 
-	addCard := &core.StructureCard{
-		CardID:        "add_card",
-		YieldModifier: addResourceModifier,
-	}
+	// StructureCard with additive value
+	addCard := core.NewStructureCard("add_card", core.ResourceQuantity{
+		Money: 5, Food: 3, Wood: 2, Iron: 1, Mana: 1,
+	}, core.NewResourceModifier(), 0.0, 0)
 
 	tests := []struct {
 		name     string
@@ -215,30 +185,31 @@ func TestTerritory_Yield(t *testing.T) {
 			},
 		},
 		{
-			name:  "Modifier that adds resources",
+			name:  "Additive card that adds resources",
 			cards: []*core.StructureCard{addCard},
 			expected: core.ResourceQuantity{
 				Money: 15, Food: 8, Wood: 5, Iron: 3, Mana: 2, // Base + (5,3,2,1,1)
 			},
 		},
 		{
-			name:  "Multiple modifiers (applied sequentially)",
+			name:  "Multiple modifiers (additive first, then multiplicative)",
 			cards: []*core.StructureCard{bonusCard, addCard},
 			expected: core.ResourceQuantity{
-				Money: 25, Food: 8, Wood: 5, Iron: 3, Mana: 2, // (10*2) + 5 = 25, etc.
+				Money: 30, Food: 8, Wood: 5, Iron: 3, Mana: 2, // (10 + 5) * 2 = 30 for Money
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			territory := &core.Territory{
-				TerritoryID: "test_territory",
-				Cards:       tt.cards,
-				CardSlot:    3,
-				BaseYield: core.ResourceQuantity{
-					Money: 10, Food: 5, Wood: 3, Iron: 2, Mana: 1,
-				},
+			terrain := core.NewTerrain("test_terrain", core.ResourceQuantity{
+				Money: 10, Food: 5, Wood: 3, Iron: 2, Mana: 1,
+			}, 3)
+			territory := core.NewTerritory("test_territory", terrain)
+
+			// Add cards to territory
+			for _, card := range tt.cards {
+				territory.AppendCard(card)
 			}
 
 			result := territory.Yield()
@@ -250,23 +221,19 @@ func TestTerritory_Yield(t *testing.T) {
 }
 
 func TestTerritory_Basic(t *testing.T) {
-	territory := &core.Territory{
-		TerritoryID: "basic_territory",
-		Cards:       []*core.StructureCard{},
-		CardSlot:    2,
-		BaseYield: core.ResourceQuantity{
-			Money: 15, Food: 10, Wood: 5, Iron: 3, Mana: 2,
-		},
-	}
+	terrain := core.NewTerrain("basic_terrain", core.ResourceQuantity{
+		Money: 15, Food: 10, Wood: 5, Iron: 3, Mana: 2,
+	}, 2)
+	territory := core.NewTerritory("basic_territory", terrain)
 
-	if territory.TerritoryID != "basic_territory" {
-		t.Errorf("TerritoryID = %v, want %v", territory.TerritoryID, "basic_territory")
+	if territory.ID() != "basic_territory" {
+		t.Errorf("ID() = %v, want %v", territory.ID(), "basic_territory")
 	}
-	if territory.CardSlot != 2 {
-		t.Errorf("CardSlot = %v, want %v", territory.CardSlot, 2)
+	if territory.Terrain().CardSlot() != 2 {
+		t.Errorf("Terrain().CardSlot() = %v, want %v", territory.Terrain().CardSlot(), 2)
 	}
-	if len(territory.Cards) != 0 {
-		t.Errorf("Cards length = %v, want %v", len(territory.Cards), 0)
+	if len(territory.Cards()) != 0 {
+		t.Errorf("Cards() length = %v, want %v", len(territory.Cards()), 0)
 	}
 
 	expectedYield := core.ResourceQuantity{
@@ -278,11 +245,4 @@ func TestTerritory_Basic(t *testing.T) {
 	}
 }
 
-// Mock implementation for testing
-type mockYieldModifier struct {
-	modifyFunc func(core.ResourceQuantity) core.ResourceQuantity
-}
-
-func (m *mockYieldModifier) Modify(quantity core.ResourceQuantity) core.ResourceQuantity {
-	return m.modifyFunc(quantity)
-}
+// Note: mockYieldModifier is no longer needed as we use ResourceModifier directly
