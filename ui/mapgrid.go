@@ -153,8 +153,8 @@ func (m *MapGridView) Draw(screen *ebiten.Image) {
 			drawing.DrawText(screen, pointName, 24, opt)
 
 			// If not controlled, draw the enemy's power.
-			if p, ok := point.(*core.WildernessPoint); ok && !p.Controlled && interactive {
-				power := p.Enemy.Power
+			if p, ok := point.(*core.WildernessPoint); ok && !p.Controlled() && interactive {
+				power := p.Enemy().Power()
 				opt := &ebiten.DrawImageOptions{}
 				opt.GeoM.Scale(2.0, 2.0)
 				opt.GeoM.Translate(imageX, imageY+16)
@@ -166,7 +166,7 @@ func (m *MapGridView) Draw(screen *ebiten.Image) {
 			}
 
 			if p, ok := point.(*core.BossPoint); ok && interactive {
-				power := p.Boss.Power
+				power := p.Boss().Power()
 				opt := &ebiten.DrawImageOptions{}
 				opt.GeoM.Scale(2.0, 2.0)
 				opt.GeoM.Translate(imageX, imageY+16)
@@ -199,7 +199,12 @@ func (m *MapGridView) drawPointImage(screen *ebiten.Image, x, y float64, point c
 		}
 		screen.DrawImage(pointImg, opt)
 	case *core.WildernessPoint:
-		pointImg := drawing.Image(typedPoint.TerrainType)
+		// TODO: TerrainType accessor method not available, use default terrain for now
+		terrainType := "terrain-plain"
+		if typedPoint.Territory() != nil && typedPoint.Territory().Terrain() != nil {
+			terrainType = string(typedPoint.Territory().Terrain().ID())
+		}
+		pointImg := drawing.Image(terrainType)
 		opt := &ebiten.DrawImageOptions{}
 		opt.GeoM.Scale(2.0, 2.0)
 		opt.GeoM.Translate(x, y)
@@ -230,9 +235,14 @@ func (m *MapGridView) getPointName(x, y int, point core.Point) string {
 	case *core.MyNationPoint:
 		return lang.Text("nation-mynation")
 	case *core.OtherNationPoint:
-		return lang.Text(string(p.OtherNation.NationID))
+		return lang.Text(string(p.OtherNation.ID()))
 	case *core.WildernessPoint:
-		return lang.Text(p.TerrainType)
+		// TODO: TerrainType accessor method not available, use default for now
+		terrainType := "terrain-plain"
+		if p.Territory() != nil && p.Territory().Terrain() != nil {
+			terrainType = string(p.Territory().Terrain().ID())
+		}
+		return lang.Text(terrainType)
 	case *core.BossPoint:
 		return lang.Text("point-boss")
 	default:

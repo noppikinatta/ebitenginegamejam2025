@@ -30,7 +30,7 @@ func NewGameUI(gameState *core.GameState) *GameUI {
 	mainView := NewMainView(gameState)
 	infoView := NewInfoView(gameState)
 
-	cardDeckView := NewCardDeckView(gameState.CardDeck)
+	cardDeckView := NewCardDeckView(gameState.CardDeck, gameState.CardGenerator)
 
 	ui := &GameUI{
 		ResourceView: resourceView,

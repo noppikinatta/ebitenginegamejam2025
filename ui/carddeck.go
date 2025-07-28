@@ -13,9 +13,10 @@ import (
 // Position: (0,600,1280,120).
 // Displays up to 16 cards at 80x120.
 type CardDeckView struct {
-	CardDeck       *core.CardDeck    // The card deck to display.
-	SelectedIndex  int               // The index of the selected card (-1 for none).
-	OnCardSelected func(interface{}) // Callback when a card is selected.
+	CardDeck       *core.CardDeck      // The card deck to display.
+	CardGenerator  *core.CardGenerator // Card generator to create card objects from IDs.
+	SelectedIndex  int                 // The index of the selected card (-1 for none).
+	OnCardSelected func(interface{})   // Callback when a card is selected.
 
 	// New callbacks.
 	OnBattleCardClicked    func(*core.BattleCard) bool    // Callback when a BattleCard is clicked.
@@ -28,9 +29,10 @@ type CardDeckView struct {
 }
 
 // NewCardDeckView creates a CardDeckView.
-func NewCardDeckView(cardDeck *core.CardDeck) *CardDeckView {
+func NewCardDeckView(cardDeck *core.CardDeck, cardGenerator *core.CardGenerator) *CardDeckView {
 	return &CardDeckView{
 		CardDeck:      cardDeck,
+		CardGenerator: cardGenerator,
 		SelectedIndex: -1, // Nothing is selected initially.
 	}
 }
@@ -51,20 +53,26 @@ func (c *CardDeckView) GetSelectedCard() interface{} {
 
 // getAllCards gets all cards in a single slice.
 func (c *CardDeckView) getAllCards() []interface{} {
-	if c.CardDeck == nil {
+	if c.CardDeck == nil || c.CardGenerator == nil {
 		return []interface{}{}
 	}
 
 	allCards := make([]interface{}, 0)
+	cardIDs := c.CardDeck.GetAllCardIDs()
 
-	// Add BattleCards.
-	for _, card := range c.CardDeck.BattleCards {
-		allCards = append(allCards, card)
-	}
-
-	// Add StructureCards.
-	for _, card := range c.CardDeck.StructureCards {
-		allCards = append(allCards, card)
+	// Generate cards from CardIDs
+	if len(cardIDs) > 0 {
+		cards, ok := c.CardGenerator.Generate(cardIDs)
+		if ok {
+			// Add BattleCards
+			for _, card := range cards.BattleCards {
+				allCards = append(allCards, card)
+			}
+			// Add StructureCards
+			for _, card := range cards.StructureCards {
+				allCards = append(allCards, card)
+			}
+		}
 	}
 
 	return allCards
@@ -129,21 +137,15 @@ func (c *CardDeckView) RemoveSelectedCard() interface{} {
 
 // removeBattleCard removes a BattleCard from the deck.
 func (c *CardDeckView) removeBattleCard(card *core.BattleCard) {
-	for i, cardToRemove := range c.CardDeck.BattleCards {
-		if cardToRemove == card {
-			c.CardDeck.BattleCards = append(c.CardDeck.BattleCards[:i], c.CardDeck.BattleCards[i+1:]...)
-			break
-		}
+	if c.CardDeck != nil {
+		c.CardDeck.Remove(card.CardID)
 	}
 }
 
 // removeStructureCard removes a StructureCard from the deck.
 func (c *CardDeckView) removeStructureCard(card *core.StructureCard) {
-	for i, cardToRemove := range c.CardDeck.StructureCards {
-		if cardToRemove == card {
-			c.CardDeck.StructureCards = append(c.CardDeck.StructureCards[:i], c.CardDeck.StructureCards[i+1:]...)
-			break
-		}
+	if c.CardDeck != nil {
+		c.CardDeck.Remove(card.ID())
 	}
 }
 
@@ -155,9 +157,9 @@ func (c *CardDeckView) AddCard(card interface{}) {
 
 	switch newCard := card.(type) {
 	case *core.BattleCard:
-		c.CardDeck.BattleCards = append(c.CardDeck.BattleCards, newCard)
+		c.CardDeck.Add(newCard.CardID)
 	case *core.StructureCard:
-		c.CardDeck.StructureCards = append(c.CardDeck.StructureCards, newCard)
+		c.CardDeck.Add(newCard.ID())
 	}
 }
 
@@ -301,7 +303,7 @@ func (c *CardDeckView) drawCard(screen *ebiten.Image, card interface{}, x, y flo
 	case *core.BattleCard:
 		DrawBattleCard(screen, x, y, typedCard)
 	case *core.StructureCard:
-		DrawCard(screen, x, y, string(typedCard.CardID))
+		DrawCard(screen, x, y, string(typedCard.ID()))
 	}
 }
 

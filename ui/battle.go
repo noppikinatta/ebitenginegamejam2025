@@ -61,7 +61,7 @@ func (bv *BattleView) CanDefeatEnemy() bool {
 	if bv.BattlePoint == nil {
 		return false
 	}
-	return bv.GetTotalPower() >= bv.BattlePoint.GetEnemy().Power
+	return bv.GetTotalPower() >= bv.BattlePoint.Enemy().Power()
 }
 
 // HandleInput handles input.
@@ -85,7 +85,10 @@ func (bv *BattleView) HandleInput(input *Input) error {
 		// Click detection for the back button (960,40,80,80).
 		if cursorX >= 960 && cursorX < 1040 && cursorY >= 40 && cursorY < 120 {
 			// Return all placed BattleCards to the CardDeck.
-			bv.GameState.CardDeck.Add(&core.Cards{BattleCards: bv.Battlefield.BattleCards})
+			// Convert BattleCards to CardIDs
+			for _, card := range bv.Battlefield.BattleCards {
+				bv.GameState.CardDeck.Add(card.CardID)
+			}
 			bv.Battlefield.BattleCards = make([]*core.BattleCard, 0)
 			if bv.OnBackClicked != nil {
 				bv.OnBackClicked()
@@ -99,7 +102,10 @@ func (bv *BattleView) HandleInput(input *Input) error {
 				bv.Conquer()
 			}
 			if bv.OnBackClicked != nil {
-				bv.GameState.CardDeck.Add(&core.Cards{BattleCards: bv.Battlefield.BattleCards})
+				// Convert BattleCards to CardIDs before returning
+				for _, card := range bv.Battlefield.BattleCards {
+					bv.GameState.CardDeck.Add(card.CardID)
+				}
 				bv.Battlefield.BattleCards = make([]*core.BattleCard, 0)
 				bv.OnBackClicked()
 			}
@@ -189,8 +195,10 @@ func (bv *BattleView) drawHeader(screen *ebiten.Image) {
 
 	// Title text.
 	pointName := ""
-	if p, ok := bv.BattlePoint.(*core.WildernessPoint); ok {
-		pointName = p.TerrainType
+	if _, ok := bv.BattlePoint.(*core.WildernessPoint); ok {
+		// TODO: TerrainType accessor method not yet implemented in core
+		// Temporarily use a placeholder
+		pointName = "wilderness"
 	}
 	if _, ok := bv.BattlePoint.(*core.BossPoint); ok {
 		pointName = "point-boss"
@@ -223,9 +231,9 @@ func (bv *BattleView) drawEnemy(screen *ebiten.Image) {
 
 	// Draw enemy information.
 	if bv.BattlePoint != nil {
-		enemy := bv.BattlePoint.GetEnemy()
+		enemy := bv.BattlePoint.Enemy()
 
-		enemyImage := drawing.Image(string(enemy.EnemyID))
+		enemyImage := drawing.Image(string(enemy.ID()))
 		opt := &ebiten.DrawImageOptions{}
 		opt.GeoM.Scale(4, 4)
 		opt.GeoM.Translate(360, 120)
@@ -234,7 +242,7 @@ func (bv *BattleView) drawEnemy(screen *ebiten.Image) {
 		// Enemy type.
 		opt = &ebiten.DrawImageOptions{}
 		opt.GeoM.Translate(370, 140)
-		enemyType := lang.ExecuteTemplate("battle-enemy-type", map[string]any{"type": lang.Text(string(enemy.EnemyType))})
+		enemyType := lang.ExecuteTemplate("battle-enemy-type", map[string]any{"type": lang.Text(string(enemy.Type()))})
 		drawing.DrawText(screen, enemyType, 24, opt)
 
 		// Enemy's Power.
@@ -245,17 +253,17 @@ func (bv *BattleView) drawEnemy(screen *ebiten.Image) {
 		screen.DrawImage(powerIcon, opt)
 		opt = &ebiten.DrawImageOptions{}
 		opt.GeoM.Translate(402, 180)
-		powerText := fmt.Sprintf("%s: %.1f", lang.Text("battle-power"), enemy.Power)
+		powerText := fmt.Sprintf("%s: %.1f", lang.Text("battle-power"), enemy.Power())
 		drawing.DrawText(screen, powerText, 24, opt)
 
 		// Enemy's quote.
 		opt = &ebiten.DrawImageOptions{}
 		opt.GeoM.Translate(32, 320)
-		enemyTalk := lang.ExecuteTemplate("battle-enemy-talk", map[string]any{"name": lang.Text(string(enemy.EnemyID)), "text": lang.Text(string(enemy.Question))})
+		enemyTalk := lang.ExecuteTemplate("battle-enemy-talk", map[string]any{"name": lang.Text(string(enemy.ID())), "text": ""})
 		drawing.DrawText(screen, enemyTalk, 24, opt)
 
 		// Enemy skills
-		for i, skill := range enemy.Skills {
+		for i, skill := range enemy.Skills() {
 			opt = &ebiten.DrawImageOptions{}
 			opt.GeoM.Translate(700, 120+float64(i*120))
 			skillName := lang.Text(string(skill.ID()))
@@ -331,7 +339,7 @@ func (bv *BattleView) drawPowerDisplay(screen *ebiten.Image) {
 	if bv.BattlePoint != nil {
 		opt = &ebiten.DrawImageOptions{}
 		opt.GeoM.Translate(970, 510)
-		requiredText := fmt.Sprintf("/%.1f", bv.BattlePoint.GetEnemy().Power)
+		requiredText := fmt.Sprintf("/%.1f", bv.BattlePoint.Enemy().Power())
 		drawing.DrawText(screen, requiredText, 20, opt)
 	}
 }
@@ -379,14 +387,24 @@ func (bv *BattleView) drawHoveredCardTooltip(screen *ebiten.Image) {
 // createBattlefield creates a battlefield
 func (bv *BattleView) createBattlefield(point core.BattlePoint) *core.Battlefield {
 	if bv.GameState == nil {
-		return core.NewBattlefield(point.GetEnemy(), 0.0)
+		return core.NewBattlefield(point.Enemy(), 0.0)
 	}
 
-	x, y, ok := bv.GameState.MapGrid.XYOfPoint(point)
+	// Convert BattlePoint to Point for XYOfPoint method
+	var pointAsPoint core.Point
+	if wp, ok := point.(*core.WildernessPoint); ok {
+		pointAsPoint = wp
+	} else if bp, ok := point.(*core.BossPoint); ok {
+		pointAsPoint = bp
+	} else {
+		panic("BattleView.createBattlefield: unknown battle point type")
+	}
+
+	x, y, ok := bv.GameState.MapGrid.XYOfPoint(pointAsPoint)
 	if !ok {
 		panic("BattleView.createBattlefield: battle point does not exist in map grid")
 	}
-	enemy := point.GetEnemy()
+	enemy := point.Enemy()
 	battlefield := core.NewBattlefield(enemy, 0.0)
 
 	// Investigate Points in four directions based on x,y
@@ -403,14 +421,13 @@ func (bv *BattleView) createBattlefield(point core.BattlePoint) *core.Battlefiel
 
 			// Get Territory from controlled WildernessPoint
 			if wildernessPoint, ok := p.(*core.WildernessPoint); ok {
-				if wildernessPoint.Controlled && wildernessPoint.Territory != nil {
-					territory := wildernessPoint.Territory
+				if wildernessPoint.Controlled() && wildernessPoint.Territory() != nil {
+					territory := wildernessPoint.Territory()
 
-					// Apply StructureCard.BattlefieldModifier from Territory.Cards
-					for _, card := range territory.Cards {
-						if card.BattlefieldModifier != nil {
-							card.BattlefieldModifier.Modify(battlefield)
-						}
+					// Apply StructureCard support power from Territory.Cards
+					for _, card := range territory.Cards() {
+						battlefield.BaseSupportPower += card.SupportPower()
+						battlefield.CardSlot += card.SupportCardSlot()
 					}
 				}
 			}
@@ -461,8 +478,7 @@ func (bv *BattleView) RemoveCard(card *core.BattleCard) bool {
 	if success && removedCard != nil {
 		// Add to GameState.CardDeck
 		if bv.GameState != nil {
-			cards := &core.Cards{BattleCards: []*core.BattleCard{removedCard}}
-			bv.GameState.CardDeck.Add(cards)
+			bv.GameState.CardDeck.Add(removedCard.CardID)
 		}
 	}
 
@@ -471,43 +487,23 @@ func (bv *BattleView) RemoveCard(card *core.BattleCard) bool {
 
 // Conquer executes the conquest process
 func (bv *BattleView) Conquer() bool {
-	if bv.Battlefield == nil || bv.GameState == nil || bv.BattlePoint == nil {
-		return false
-	}
-	// Check if victory is possible
-	if !bv.Battlefield.CanBeat() {
+	if !bv.CanDefeatEnemy() {
 		return false
 	}
 
-	// Return all placed BattleCards to the CardDeck
-	bv.GameState.CardDeck.Add(&core.Cards{BattleCards: bv.Battlefield.BattleCards})
-
-	// Change the target BattlePoint's Controlled to true
-	bv.BattlePoint.SetControlled(true)
-	bv.GameState.MapGrid.UpdateAccesibles()
-
-	bv.GameState.AddHistory(core.History{
-		Turn: bv.GameState.CurrentTurn,
-		Key:  "history-defeat",
-		Data: map[string]any{
-			"enemy":   string(bv.BattlePoint.GetEnemy().EnemyID),
-			"terrain": bv.BattlePoint.GetTerrainType(),
-		},
-	})
-
-	oldLevel := bv.GameState.MyNation.GetMarket().Level
-	bv.GameState.MyNation.AppendLevel(0.5)
-	if int(bv.GameState.MyNation.GetMarket().Level) > int(oldLevel) {
-		bv.GameState.AddHistory(core.History{
-			Turn: bv.GameState.CurrentTurn,
-			Key:  "history-market",
-			Data: map[string]any{
-				"nation": string(bv.GameState.MyNation.ID()),
-				"level":  int(bv.GameState.MyNation.GetMarket().Level),
-			},
-		})
+	// Add all BattleCards back to the CardDeck.
+	for _, card := range bv.Battlefield.BattleCards {
+		bv.GameState.CardDeck.Add(card.CardID)
 	}
-	bv.GameState.NextTurn()
+
+	// Clear the Battlefield.
+	bv.Battlefield.BattleCards = make([]*core.BattleCard, 0)
+
+	// Set the Point as conquered.
+	bv.BattlePoint.Conquer()
+
+	// Note: ConqueredTerritoryCount field may not exist in current GameState
+	// This would be added to GameState later if needed
 
 	return true
 }

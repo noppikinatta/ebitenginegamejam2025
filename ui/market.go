@@ -95,8 +95,11 @@ func (mv *MarketView) drawHeader(screen *ebiten.Image) {
 	// Market level text
 	opt = &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(600, 60)
-	marketLevel := lang.ExecuteTemplate("ui-market-level", map[string]any{"level": mv.Nation.GetMarket().Level})
-	drawing.DrawText(screen, marketLevel, 28, opt)
+	market := mv.getMarket()
+	if market != nil {
+		marketLevel := lang.ExecuteTemplate("ui-market-level", map[string]any{"level": market.Level})
+		drawing.DrawText(screen, marketLevel, 28, opt)
+	}
 }
 
 // drawBackButton draws the back button
@@ -154,7 +157,11 @@ func (mv *MarketView) drawMarketItem(screen *ebiten.Image, item *core.MarketItem
 	// CardPack name (80,120,440,40) -> relative position (80,0,440,40)
 	opt := &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(x+80, y)
-	cardPackName := lang.Text(string(item.CardPack.CardPackID))
+	cardPack := item.CardPack()
+	var cardPackName string
+	if cardPack != nil {
+		cardPackName = lang.Text(string(cardPack.CardPackID))
+	}
 	drawing.DrawText(screen, cardPackName, 28, opt)
 
 	// CardPack description (80,160,440,80) -> relative position (80,40,440,80)
@@ -162,7 +169,7 @@ func (mv *MarketView) drawMarketItem(screen *ebiten.Image, item *core.MarketItem
 	opt.GeoM.Translate(x+80, y+40)
 	var description string
 	if !isAvailable {
-		description = lang.ExecuteTemplate("market-required-level", map[string]any{"level": item.RequiredLevel})
+		description = lang.ExecuteTemplate("market-required-level", map[string]any{"level": item.RequiredLevel()})
 		drawing.DrawText(screen, description, 20, opt)
 	}
 
@@ -190,7 +197,7 @@ func (mv *MarketView) drawCardPackImage(screen *ebiten.Image, x, y, width, heigh
 func (mv *MarketView) drawCardPackPrice(screen *ebiten.Image, item *core.MarketItem, index int, x, y, width, height float64) {
 	// Get price information
 	_, canPurchase := mv.getCardPackPrice(index)
-	price := item.Price
+	price := item.Price()
 	subtracted := mv.GameState.Treasury.Resources.Sub(price)
 
 	// Display each resource type in 120x40
@@ -232,12 +239,17 @@ func (mv *MarketView) drawCardPackPrice(screen *ebiten.Image, item *core.MarketI
 	}
 }
 
+// getMarket gets the market for the current nation
+func (mv *MarketView) getMarket() *core.Market {
+	if mv.Nation == nil || mv.GameState == nil {
+		return nil
+	}
+	return mv.GameState.Markets[mv.Nation.ID()]
+}
+
 // getAllMarketItems gets a list of all MarketItems (including insufficient level)
 func (mv *MarketView) getAllMarketItems() []*core.MarketItem {
-	if mv.Nation == nil {
-		return []*core.MarketItem{}
-	}
-	market := mv.Nation.GetMarket()
+	market := mv.getMarket()
 	if market == nil {
 		return []*core.MarketItem{}
 	}
@@ -246,15 +258,16 @@ func (mv *MarketView) getAllMarketItems() []*core.MarketItem {
 
 // getCardPackPrice gets the price and purchasability of a CardPack
 func (mv *MarketView) getCardPackPrice(index int) (*core.ResourceQuantity, bool) {
-	if mv.GameState.Treasury == nil || mv.Nation == nil {
+	if mv.GameState.Treasury == nil {
 		return nil, false
 	}
 
-	market := mv.Nation.GetMarket()
+	market := mv.getMarket()
 	if market != nil && index < len(market.Items) {
 		item := market.Items[index]
-		canPurchase := mv.Nation.CanPurchase(index, mv.GameState.Treasury)
-		return &item.Price, canPurchase
+		canPurchase := market.CanPurchase(index, mv.GameState.Treasury)
+		price := item.Price()
+		return &price, canPurchase
 	}
 
 	return nil, false
@@ -318,14 +331,9 @@ func (mv *MarketView) PurchaseCardPack(item *core.MarketItem) error {
 		return fmt.Errorf("GameState or Nation is nil")
 	}
 
-	market := mv.Nation.GetMarket()
-	if market == nil {
-		return fmt.Errorf("market is nil")
-	}
-
 	// Find item index
 	itemIndex := -1
-	for i, marketItem := range market.Items {
+	for i, marketItem := range mv.getMarket().Items {
 		if marketItem == item {
 			itemIndex = i
 			break
@@ -337,34 +345,38 @@ func (mv *MarketView) PurchaseCardPack(item *core.MarketItem) error {
 	}
 
 	// Purchase processing
-	oldLevel := mv.Nation.GetMarket().Level
-	cardPack, ok := mv.Nation.Purchase(itemIndex, mv.GameState.Treasury)
+	market := mv.getMarket()
+	if market == nil {
+		return fmt.Errorf("market is nil")
+	}
+	
+	oldLevel := market.Level
+	cardPack, ok := market.Purchase(itemIndex, mv.GameState.Treasury)
 	if !ok {
 		return fmt.Errorf("purchase failed")
 	}
 
-	if int(mv.Nation.GetMarket().Level) > int(oldLevel) {
+	if int(market.Level) > int(oldLevel) {
 		mv.GameState.AddHistory(core.History{
 			Turn: mv.GameState.CurrentTurn,
 			Key:  "history-market",
 			Data: map[string]any{
 				"nation": string(mv.Nation.ID()),
-				"level":  int(mv.Nation.GetMarket().Level),
+				"level":  int(market.Level),
 			},
 		})
 	}
 
 	// Open CardPack and get Cards
-	rng := newSimpleRand()
-	cardIDs := cardPack.Open(rng)
+	if cardPack != nil {
+		rng := newSimpleRand()
+		cardIDs := cardPack.Open(rng)
 
-	cards, ok := mv.GameState.CardGenerator.Generate(cardIDs)
-	if !ok {
-		return fmt.Errorf("card generation failed")
+		// Add CardIDs to GameState.CardDeck
+		for _, cardID := range cardIDs {
+			mv.GameState.CardDeck.Add(cardID)
+		}
 	}
-
-	// Add to GameState.CardDeck
-	mv.GameState.CardDeck.Add(cards)
 
 	mv.GameState.NextTurn()
 
@@ -376,10 +388,10 @@ func (mv *MarketView) isMarketItemAvailable(item *core.MarketItem) bool {
 	if mv.Nation == nil {
 		return false
 	}
-	market := mv.Nation.GetMarket()
+	market := mv.getMarket()
 	if market == nil {
 		return false
 	}
 	// Currently, only level is checked
-	return market.Level >= item.RequiredLevel
+	return market.Level >= item.RequiredLevel()
 }

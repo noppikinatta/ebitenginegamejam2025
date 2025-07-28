@@ -59,7 +59,7 @@ func NewMainView(gameState *core.GameState) *MainView {
 			m.SetSelectedNation(p.OtherNation)
 			m.SwitchView(ViewTypeMarket)
 		case *core.WildernessPoint:
-			if p.Controlled {
+			if p.Controlled() {
 				m.SwitchView(ViewTypeTerritory)
 			} else {
 				m.SwitchView(ViewTypeBattle)
@@ -140,9 +140,14 @@ func (m *MainView) SetSelectedNation(nation core.Nation) {
 func (m *MainView) SetSelectedPoint(point core.Point) {
 	switch p := point.(type) {
 	case *core.WildernessPoint:
-		if p.Controlled {
+		if p.Controlled() {
 			if m.Territory != nil {
-				m.Territory.SetTerritory(p.Territory, string(p.TerrainType))
+				territory := p.Territory()
+				terrainType := ""
+				if territory != nil && territory.Terrain() != nil {
+					terrainType = string(territory.Terrain().ID())
+				}
+				m.Territory.SetTerritory(territory, terrainType)
 			}
 		} else {
 			if m.Battle != nil {

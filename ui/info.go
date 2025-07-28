@@ -245,7 +245,7 @@ func (iv *InfoView) drawStructureCardInfo(screen *ebiten.Image, card *core.Struc
 	// Card name (40).
 	opt := &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(1050, y)
-	drawing.DrawText(screen, fmt.Sprintf("Card: %s", card.CardID), 20, opt)
+	drawing.DrawText(screen, fmt.Sprintf("Card: %s", card.ID()), 20, opt)
 	y += 40
 
 	// Illustration (120).
@@ -312,24 +312,31 @@ func (iv *InfoView) drawNationPointView(screen *ebiten.Image) {
 		y += 40
 
 		// CardPack list (40×12)
-		marketItems := point.MyNation.VisibleMarketItems()
-		for i, item := range marketItems {
-			if i >= 12 {
-				break
-			}
+		market := iv.getMarketForNation(point.MyNation)
+		if market != nil {
+			marketItems := market.VisibleMarketItems()
+			for i, item := range marketItems {
+				if i >= 12 {
+					break
+				}
 
-			opt = &ebiten.DrawImageOptions{}
-			opt.GeoM.Translate(1050, y)
-			packName := string(item.CardPack.CardPackID)
-			if len(packName) > 12 {
-				packName = packName[:9] + "..."
+				opt = &ebiten.DrawImageOptions{}
+				opt.GeoM.Translate(1050, y)
+				cardPack := item.CardPack()
+				var packName string
+				if cardPack != nil {
+					packName = string(cardPack.CardPackID)
+				}
+				if len(packName) > 12 {
+					packName = packName[:9] + "..."
+				}
+				drawing.DrawText(screen, packName, 18, opt)
+				y += 36
 			}
-			drawing.DrawText(screen, packName, 18, opt)
-			y += 36
 		}
 
 	case *core.OtherNationPoint:
-		drawing.DrawText(screen, fmt.Sprintf("Nation %s", point.OtherNation.NationID), 20, opt)
+		drawing.DrawText(screen, fmt.Sprintf("Nation %s", point.OtherNation.ID()), 20, opt)
 		y += 40
 
 		// Card Packs (40)
@@ -339,20 +346,27 @@ func (iv *InfoView) drawNationPointView(screen *ebiten.Image) {
 		y += 40
 
 		// CardPack list (40×12)
-		marketItems := point.OtherNation.VisibleMarketItems()
-		for i, item := range marketItems {
-			if i >= 12 {
-				break
-			}
+		market := iv.getMarketForNation(point.OtherNation)
+		if market != nil {
+			marketItems := market.VisibleMarketItems()
+			for i, item := range marketItems {
+				if i >= 12 {
+					break
+				}
 
-			opt = &ebiten.DrawImageOptions{}
-			opt.GeoM.Translate(1050, y)
-			packName := string(item.CardPack.CardPackID)
-			if len(packName) > 12 {
-				packName = packName[:9] + "..."
+				opt = &ebiten.DrawImageOptions{}
+				opt.GeoM.Translate(1050, y)
+				cardPack := item.CardPack()
+				var packName string
+				if cardPack != nil {
+					packName = string(cardPack.CardPackID)
+				}
+				if len(packName) > 12 {
+					packName = packName[:9] + "..."
+				}
+				drawing.DrawText(screen, packName, 18, opt)
+				y += 36
 			}
-			drawing.DrawText(screen, packName, 18, opt)
-			y += 36
 		}
 	}
 }
@@ -381,14 +395,14 @@ func (iv *InfoView) drawWildernessPointView(screen *ebiten.Image) {
 		y += 40
 
 		// Enemy information (80)
-		if point.Enemy != nil {
+		if point.Enemy() != nil {
 			opt = &ebiten.DrawImageOptions{}
 			opt.GeoM.Translate(1050, y)
-			enemyName := string(point.Enemy.EnemyID)
+			enemyName := string(point.Enemy().ID())
 			if len(enemyName) > 12 {
 				enemyName = enemyName[:9] + "..."
 			}
-			if point.Controlled {
+			if point.Controlled() {
 				enemyName += " (X)" // Controlled
 			}
 			drawing.DrawText(screen, enemyName, 18, opt)
@@ -397,19 +411,19 @@ func (iv *InfoView) drawWildernessPointView(screen *ebiten.Image) {
 			// Enemy Power (40)
 			opt = &ebiten.DrawImageOptions{}
 			opt.GeoM.Translate(1050, y)
-			drawing.DrawText(screen, fmt.Sprintf("Power: %.1f", point.Enemy.Power), 18, opt)
+			drawing.DrawText(screen, fmt.Sprintf("Power: %.1f", point.Enemy().Power()), 18, opt)
 			y += 40
 		}
 
 		// Yields (40)
-		if point.Territory != nil {
+		if point.Territory() != nil {
 			opt = &ebiten.DrawImageOptions{}
 			opt.GeoM.Translate(1050, y)
 			drawing.DrawText(screen, "Yields:", 20, opt)
 			y += 40
 
 			// Yield by resource type (40×3 - 2 types per line)
-			yield := point.Territory.BaseYield
+			yield := point.Territory().Yield()
 			resources := []struct {
 				name  string
 				value int
@@ -440,14 +454,14 @@ func (iv *InfoView) drawWildernessPointView(screen *ebiten.Image) {
 			y += 36
 
 			// Deployed StructureCards (40×4)
-			for i, card := range point.Territory.Cards {
+			for i, card := range point.Territory().Cards() {
 				if i >= 4 {
 					break
 				}
 
 				opt = &ebiten.DrawImageOptions{}
 				opt.GeoM.Translate(1050, y)
-				cardName := string(card.CardID)
+				cardName := string(card.ID())
 				if len(cardName) > 12 {
 					cardName = cardName[:9] + "..."
 				}
@@ -470,14 +484,15 @@ func (iv *InfoView) drawWildernessPointView(screen *ebiten.Image) {
 		y += 40
 
 		// Boss information (80)
-		if point.Boss != nil {
+		if point.Boss() != nil {
 			opt = &ebiten.DrawImageOptions{}
 			opt.GeoM.Translate(1050, y)
-			bossName := string(point.Boss.EnemyID)
+			bossName := string(point.Boss().ID())
 			if len(bossName) > 12 {
 				bossName = bossName[:9] + "..."
 			}
-			if point.Defeated {
+			// Check if defeated by checking if AsBattlePoint returns valid battle point
+			if _, canBattle := point.AsBattlePoint(); !canBattle {
 				bossName += " (X)" // Defeated
 			}
 			drawing.DrawText(screen, bossName, 18, opt)
@@ -486,7 +501,7 @@ func (iv *InfoView) drawWildernessPointView(screen *ebiten.Image) {
 			// Boss Power (40)
 			opt = &ebiten.DrawImageOptions{}
 			opt.GeoM.Translate(1050, y)
-			drawing.DrawText(screen, fmt.Sprintf("Power: %.1f", point.Boss.Power), 18, opt)
+			drawing.DrawText(screen, fmt.Sprintf("Power: %.1f", point.Boss().Power()), 18, opt)
 		}
 	}
 }
@@ -507,14 +522,14 @@ func (iv *InfoView) drawEnemySkillView(screen *ebiten.Image) {
 	y += 40
 
 	// Enemy Skills (120×4)
-	if len(iv.SelectedEnemy.Skills) == 0 {
+	if len(iv.SelectedEnemy.Skills()) == 0 {
 		opt = &ebiten.DrawImageOptions{}
 		opt.GeoM.Translate(1050, y)
 		drawing.DrawText(screen, "No special skills", 18, opt)
 		return
 	}
 
-	for i, _ := range iv.SelectedEnemy.Skills {
+	for i, _ := range iv.SelectedEnemy.Skills() {
 		if i >= 4 { // max 4 skills
 			break
 		}
@@ -541,4 +556,12 @@ func (iv *InfoView) drawEnemySkillView(screen *ebiten.Image) {
 		drawing.DrawText(screen, "in battle", 16, opt)
 		y += 32
 	}
+}
+
+// getMarketForNation gets the market for a given nation
+func (iv *InfoView) getMarketForNation(nation core.Nation) *core.Market {
+	if iv.GameState == nil || nation == nil {
+		return nil
+	}
+	return iv.GameState.Markets[nation.ID()]
 }

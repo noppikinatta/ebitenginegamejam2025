@@ -35,8 +35,8 @@ func NewTerritoryView(onBackClicked func()) *TerritoryView {
 // SetTerritory sets the Territory to display
 func (tv *TerritoryView) SetTerritory(territory *core.Territory, terrainType string) {
 	tv.Territory = territory
-	tv.OldCards = make([]*core.StructureCard, len(territory.Cards))
-	copy(tv.OldCards, territory.Cards)
+	tv.OldCards = make([]*core.StructureCard, len(territory.Cards()))
+	copy(tv.OldCards, territory.Cards())
 	tv.TerrainType = terrainType
 }
 
@@ -80,7 +80,10 @@ func (tv *TerritoryView) HandleInput(input *Input) error {
 	tv.MouseY = cursorY
 	cardIndex := tv.cardIndex(cursorX, cursorY)
 	if cardIndex != -1 {
-		tv.HoveredCard = tv.Territory.Cards[cardIndex]
+		cards := tv.Territory.Cards()
+		if cardIndex < len(cards) {
+			tv.HoveredCard = cards[cardIndex]
+		}
 	} else {
 		tv.HoveredCard = nil
 	}
@@ -123,7 +126,8 @@ func (tv *TerritoryView) cardIndex(cursorX, cursorY int) int {
 		return -1
 	}
 	cardIndex := cursorX / 80
-	if cardIndex < 0 || cardIndex >= len(tv.Territory.Cards) {
+	cards := tv.Territory.Cards()
+	if cardIndex < 0 || cardIndex >= len(cards) {
 		return -1
 	}
 	return cardIndex
@@ -242,7 +246,7 @@ func (tv *TerritoryView) drawEffectDescription(screen *ebiten.Image) {
 	opt.GeoM.Translate(130, 130)
 	drawing.DrawText(screen, lang.Text("territory-structure-effects"), 24, opt)
 
-	if tv.Territory == nil || len(tv.Territory.Cards) == 0 {
+	if tv.Territory == nil || len(tv.Territory.Cards()) == 0 {
 		// When no cards are placed
 		opt = &ebiten.DrawImageOptions{}
 		opt.GeoM.Translate(130, 170)
@@ -256,7 +260,8 @@ func (tv *TerritoryView) drawEffectDescription(screen *ebiten.Image) {
 
 	// Display effects of placed StructureCards
 	startY := 170.0
-	for i, card := range tv.Territory.Cards {
+	cards := tv.Territory.Cards()
+	for i, card := range cards {
 		if i >= 4 { // Display up to 4 cards maximum
 			break
 		}
@@ -266,13 +271,13 @@ func (tv *TerritoryView) drawEffectDescription(screen *ebiten.Image) {
 		// Card name
 		opt = &ebiten.DrawImageOptions{}
 		opt.GeoM.Translate(130, y)
-		cardName := lang.Text(string(card.CardID))
+		cardName := lang.Text(string(card.ID()))
 		drawing.DrawText(screen, cardName, 20, opt)
 
-		// Effect description
+		// Effect description (TODO: DescriptionKey removed, use card ID for now)
 		opt = &ebiten.DrawImageOptions{}
 		opt.GeoM.Translate(400, y)
-		effect := lang.Text(string(card.DescriptionKey))
+		effect := lang.Text(string(card.ID()) + "-desc")
 		drawing.DrawText(screen, effect, 18, opt)
 	}
 }
@@ -290,17 +295,18 @@ func (tv *TerritoryView) drawStructureCards(screen *ebiten.Image) {
 	screen.DrawTriangles(vertices, indices, drawing.WhitePixel, &ebiten.DrawTrianglesOptions{})
 
 	// Draw deployed StructureCards (using temporary storage tv.Cards)
-	for i, card := range tv.Territory.Cards {
+	cards := tv.Territory.Cards()
+	for i, card := range cards {
 		cardX := float64(i * 80)
 		cardY := 320.0
 
-		DrawCard(screen, cardX, cardY, string(card.CardID))
+		DrawCard(screen, cardX, cardY, string(card.ID()))
 	}
 
 	// Display empty slots
 	if tv.Territory != nil {
-		maxSlots := tv.Territory.CardSlot
-		for i := len(tv.Territory.Cards); i < maxSlots && i < 13; i++ { // Display up to 13 cards max (1040÷80=13)
+		maxSlots := tv.Territory.Terrain().CardSlot()
+		for i := len(tv.Territory.Cards()); i < maxSlots && i < 13; i++ { // Display up to 13 cards max (1040÷80=13)
 			cardX := float64(i * 80)
 			cardY := 320.0
 
@@ -331,8 +337,8 @@ func (tv *TerritoryView) handleStructureCardClick(cursorX, cursorY int) {
 	if cursorY >= 320 && cursorY < 440 {
 		cardIndex := cursorX / 80
 
-		if cardIndex >= 0 && cardIndex < len(tv.Territory.Cards) {
-			targetCard := tv.Territory.Cards[cardIndex]
+		if cardIndex >= 0 && cardIndex < len(tv.Territory.Cards()) {
+			targetCard := tv.Territory.Cards()[cardIndex]
 
 			// Return card to CardDeck
 			tv.RemoveCard(targetCard)
@@ -399,14 +405,14 @@ func (tv *TerritoryView) IsChanged() bool {
 	if tv.Territory == nil {
 		return false
 	}
-	if len(tv.Territory.Cards) != len(tv.OldCards) {
+	if len(tv.Territory.Cards()) != len(tv.OldCards) {
 		return true
 	}
 
 	// Check if all StructureCard pointers in both slices are the same (order doesn't matter)
 	for _, oldCard := range tv.OldCards {
 		found := false
-		for _, territoryCard := range tv.Territory.Cards {
+		for _, territoryCard := range tv.Territory.Cards() {
 			if oldCard == territoryCard {
 				found = true
 				break
@@ -432,7 +438,7 @@ func (tv *TerritoryView) CanPlaceCard() bool {
 	if tv.Territory == nil {
 		return false
 	}
-	return len(tv.Territory.Cards) < tv.Territory.CardSlot
+	return len(tv.Territory.Cards()) < tv.Territory.Terrain().CardSlot()
 }
 
 // PlaceCard places a card
@@ -440,15 +446,15 @@ func (tv *TerritoryView) PlaceCard(card *core.StructureCard) bool {
 	if !tv.CanPlaceCard() {
 		return false
 	}
-	tv.Territory.Cards = append(tv.Territory.Cards, card)
-	return true
+	return tv.Territory.AppendCard(card)
 }
 
 // RemoveCard removes a card
 func (tv *TerritoryView) RemoveCard(card *core.StructureCard) bool {
 	// Find card index
 	cardIndex := -1
-	for i, structureCard := range tv.Territory.Cards {
+	cards := tv.Territory.Cards()
+	for i, structureCard := range cards {
 		if structureCard == card {
 			cardIndex = i
 			break
@@ -459,13 +465,15 @@ func (tv *TerritoryView) RemoveCard(card *core.StructureCard) bool {
 		return false
 	}
 
-	// Remove from Cards
-	tv.Territory.Cards = append(tv.Territory.Cards[:cardIndex], tv.Territory.Cards[cardIndex+1:]...)
+	// Remove from Territory
+	removedCard, ok := tv.Territory.RemoveCard(cardIndex)
+	if !ok {
+		return false
+	}
 
 	// Add to GameState.CardDeck
 	if tv.GameState != nil {
-		cards := &core.Cards{StructureCards: []*core.StructureCard{card}}
-		tv.GameState.CardDeck.Add(cards)
+		tv.GameState.CardDeck.Add(removedCard.ID())
 	}
 
 	return true
