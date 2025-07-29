@@ -3,6 +3,8 @@ package ui
 import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/noppikinatta/ebitenginegamejam2025/core"
+	"github.com/noppikinatta/ebitenginegamejam2025/flow"
+	"github.com/noppikinatta/ebitenginegamejam2025/viewmodel"
 )
 
 // GameUI is the controller that manages the entire game UI.
@@ -15,8 +17,18 @@ type GameUI struct {
 	InfoView     *InfoView
 	CardDeckView *CardDeckView
 
-	// GameState reference
+	// GameState reference (for creating flows and viewmodels)
 	GameState *core.GameState
+
+	// Flow instances for operations
+	CardDeckFlow *flow.CardDeckFlow
+	MapGridFlow  *flow.MapGridFlow
+
+	// ViewModel instances for display
+	ResourceViewModel *viewmodel.ResourceViewModel
+	CalendarViewModel *viewmodel.CalendarViewModel
+	CardDeckViewModel *viewmodel.CardDeckViewModel
+	MapGridViewModel  *viewmodel.MapGridViewModel
 
 	// Mouse position tracking
 	MouseX, MouseY int
@@ -24,14 +36,23 @@ type GameUI struct {
 
 // NewGameUI creates a GameUI.
 func NewGameUI(gameState *core.GameState) *GameUI {
-	// Initialize each Widget
-	resourceView := NewResourceView(gameState)
-	calendarView := NewCalendarView(gameState)
-	mainView := NewMainView(gameState)
+	// Create flow instances
+	cardDeckFlow := flow.NewCardDeckFlow(gameState, gameState.CardGenerator)
+	mapGridFlow := flow.NewMapGridFlow(gameState)
+
+	// Create viewmodel instances
+	resourceViewModel := viewmodel.NewResourceViewModel(gameState)
+	calendarViewModel := viewmodel.NewCalendarViewModel(gameState)
+	cardDeckViewModel := viewmodel.NewCardDeckViewModel(gameState, gameState.CardGenerator)
+	mapGridViewModel := viewmodel.NewMapGridViewModel(gameState)
+
+	// Initialize each Widget with viewmodels
+	resourceView := NewResourceView(resourceViewModel)
+	calendarView := NewCalendarView(calendarViewModel)
+	mainView := NewMainView(gameState, mapGridViewModel, mapGridFlow)
 	infoView := NewInfoView(gameState)
 
-	cardDeckView := NewCardDeckView(gameState.CardDeck, gameState.CardGenerator)
-	cardDeckView.SetDisplayOrder(gameState.CardDisplayOrder)
+	cardDeckView := NewCardDeckView(cardDeckViewModel, cardDeckFlow)
 
 	ui := &GameUI{
 		ResourceView: resourceView,
@@ -40,6 +61,14 @@ func NewGameUI(gameState *core.GameState) *GameUI {
 		InfoView:     infoView,
 		CardDeckView: cardDeckView,
 		GameState:    gameState,
+		
+		// Store flows and viewmodels
+		CardDeckFlow:      cardDeckFlow,
+		MapGridFlow:       mapGridFlow,
+		ResourceViewModel: resourceViewModel,
+		CalendarViewModel: calendarViewModel,
+		CardDeckViewModel: cardDeckViewModel,
+		MapGridViewModel:  mapGridViewModel,
 	}
 
 	// Set up coordination between Widgets
@@ -56,6 +85,7 @@ func (gui *GameUI) onBattleCardClicked(card *core.BattleCard) bool {
 		return false
 	}
 
+	// Use BattleFlow through MainView.Battle
 	if gui.MainView.Battle.CanPlaceCard() {
 		return gui.MainView.Battle.PlaceCard(card)
 	}
@@ -69,6 +99,7 @@ func (gui *GameUI) onStructureCardClicked(card *core.StructureCard) bool {
 		return false
 	}
 
+	// Use TerritoryFlow through MainView.Territory
 	if gui.MainView.Territory.CanPlaceCard() {
 		return gui.MainView.Territory.PlaceCard(card)
 	}
@@ -78,25 +109,26 @@ func (gui *GameUI) onStructureCardClicked(card *core.StructureCard) bool {
 
 // setupWidgetConnections sets up coordination between Widgets.
 func (gui *GameUI) setupWidgetConnections() {
-	// Coordination from CardDeckView to InfoView
-	gui.CardDeckView.OnCardSelected = func(card interface{}) {
-		gui.InfoView.SetSelectedCard(card)
+	// Set up MainView point selection to update InfoView
+	gui.MainView.OnPointSelected = func(point core.Point) {
+		gui.SelectPoint(point)
 	}
 
-	// Coordination from MainView to InfoView is handled dynamically in Update()
+	// Set up CardDeckView card selection to update InfoView
+	gui.CardDeckView.OnCardSelected = func(card interface{}) {
+		gui.SelectCard(card)
+	}
 }
 
-// SetMousePosition updates the mouse position.
-func (gui *GameUI) SetMousePosition(x, y int) {
-	gui.MouseX = x
-	gui.MouseY = y
-
-	// Updating the mouse position for each Widget will be implemented in the future.
-	// Omitted for now as Widgets do not currently have MouseX/MouseY fields.
-}
-
-// HandleInput handles unified input.
+// HandleInput handles input for all Widgets.
 func (gui *GameUI) HandleInput(input *Input) error {
+	// Update mouse position
+	gui.MouseX, gui.MouseY = input.Mouse.CursorPosition()
+
+	// Pass mouse position to child Widgets
+	gui.CardDeckView.MouseX = gui.MouseX
+	gui.CardDeckView.MouseY = gui.MouseY
+
 	// MainView processes input first (important processes such as View switching).
 	if err := gui.MainView.HandleInput(input); err != nil {
 		return err
@@ -115,7 +147,6 @@ func (gui *GameUI) HandleInput(input *Input) error {
 
 // Update handles frame updates.
 func (gui *GameUI) Update() error {
-
 	return nil
 }
 
@@ -173,25 +204,24 @@ func (gui *GameUI) SelectCard(card interface{}) {
 
 // SelectCardFromDeck selects a specific card from the CardDeck.
 func (gui *GameUI) SelectCardFromDeck(index int) {
-	gui.CardDeckView.SelectCard(index)
+	// Use CardDeckFlow for selection
+	gui.CardDeckFlow.Select(index)
+
+	// Update CardDeckView to reflect the selection
+	gui.CardDeckView.SetSelectedIndex(index)
 }
 
 // MoveCardToTerritory moves the selected card to the TerritoryView.
 func (gui *GameUI) MoveCardToTerritory() bool {
-	selectedCard := gui.CardDeckView.GetSelectedCard()
+	selectedCard := gui.CardDeckFlow.GetSelectedCard()
 	if selectedCard == nil {
 		return false
 	}
 
 	// Only StructureCards can be moved
 	if structureCard, ok := selectedCard.(*core.StructureCard); ok {
-		// Remove from CardDeck
-		gui.CardDeckView.RemoveSelectedCard()
-
-		// Add to TerritoryView
-		gui.MainView.Territory.AddStructureCard(structureCard)
-
-		return true
+		// This will be handled by TerritoryFlow in the TerritoryView
+		return gui.MainView.Territory.PlaceCard(structureCard)
 	}
 
 	return false
@@ -199,5 +229,7 @@ func (gui *GameUI) MoveCardToTerritory() bool {
 
 // ReturnCardToDeck returns a card to the CardDeck.
 func (gui *GameUI) ReturnCardToDeck(card interface{}) {
+	// This operation will be handled by the appropriate flow
+	// For now, we'll delegate to CardDeckView to handle the UI update
 	gui.CardDeckView.AddCard(card)
 }

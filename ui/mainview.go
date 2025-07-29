@@ -3,6 +3,8 @@ package ui
 import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/noppikinatta/ebitenginegamejam2025/core"
+	"github.com/noppikinatta/ebitenginegamejam2025/flow"
+	"github.com/noppikinatta/ebitenginegamejam2025/viewmodel"
 )
 
 // ViewType is the type of View to be displayed in MainView.
@@ -27,13 +29,22 @@ type MainView struct {
 
 	// Game state
 	GameState *core.GameState
+
+	// ViewModels and Flows
+	MapGridViewModel *viewmodel.MapGridViewModel
+	MapGridFlow      *flow.MapGridFlow
+
+	// Callbacks
+	OnPointSelected func(point core.Point)
 }
 
 // NewMainView creates a MainView.
-func NewMainView(gameState *core.GameState) *MainView {
+func NewMainView(gameState *core.GameState, mapGridViewModel *viewmodel.MapGridViewModel, mapGridFlow *flow.MapGridFlow) *MainView {
 	m := &MainView{
-		CurrentView: ViewTypeMapGrid, // The initial display is MapGridView.
-		GameState:   gameState,
+		CurrentView:      ViewTypeMapGrid, // The initial display is MapGridView.
+		GameState:        gameState,
+		MapGridViewModel: mapGridViewModel,
+		MapGridFlow:      mapGridFlow,
 	}
 
 	onBack := func() {
@@ -49,8 +60,14 @@ func NewMainView(gameState *core.GameState) *MainView {
 	m.Battle.SetGameState(gameState)
 	m.Territory.SetGameState(gameState)
 
-	m.MapGrid = NewMapGridView(gameState, func(point core.Point) {
+	m.MapGrid = NewMapGridView(mapGridViewModel, mapGridFlow, func(point core.Point) {
 		m.SetSelectedPoint(point)
+		
+		// Notify parent about point selection
+		if m.OnPointSelected != nil {
+			m.OnPointSelected(point)
+		}
+		
 		switch p := point.(type) {
 		case *core.MyNationPoint:
 			m.SetSelectedNation(p.MyNation)
@@ -79,84 +96,59 @@ func (m *MainView) SwitchView(viewType ViewType) {
 
 // HandleInput handles input.
 func (m *MainView) HandleInput(input *Input) error {
-	// Forward input to the current View.
 	switch m.CurrentView {
 	case ViewTypeMapGrid:
-		if m.MapGrid != nil {
-			return m.MapGrid.HandleInput(input)
-		}
+		return m.MapGrid.HandleInput(input)
 	case ViewTypeMarket:
-		if m.Market != nil {
-			return m.Market.HandleInput(input)
-		}
+		return m.Market.HandleInput(input)
 	case ViewTypeBattle:
-		if m.Battle != nil {
-			return m.Battle.HandleInput(input)
-		}
+		return m.Battle.HandleInput(input)
 	case ViewTypeTerritory:
-		if m.Territory != nil {
-			return m.Territory.HandleInput(input)
-		}
+		return m.Territory.HandleInput(input)
 	}
 	return nil
 }
 
 // Draw handles drawing.
 func (m *MainView) Draw(screen *ebiten.Image) {
-	// Draw the current View.
 	switch m.CurrentView {
 	case ViewTypeMapGrid:
-		if m.MapGrid != nil {
-			m.MapGrid.Draw(screen)
-		}
+		m.MapGrid.Draw(screen)
 	case ViewTypeMarket:
-		if m.Market != nil {
-			m.Market.Draw(screen)
-		}
+		m.Market.Draw(screen)
 	case ViewTypeBattle:
-		if m.Battle != nil {
-			m.Battle.Draw(screen)
-		}
+		m.Battle.Draw(screen)
 	case ViewTypeTerritory:
-		if m.Territory != nil {
-			m.Territory.Draw(screen)
-		}
+		m.Territory.Draw(screen)
 	}
 }
 
-// GetCurrentView gets the currently displayed View type.
-func (m *MainView) GetCurrentView() ViewType {
-	return m.CurrentView
-}
-
-// SetSelectedNation sets the nation to be displayed in MarketView.
+// SetSelectedNation sets the nation to be displayed
 func (m *MainView) SetSelectedNation(nation core.Nation) {
-	if m.Market != nil {
+	switch m.CurrentView {
+	case ViewTypeMarket:
 		m.Market.SetNation(nation)
 	}
 }
 
-// SetSelectedPoint sets the Point to be displayed in BattleView or TerritoryView.
+// SetSelectedPoint sets the point to be displayed
 func (m *MainView) SetSelectedPoint(point core.Point) {
 	switch p := point.(type) {
 	case *core.WildernessPoint:
 		if p.Controlled() {
-			if m.Territory != nil {
-				territory := p.Territory()
-				terrainType := ""
-				if territory != nil && territory.Terrain() != nil {
-					terrainType = string(territory.Terrain().ID())
-				}
-				m.Territory.SetTerritory(territory, terrainType)
+			// Set territory for TerritoryView
+			territory := p.Territory()
+			if territory != nil {
+				m.Territory.SetTerritory(territory, "wilderness") // terrain type placeholder
 			}
 		} else {
-			if m.Battle != nil {
-				m.Battle.SetBattlePoint(p)
-			}
+			// Set battle point for BattleView
+			m.Battle.SetBattlePoint(p)
+			m.Battle.SetPointName("Wilderness")
 		}
 	case *core.BossPoint:
-		if m.Battle != nil {
-			m.Battle.SetBattlePoint(p)
-		}
+		// Set battle point for BattleView
+		m.Battle.SetBattlePoint(p)
+		m.Battle.SetPointName("Boss")
 	}
 }

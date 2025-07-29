@@ -52,11 +52,7 @@ func (g *InGame) Update() error {
 		return nil
 	}
 
-	// Set mouse position in GameUI
-	mouseX, mouseY := ebiten.CursorPosition()
-	g.gameUI.SetMousePosition(mouseX, mouseY)
-
-	// Handle input for GameUI
+	// Handle input for GameUI (mouse position is handled automatically inside HandleInput)
 	if err := g.gameUI.HandleInput(g.input); err != nil {
 		return err
 	}
