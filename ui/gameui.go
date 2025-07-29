@@ -31,6 +31,7 @@ func NewGameUI(gameState *core.GameState) *GameUI {
 	infoView := NewInfoView(gameState)
 
 	cardDeckView := NewCardDeckView(gameState.CardDeck, gameState.CardGenerator)
+	cardDeckView.SetDisplayOrder(gameState.CardDisplayOrder)
 
 	ui := &GameUI{
 		ResourceView: resourceView,

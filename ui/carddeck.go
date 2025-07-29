@@ -26,6 +26,9 @@ type CardDeckView struct {
 	MouseX, MouseY int
 
 	HoveredCard interface{}
+	
+	// Card display order for stable rendering
+	displayOrder []core.CardID
 }
 
 // NewCardDeckView creates a CardDeckView.
@@ -51,27 +54,52 @@ func (c *CardDeckView) GetSelectedCard() interface{} {
 	return allCards[c.SelectedIndex]
 }
 
-// getAllCards gets all cards in a single slice.
+// getAllCards gets all cards in a single slice, sorted by display order.
 func (c *CardDeckView) getAllCards() []interface{} {
 	if c.CardDeck == nil || c.CardGenerator == nil {
 		return []interface{}{}
 	}
 
-	allCards := make([]interface{}, 0)
 	cardIDs := c.CardDeck.GetAllCardIDs()
+	if len(cardIDs) == 0 {
+		return []interface{}{}
+	}
 
 	// Generate cards from CardIDs
-	if len(cardIDs) > 0 {
-		cards, ok := c.CardGenerator.Generate(cardIDs)
-		if ok {
-			// Add BattleCards
-			for _, card := range cards.BattleCards {
-				allCards = append(allCards, card)
+	cards, ok := c.CardGenerator.Generate(cardIDs)
+	if !ok {
+		return []interface{}{}
+	}
+
+	// 表示順序に従ってソート
+	var allCards []interface{}
+	
+	if c.displayOrder != nil {
+		cardMap := make(map[core.CardID][]interface{})
+		
+		// BattleCardsをマップに追加
+		for _, card := range cards.BattleCards {
+			cardMap[card.CardID] = append(cardMap[card.CardID], card)
+		}
+		
+		// StructureCardsをマップに追加
+		for _, card := range cards.StructureCards {
+			cardMap[card.ID()] = append(cardMap[card.ID()], card)
+		}
+		
+		// displayOrderに従って並べる
+		for _, cardID := range c.displayOrder {
+			if cardInstances, exists := cardMap[cardID]; exists {
+				allCards = append(allCards, cardInstances...)
 			}
-			// Add StructureCards
-			for _, card := range cards.StructureCards {
-				allCards = append(allCards, card)
-			}
+		}
+	} else {
+		// フォールバック: 元の実装
+		for _, card := range cards.BattleCards {
+			allCards = append(allCards, card)
+		}
+		for _, card := range cards.StructureCards {
+			allCards = append(allCards, card)
 		}
 	}
 
@@ -105,6 +133,11 @@ func (c *CardDeckView) ClearSelection() {
 	if c.OnCardSelected != nil {
 		c.OnCardSelected(nil)
 	}
+}
+
+// SetDisplayOrder sets the card display order.
+func (c *CardDeckView) SetDisplayOrder(order []core.CardID) {
+	c.displayOrder = order
 }
 
 // RemoveSelectedCard removes the selected card from the deck.

@@ -8,20 +8,21 @@ import (
 func LoadGameState() *core.GameState {
 	myNation := createMyNation()
 	treasury := createTreasury()
-	cardGenerator := createCardGenerator()
+	cardGenerator, cardDisplayOrder := createCardGenerator()
 	cardDeck := createCardDeck(cardGenerator)
 	cardPacks, cardPackPrices := createCardPacksAndPrices()
 	markets := createMarkets(cardPacks, cardPackPrices)
 	mapGrid := createMapGrid(myNation, cardPacks, cardPackPrices)
 
 	gs := &core.GameState{
-		MyNation:      myNation,
-		CardDeck:      cardDeck,
-		MapGrid:       mapGrid,
-		Treasury:      treasury,
-		CurrentTurn:   0,
-		CardGenerator: cardGenerator,
-		Markets:       markets,
+		MyNation:         myNation,
+		CardDeck:         cardDeck,
+		MapGrid:          mapGrid,
+		Treasury:         treasury,
+		CurrentTurn:      0,
+		CardGenerator:    cardGenerator,
+		Markets:          markets,
+		CardDisplayOrder: cardDisplayOrder,
 	}
 
 	return gs
@@ -436,11 +437,60 @@ func createMarkets(cardPacks map[string]*core.CardPack, cardPackPrices map[strin
 	return markets
 }
 
-func createCardGenerator() *core.CardGenerator {
-	return &core.CardGenerator{
-		BattleCards:    createBattleCards(),
-		StructureCards: createStructureCards(),
+func createCardGenerator() (*core.CardGenerator, []core.CardID) {
+	battleCards := createBattleCards()
+	structureCards := createStructureCards()
+	
+	// 表示順序を作成（BattleCard → StructureCard の順）
+	var displayOrder []core.CardID
+	
+	// createBattleCardsで定義されている順序で追加
+	battleCardOrder := []core.CardID{
+		"battlecard-debug",
+		"battlecard-soldier", 
+		"battlecard-knight",
+		"battlecard-general",
+		"battlecard-archer",
+		"battlecard-fortune",
+		"battlecard-wizard",
+		"battlecard-mage",
+		"battlecard-blacksmith",
+		"battlecard-samurai",
+		"battlecard-ninja",
+		"battlecard-monk",
+		"battlecard-bard",
+		"battlecard-artillery",
+		"battlecard-clown",
+		"battlecard-wrestler",
+		"battlecard-golem",
 	}
+	displayOrder = append(displayOrder, battleCardOrder...)
+	
+	// createStructureCardsで定義されている順序で追加
+	structureCardOrder := []core.CardID{
+		"structurecard-farm",
+		"structurecard-woodcutter",
+		"structurecard-tunnel",
+		"structurecard-market",
+		"structurecard-shrine",
+		"structurecard-granary",
+		"structurecard-sawmill",
+		"structurecard-smelter",
+		"structurecard-mint",
+		"structurecard-temple",
+		"structurecard-camp",
+		"structurecard-catapult",
+		"structurecard-ballista",
+		"structurecard-orban-cannon",
+	}
+	displayOrder = append(displayOrder, structureCardOrder...)
+	
+	cardGenerator := &core.CardGenerator{
+		BattleCards:    battleCards,
+		StructureCards: structureCards,
+	}
+	
+	return cardGenerator, displayOrder
 }
 
 func createBattleCards() map[core.CardID]*core.BattleCard {

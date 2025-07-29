@@ -2,14 +2,15 @@ package core
 
 // GameState manages the overall state of the game.
 type GameState struct {
-	MyNation      *MyNation                  // Player's nation
-	CardDeck      *CardDeck                  // Player's card deck
-	MapGrid       *MapGrid                   // Map grid
-	Treasury      *Treasury                  // Player's treasury
-	CurrentTurn   Turn                       // Current turn number
-	CardGenerator *CardGenerator             // Card generator
-	Histories     []History                  // History of events
-	Markets       map[NationID]*Market       // Markets for each nation
+	MyNation         *MyNation                  // Player's nation
+	CardDeck         *CardDeck                  // Player's card deck
+	MapGrid          *MapGrid                   // Map grid
+	Treasury         *Treasury                  // Player's treasury
+	CurrentTurn      Turn                       // Current turn number
+	CardGenerator    *CardGenerator             // Card generator
+	Histories        []History                  // History of events
+	Markets          map[NationID]*Market       // Markets for each nation
+	CardDisplayOrder []CardID                   // Card display order for stable UI rendering
 }
 
 func (g *GameState) GetYield() ResourceQuantity {
