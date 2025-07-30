@@ -28,38 +28,38 @@ func (mf *MarketFlow) Purchase(marketItemIdx int) bool {
 	if mf.market == nil || mf.gameState == nil {
 		return false
 	}
-	
+
 	if marketItemIdx < 0 || marketItemIdx >= len(mf.market.Items) {
 		return false
 	}
-	
+
 	item := mf.market.Items[marketItemIdx]
-	
+
 	// Check if item is available
 	if !mf.isMarketItemAvailable(item) {
 		return false
 	}
-	
+
 	// Attempt purchase
 	oldLevel := mf.market.Level
 	cardPack, ok := mf.market.Purchase(marketItemIdx, mf.gameState.Treasury)
 	if !ok {
 		return false
 	}
-	
+
 	// Add history if market level increased
 	if int(mf.market.Level) > int(oldLevel) {
 		mf.addMarketLevelHistory()
 	}
-	
+
 	// Process card pack if purchased
 	if cardPack != nil {
 		mf.processCardPack(cardPack)
 	}
-	
+
 	// Advance turn
 	mf.gameState.NextTurn()
-	
+
 	return true
 }
 
@@ -68,13 +68,13 @@ func (mf *MarketFlow) CanPurchase(marketItemIdx int) bool {
 	if mf.market == nil || mf.gameState == nil {
 		return false
 	}
-	
+
 	if marketItemIdx < 0 || marketItemIdx >= len(mf.market.Items) {
 		return false
 	}
-	
+
 	item := mf.market.Items[marketItemIdx]
-	
+
 	// Check availability and affordability
 	return mf.isMarketItemAvailable(item) && item.CanPurchase(mf.gameState.Treasury)
 }
@@ -93,7 +93,7 @@ func (mf *MarketFlow) addMarketLevelHistory() {
 	if mf.gameState == nil || mf.nation == nil {
 		return
 	}
-	
+
 	mf.gameState.AddHistory(core.History{
 		Turn: mf.gameState.CurrentTurn,
 		Key:  "history-market",
@@ -109,15 +109,15 @@ func (mf *MarketFlow) processCardPack(cardPack *core.CardPack) {
 	if cardPack == nil || mf.gameState == nil {
 		return
 	}
-	
+
 	// Create random number generator
 	rng := &simpleRand{
 		Rand: rand.New(rand.NewSource(time.Now().UnixNano())),
 	}
-	
+
 	// Open card pack
 	cardIDs := cardPack.Open(rng)
-	
+
 	// Add cards to deck
 	for _, cardID := range cardIDs {
 		mf.gameState.CardDeck.Add(cardID)
@@ -131,4 +131,4 @@ type simpleRand struct {
 
 func (sr *simpleRand) Intn(n int) int {
 	return sr.Rand.Intn(n)
-} 
+}

@@ -32,12 +32,12 @@ func (vm *MapGridViewModel) Point(x, y int) *PointViewModel {
 	if vm.gameState == nil || vm.gameState.MapGrid == nil {
 		return nil
 	}
-	
+
 	point := vm.gameState.MapGrid.GetPoint(x, y)
 	if point == nil {
 		return nil
 	}
-	
+
 	return NewPointViewModel(vm.gameState, point)
 }
 
@@ -46,7 +46,7 @@ func (vm *MapGridViewModel) ShouldDrawLineToRight(x, y int) bool {
 	if vm.gameState == nil || vm.gameState.MapGrid == nil {
 		return false
 	}
-	
+
 	// Check if there's a connection to the right
 	// For now, return a simple implementation based on grid bounds
 	size := vm.gameState.MapGrid.Size
@@ -58,7 +58,7 @@ func (vm *MapGridViewModel) ShouldDrawLineToUpper(x, y int) bool {
 	if vm.gameState == nil || vm.gameState.MapGrid == nil {
 		return false
 	}
-	
+
 	// Check if there's a connection upward
 	// For now, return a simple implementation based on grid bounds
 	return y > 0
@@ -127,4 +127,4 @@ func (vm *PointViewModel) EnemyPower() float64 {
 		}
 	}
 	return 0.0
-} 
+}

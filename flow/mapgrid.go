@@ -22,12 +22,12 @@ func (mf *MapGridFlow) SelectPoint(x, y int) bool {
 	if mf.gameState == nil || mf.gameState.MapGrid == nil {
 		return false
 	}
-	
+
 	point := mf.gameState.MapGrid.GetPoint(x, y)
 	if point == nil {
 		return false
 	}
-	
+
 	mf.selectedPoint = point
 	return true
 }
@@ -47,7 +47,7 @@ func (mf *MapGridFlow) GetPointType() core.PointType {
 	if mf.selectedPoint == nil {
 		return core.PointTypeUnknown
 	}
-	
+
 	switch mf.selectedPoint.(type) {
 	case *core.MyNationPoint:
 		return core.PointTypeMyNation
@@ -67,7 +67,7 @@ func (mf *MapGridFlow) GetNationFromSelectedPoint() core.Nation {
 	if mf.selectedPoint == nil {
 		return nil
 	}
-	
+
 	switch p := mf.selectedPoint.(type) {
 	case *core.MyNationPoint:
 		return p.MyNation
@@ -83,13 +83,13 @@ func (mf *MapGridFlow) GetTerritoryFromSelectedPoint() *core.Territory {
 	if mf.selectedPoint == nil {
 		return nil
 	}
-	
+
 	if p, ok := mf.selectedPoint.(*core.WildernessPoint); ok {
 		if p.Controlled() {
 			return p.Territory()
 		}
 	}
-	
+
 	return nil
 }
 
@@ -98,7 +98,7 @@ func (mf *MapGridFlow) GetBattlePointFromSelectedPoint() core.BattlePoint {
 	if mf.selectedPoint == nil {
 		return nil
 	}
-	
+
 	switch p := mf.selectedPoint.(type) {
 	case *core.WildernessPoint:
 		if !p.Controlled() {
@@ -107,7 +107,7 @@ func (mf *MapGridFlow) GetBattlePointFromSelectedPoint() core.BattlePoint {
 	case *core.BossPoint:
 		return p
 	}
-	
+
 	return nil
 }
 
@@ -116,11 +116,11 @@ func (mf *MapGridFlow) IsSelectedPointControllable() bool {
 	if p, ok := mf.selectedPoint.(*core.WildernessPoint); ok {
 		return !p.Controlled()
 	}
-	
+
 	if _, ok := mf.selectedPoint.(*core.BossPoint); ok {
 		return true // Boss points can be challenged
 	}
-	
+
 	return false
 }
 
@@ -129,6 +129,6 @@ func (mf *MapGridFlow) IsSelectedPointControlled() bool {
 	if p, ok := mf.selectedPoint.(*core.WildernessPoint); ok {
 		return p.Controlled()
 	}
-	
+
 	return false
-} 
+}

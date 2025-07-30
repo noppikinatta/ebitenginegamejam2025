@@ -23,12 +23,12 @@ func NewCardDeckFlow(gameState *core.GameState, cardGenerator *core.CardGenerato
 // Select selects a card at the specified index
 func (cf *CardDeckFlow) Select(cardIndex int) bool {
 	allCards := cf.getAllCards()
-	
+
 	if cardIndex < 0 || cardIndex >= len(allCards) {
 		cf.selectedIndex = -1
 		return false
 	}
-	
+
 	cf.selectedIndex = cardIndex
 	return true
 }
@@ -38,12 +38,12 @@ func (cf *CardDeckFlow) GetSelectedCard() interface{} {
 	if cf.selectedIndex < 0 {
 		return nil
 	}
-	
+
 	allCards := cf.getAllCards()
 	if cf.selectedIndex >= len(allCards) {
 		return nil
 	}
-	
+
 	return allCards[cf.selectedIndex]
 }
 
@@ -67,30 +67,30 @@ func (cf *CardDeckFlow) getAllCards() []interface{} {
 	if cf.gameState == nil || cf.gameState.CardDeck == nil || cf.cardGenerator == nil {
 		return []interface{}{}
 	}
-	
+
 	cardIDs := cf.gameState.CardDeck.GetAllCardIDs()
 	if len(cardIDs) == 0 {
 		return []interface{}{}
 	}
-	
+
 	// Generate cards from CardIDs
 	cards, ok := cf.cardGenerator.Generate(cardIDs)
 	if !ok {
 		return []interface{}{}
 	}
-	
+
 	var allCards []interface{}
-	
+
 	// Add battle cards
 	for _, card := range cards.BattleCards {
 		allCards = append(allCards, card)
 	}
-	
+
 	// Add structure cards
 	for _, card := range cards.StructureCards {
 		allCards = append(allCards, card)
 	}
-	
+
 	return allCards
 }
 
@@ -99,17 +99,17 @@ func (cf *CardDeckFlow) GetBattleCards() []*core.BattleCard {
 	if cf.gameState == nil || cf.gameState.CardDeck == nil || cf.cardGenerator == nil {
 		return []*core.BattleCard{}
 	}
-	
+
 	cardIDs := cf.gameState.CardDeck.GetAllCardIDs()
 	if len(cardIDs) == 0 {
 		return []*core.BattleCard{}
 	}
-	
+
 	cards, ok := cf.cardGenerator.Generate(cardIDs)
 	if !ok {
 		return []*core.BattleCard{}
 	}
-	
+
 	return cards.BattleCards
 }
 
@@ -118,16 +118,16 @@ func (cf *CardDeckFlow) GetStructureCards() []*core.StructureCard {
 	if cf.gameState == nil || cf.gameState.CardDeck == nil || cf.cardGenerator == nil {
 		return []*core.StructureCard{}
 	}
-	
+
 	cardIDs := cf.gameState.CardDeck.GetAllCardIDs()
 	if len(cardIDs) == 0 {
 		return []*core.StructureCard{}
 	}
-	
+
 	cards, ok := cf.cardGenerator.Generate(cardIDs)
 	if !ok {
 		return []*core.StructureCard{}
 	}
-	
+
 	return cards.StructureCards
-} 
+}

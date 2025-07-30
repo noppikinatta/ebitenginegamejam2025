@@ -440,14 +440,14 @@ func createMarkets(cardPacks map[string]*core.CardPack, cardPackPrices map[strin
 func createCardGenerator() (*core.CardGenerator, []core.CardID) {
 	battleCards := createBattleCards()
 	structureCards := createStructureCards()
-	
+
 	// 表示順序を作成（BattleCard → StructureCard の順）
 	var displayOrder []core.CardID
-	
+
 	// createBattleCardsで定義されている順序で追加
 	battleCardOrder := []core.CardID{
 		"battlecard-debug",
-		"battlecard-soldier", 
+		"battlecard-soldier",
 		"battlecard-knight",
 		"battlecard-general",
 		"battlecard-archer",
@@ -465,7 +465,7 @@ func createCardGenerator() (*core.CardGenerator, []core.CardID) {
 		"battlecard-golem",
 	}
 	displayOrder = append(displayOrder, battleCardOrder...)
-	
+
 	// createStructureCardsで定義されている順序で追加
 	structureCardOrder := []core.CardID{
 		"structurecard-farm",
@@ -484,12 +484,12 @@ func createCardGenerator() (*core.CardGenerator, []core.CardID) {
 		"structurecard-orban-cannon",
 	}
 	displayOrder = append(displayOrder, structureCardOrder...)
-	
+
 	cardGenerator := &core.CardGenerator{
 		BattleCards:    battleCards,
 		StructureCards: structureCards,
 	}
-	
+
 	return cardGenerator, displayOrder
 }
 

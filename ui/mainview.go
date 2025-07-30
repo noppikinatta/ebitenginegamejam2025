@@ -62,12 +62,12 @@ func NewMainView(gameState *core.GameState, mapGridViewModel *viewmodel.MapGridV
 
 	m.MapGrid = NewMapGridView(mapGridViewModel, mapGridFlow, func(point core.Point) {
 		m.SetSelectedPoint(point)
-		
+
 		// Notify parent about point selection
 		if m.OnPointSelected != nil {
 			m.OnPointSelected(point)
 		}
-		
+
 		switch p := point.(type) {
 		case *core.MyNationPoint:
 			m.SetSelectedNation(p.MyNation)
@@ -144,11 +144,9 @@ func (m *MainView) SetSelectedPoint(point core.Point) {
 		} else {
 			// Set battle point for BattleView
 			m.Battle.SetBattlePoint(p)
-			m.Battle.SetPointName("Wilderness")
 		}
 	case *core.BossPoint:
 		// Set battle point for BattleView
 		m.Battle.SetBattlePoint(p)
-		m.Battle.SetPointName("Boss")
 	}
 }

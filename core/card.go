@@ -91,21 +91,21 @@ func (c *BattleCard) Power() BattleCardPower {
 
 // StructureCard is a card placed in a Territory. This struct is immutable.
 type StructureCard struct {
-	cardID              CardID
-	yieldAdditiveValue  ResourceQuantity // Direct additive yield bonus
-	yieldModifier       ResourceModifier // Multiplicative yield modifier  
-	supportPower        float64          // Support power provided to battlefield
-	supportCardSlot     int              // Additional card slots provided to battlefield
+	cardID             CardID
+	yieldAdditiveValue ResourceQuantity // Direct additive yield bonus
+	yieldModifier      ResourceModifier // Multiplicative yield modifier
+	supportPower       float64          // Support power provided to battlefield
+	supportCardSlot    int              // Additional card slots provided to battlefield
 }
 
 // NewStructureCard creates a new StructureCard instance.
 func NewStructureCard(cardID CardID, yieldAdditiveValue ResourceQuantity, yieldModifier ResourceModifier, supportPower float64, supportCardSlot int) *StructureCard {
 	return &StructureCard{
-		cardID:              cardID,
-		yieldAdditiveValue:  yieldAdditiveValue,
-		yieldModifier:       yieldModifier,
-		supportPower:        supportPower,
-		supportCardSlot:     supportCardSlot,
+		cardID:             cardID,
+		yieldAdditiveValue: yieldAdditiveValue,
+		yieldModifier:      yieldModifier,
+		supportPower:       supportPower,
+		supportCardSlot:    supportCardSlot,
 	}
 }
 
@@ -344,5 +344,3 @@ type BattleCardSkillEffect struct {
 func (e *BattleCardSkillEffect) Apply(modifier *BattleCardPowerModifier) {
 	modifier.Union(e.Modifier)
 }
-
-

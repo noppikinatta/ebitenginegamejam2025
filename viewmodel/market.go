@@ -26,7 +26,7 @@ func (vm *MarketViewModel) Title() string {
 	if vm.nation == nil {
 		return lang.Text("market_title")
 	}
-	
+
 	// Get localized market title based on nation
 	return lang.Text("market_title_" + string(vm.nation.ID()))
 }
@@ -52,7 +52,7 @@ func (vm *MarketViewModel) Item(idx int) *MarketItemViewModel {
 	if vm.market == nil || idx < 0 || idx >= len(vm.market.Items) {
 		return nil
 	}
-	
+
 	item := vm.market.Items[idx]
 	return NewMarketItemViewModel(vm.gameState, vm.market, item)
 }
@@ -80,7 +80,7 @@ func (vm *MarketItemViewModel) ItemName() string {
 	if vm.item.CardPack() != nil {
 		return lang.Text("cardpack_name_" + string(vm.item.CardPack().CardPackID))
 	}
-	
+
 	// For investment items without card packs
 	return lang.Text("investment_item")
 }
@@ -106,7 +106,7 @@ func (vm *MarketItemViewModel) CanPurchase() bool {
 	if vm.gameState == nil || vm.item == nil {
 		return false
 	}
-	
+
 	return vm.Unlocked() && vm.item.CanPurchase(vm.gameState.Treasury)
 }
 
@@ -123,10 +123,10 @@ func (vm *MarketItemViewModel) ResourceSufficiency() *ResourceSufficiency {
 	if vm.gameState == nil || vm.item == nil {
 		return &ResourceSufficiency{}
 	}
-	
+
 	treasury := vm.gameState.Treasury.Resources
 	price := vm.item.Price()
-	
+
 	return &ResourceSufficiency{
 		Money: treasury.Money >= price.Money,
 		Food:  treasury.Food >= price.Food,
@@ -143,4 +143,4 @@ type ResourceSufficiency struct {
 	Wood  bool
 	Iron  bool
 	Mana  bool
-} 
+}

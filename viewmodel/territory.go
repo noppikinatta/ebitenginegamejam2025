@@ -24,7 +24,7 @@ func (vm *TerritoryViewModel) Title() string {
 	if vm.territory == nil {
 		return lang.Text("territory_title")
 	}
-	
+
 	// Get localized territory title based on territory ID
 	return lang.Text("territory_title_" + string(vm.territory.ID()))
 }
@@ -50,12 +50,12 @@ func (vm *TerritoryViewModel) Card(idx int) *StructureCardViewModel {
 	if vm.territory == nil {
 		return nil
 	}
-	
+
 	cards := vm.territory.Cards()
 	if idx < 0 || idx >= len(cards) {
 		return nil
 	}
-	
+
 	card := cards[idx]
 	return NewStructureCardViewModel(vm.gameState, card)
 }
@@ -65,19 +65,19 @@ func (vm *TerritoryViewModel) Yield() core.ResourceQuantity {
 	if vm.territory == nil {
 		return core.ResourceQuantity{}
 	}
-	
+
 	// Start with base yield from terrain
 	totalYield := vm.territory.Terrain().BaseYield()
-	
+
 	// Apply effects from placed structure cards
 	for _, card := range vm.territory.Cards() {
 		// Add additive yield value
 		totalYield = totalYield.Add(card.YieldAdditiveValue())
-		
+
 		// Apply yield modifier
 		totalYield = card.YieldModifier().Modify(totalYield)
 	}
-	
+
 	return totalYield
 }
 
@@ -86,12 +86,12 @@ func (vm *TerritoryViewModel) SupportPower() float64 {
 	if vm.territory == nil {
 		return 0.0
 	}
-	
+
 	totalSupportPower := 0.0
 	for _, card := range vm.territory.Cards() {
 		totalSupportPower += card.SupportPower()
 	}
-	
+
 	return totalSupportPower
 }
 
@@ -100,11 +100,11 @@ func (vm *TerritoryViewModel) SupportCardSlot() int {
 	if vm.territory == nil {
 		return 0
 	}
-	
+
 	totalSupportCardSlot := 0
 	for _, card := range vm.territory.Cards() {
 		totalSupportCardSlot += card.SupportCardSlot()
 	}
-	
+
 	return totalSupportCardSlot
-} 
+}

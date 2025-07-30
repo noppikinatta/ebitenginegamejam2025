@@ -62,7 +62,7 @@ func (vm *BattleCardViewModel) SkillName() string {
 	if vm.card.Skill == nil {
 		return ""
 	}
-	
+
 	// Get localized skill name
 	return lang.Text("battlecard_skill_name_" + string(vm.card.Skill.BattleCardSkillID))
 }
@@ -72,7 +72,7 @@ func (vm *BattleCardViewModel) SkillDescription() string {
 	if vm.card.Skill == nil {
 		return ""
 	}
-	
+
 	// Get localized skill description
 	return lang.Text("battlecard_skill_desc_" + string(vm.card.Skill.BattleCardSkillID))
 }
@@ -106,4 +106,4 @@ func (vm *StructureCardViewModel) Name() string {
 // Duplicates returns the number of this card in the deck
 func (vm *StructureCardViewModel) Duplicates() int {
 	return vm.gameState.CardDeck.Count(vm.card.ID())
-} 
+}

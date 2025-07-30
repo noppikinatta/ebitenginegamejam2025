@@ -6,8 +6,8 @@ import (
 
 // TerritoryFlow handles territory construction operations
 type TerritoryFlow struct {
-	gameState   *core.GameState
-	territory   *core.Territory
+	gameState     *core.GameState
+	territory     *core.Territory
 	originalCards []*core.StructureCard // Backup for rollback
 }
 
@@ -16,7 +16,7 @@ func NewTerritoryFlow(gameState *core.GameState, territory *core.Territory) *Ter
 	// Create backup of original cards for rollback functionality
 	originalCards := make([]*core.StructureCard, len(territory.Cards()))
 	copy(originalCards, territory.Cards())
-	
+
 	return &TerritoryFlow{
 		gameState:     gameState,
 		territory:     territory,
@@ -29,21 +29,21 @@ func (tf *TerritoryFlow) PlaceCard(card *core.StructureCard) bool {
 	if tf.territory == nil {
 		return false
 	}
-	
+
 	// Check if there's space for the card
 	if !tf.CanPlaceCard() {
 		return false
 	}
-	
+
 	// Add card to territory (temporary placement)
 	success := tf.territory.AppendCard(card)
 	if !success {
 		return false
 	}
-	
+
 	// Remove from deck
 	tf.gameState.CardDeck.Remove(card.ID())
-	
+
 	return true
 }
 
@@ -52,21 +52,21 @@ func (tf *TerritoryFlow) RemoveFromPlan(cardIndex int) bool {
 	if tf.territory == nil {
 		return false
 	}
-	
+
 	cards := tf.territory.Cards()
 	if cardIndex < 0 || cardIndex >= len(cards) {
 		return false
 	}
-	
+
 	// Remove card from territory
 	removedCard, ok := tf.territory.RemoveCard(cardIndex)
 	if !ok {
 		return false
 	}
-	
+
 	// Return to deck
 	tf.gameState.CardDeck.Add(removedCard.ID())
-	
+
 	return true
 }
 
@@ -82,7 +82,7 @@ func (tf *TerritoryFlow) Rollback() {
 	if tf.territory == nil {
 		return
 	}
-	
+
 	// Return any cards that were added back to deck
 	currentCards := tf.territory.Cards()
 	for _, currentCard := range currentCards {
@@ -98,7 +98,7 @@ func (tf *TerritoryFlow) Rollback() {
 			tf.gameState.CardDeck.Add(currentCard.ID())
 		}
 	}
-	
+
 	// Re-add any cards that were removed
 	for _, originalCard := range tf.originalCards {
 		found := false
@@ -138,4 +138,4 @@ func (tf *TerritoryFlow) GetMaxCardSlot() int {
 		return 0
 	}
 	return tf.territory.Terrain().CardSlot()
-} 
+}

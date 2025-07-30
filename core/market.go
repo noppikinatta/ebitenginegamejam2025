@@ -65,10 +65,10 @@ func (m *Market) Purchase(index int, treasury *Treasury) (*CardPack, bool) {
 
 // MarketItem represents a card pack or investment item.
 type MarketItem struct {
-	cardPack         *CardPack        // The card pack (nil for investment items)
-	price            ResourceQuantity // The price of the item
-	requiredLevel    MarketLevel      // The Market level required to purchase the item
-	levelEffect      MarketLevel      // The level effect applied to market when purchased
+	cardPack         *CardPack         // The card pack (nil for investment items)
+	price            ResourceQuantity  // The price of the item
+	requiredLevel    MarketLevel       // The Market level required to purchase the item
+	levelEffect      MarketLevel       // The level effect applied to market when purchased
 	resourceQuantity *ResourceQuantity // Resource quantity given when purchased (nil if none)
 }
 

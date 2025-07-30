@@ -23,18 +23,18 @@ func (bf *BattleFlow) PlaceCard(card *core.BattleCard) bool {
 	if bf.battlefield == nil {
 		return false
 	}
-	
+
 	// Check if there's space for the card
 	if len(bf.battlefield.BattleCards) >= bf.battlefield.CardSlot {
 		return false
 	}
-	
+
 	// Add card to battlefield
 	bf.battlefield.BattleCards = append(bf.battlefield.BattleCards, card)
-	
+
 	// Remove from deck
 	bf.gameState.CardDeck.Remove(card.CardID)
-	
+
 	return true
 }
 
@@ -43,19 +43,19 @@ func (bf *BattleFlow) RemoveFromBattle(cardIndex int) bool {
 	if bf.battlefield == nil || cardIndex < 0 || cardIndex >= len(bf.battlefield.BattleCards) {
 		return false
 	}
-	
+
 	// Get the card to remove
 	card := bf.battlefield.BattleCards[cardIndex]
-	
+
 	// Remove from battlefield
 	bf.battlefield.BattleCards = append(
 		bf.battlefield.BattleCards[:cardIndex],
 		bf.battlefield.BattleCards[cardIndex+1:]...,
 	)
-	
+
 	// Return to deck
 	bf.gameState.CardDeck.Add(card.CardID)
-	
+
 	return true
 }
 
@@ -64,11 +64,11 @@ func (bf *BattleFlow) Conquer() bool {
 	if bf.battlefield == nil {
 		return false
 	}
-	
+
 	if !bf.battlefield.CanBeat() {
 		return false
 	}
-	
+
 	// Conquest logic - mark point as conquered
 	// The actual conquest logic should be implemented based on the point type
 	// For now, we return true to indicate successful conquest
@@ -80,12 +80,12 @@ func (bf *BattleFlow) Rollback() {
 	if bf.battlefield == nil {
 		return
 	}
-	
+
 	// Return all cards to deck
 	for _, card := range bf.battlefield.BattleCards {
 		bf.gameState.CardDeck.Add(card.CardID)
 	}
-	
+
 	// Clear battlefield
 	bf.battlefield.BattleCards = make([]*core.BattleCard, 0)
 }
@@ -96,4 +96,4 @@ func (bf *BattleFlow) CanPlaceCard() bool {
 		return false
 	}
 	return len(bf.battlefield.BattleCards) < bf.battlefield.CardSlot
-} 
+}

@@ -13,9 +13,9 @@ import (
 // TerritoryView is a widget for displaying a Territory.
 // Position: Drawn within MainView
 type TerritoryView struct {
-	Territory   *core.Territory       // Territory to display
-	TerrainType string                // Terrain name
-	GameState   *core.GameState       // Game state
+	Territory   *core.Territory // Territory to display
+	TerrainType string          // Terrain name
+	GameState   *core.GameState // Game state
 
 	// ViewModels and Flows
 	TerritoryViewModel *viewmodel.TerritoryViewModel
@@ -41,7 +41,7 @@ func NewTerritoryView(onBackClicked func()) *TerritoryView {
 func (tv *TerritoryView) SetTerritory(territory *core.Territory, terrainType string) {
 	tv.Territory = territory
 	tv.TerrainType = terrainType
-	
+
 	// Create viewmodel and flow with new territory
 	if tv.GameState != nil {
 		tv.TerritoryViewModel = viewmodel.NewTerritoryViewModel(tv.GameState, territory)
@@ -52,7 +52,7 @@ func (tv *TerritoryView) SetTerritory(territory *core.Territory, terrainType str
 // SetGameState sets the game state
 func (tv *TerritoryView) SetGameState(gameState *core.GameState) {
 	tv.GameState = gameState
-	
+
 	// Recreate viewmodel and flow if territory exists
 	if tv.Territory != nil {
 		tv.TerritoryViewModel = viewmodel.NewTerritoryViewModel(gameState, tv.Territory)
@@ -160,19 +160,19 @@ func (tv *TerritoryView) cardIndex(cursorX, cursorY int) int {
 	if cursorY < 400 || cursorY >= 520 { // Card area roughly
 		return -1
 	}
-	
+
 	cardX := (cursorX - 100) / 80 // Assuming cards start at x=100 and are 80px wide
 	if cardX < 0 {
 		return -1
 	}
-	
+
 	if tv.TerritoryViewModel != nil {
 		numCards := tv.TerritoryViewModel.NumCards()
 		if cardX >= numCards {
 			return -1
 		}
 	}
-	
+
 	return cardX
 }
 
@@ -234,25 +234,25 @@ func (tv *TerritoryView) drawTerritoryInfo(screen *ebiten.Image) {
 // drawStructureCards draws the placed structure cards
 func (tv *TerritoryView) drawStructureCards(screen *ebiten.Image) {
 	numCards := tv.TerritoryViewModel.NumCards()
-	
+
 	for i := 0; i < numCards; i++ {
 		cardVM := tv.TerritoryViewModel.Card(i)
 		if cardVM != nil {
 			x := float64(100 + i*80)
 			y := float64(400)
-			
+
 			// Draw card background
 			alpha := float32(1.0)
 			if cardVM == tv.HoveredCard {
 				alpha = 0.8
 			}
 			DrawCardBackground(screen, x, y, alpha)
-			
+
 			// Draw card content (simplified)
 			opt := &ebiten.DrawImageOptions{}
 			opt.GeoM.Translate(x+10, y+10)
 			drawing.DrawText(screen, cardVM.Name(), 12, opt)
-			
+
 			// Draw card name only for now
 			// TODO: Add yield display once StructureCardViewModel.Yield() is implemented
 			opt = &ebiten.DrawImageOptions{}
@@ -260,7 +260,7 @@ func (tv *TerritoryView) drawStructureCards(screen *ebiten.Image) {
 			drawing.DrawText(screen, "Structure", 8, opt)
 		}
 	}
-	
+
 	// Draw empty card slots
 	maxCards := 10 // Default max cards
 	for i := numCards; i < maxCards; i++ {
@@ -289,29 +289,29 @@ func (tv *TerritoryView) drawButtons(screen *ebiten.Image) {
 func (tv *TerritoryView) drawYieldInfo(screen *ebiten.Image) {
 	currentYield := tv.GetCurrentYield()
 	predictedYield := tv.GetNewYield()
-	
+
 	// Current yield
 	opt := &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(400, 200)
 	drawing.DrawText(screen, "Current Yield:", 20, opt)
-	
+
 	opt = &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(400, 220)
-	currentText := fmt.Sprintf("M:%.0f F:%.0f W:%.0f I:%.0f A:%.0f", 
+	currentText := fmt.Sprintf("M:%.0f F:%.0f W:%.0f I:%.0f A:%.0f",
 		currentYield.Money, currentYield.Food, currentYield.Wood, currentYield.Iron, currentYield.Mana)
 	drawing.DrawText(screen, currentText, 16, opt)
-	
+
 	// Predicted yield
 	opt = &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(400, 260)
 	drawing.DrawText(screen, "Predicted Yield:", 20, opt)
-	
+
 	opt = &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(400, 280)
-	predictedText := fmt.Sprintf("M:%.0f F:%.0f W:%.0f I:%.0f A:%.0f", 
+	predictedText := fmt.Sprintf("M:%.0f F:%.0f W:%.0f I:%.0f A:%.0f",
 		predictedYield.Money, predictedYield.Food, predictedYield.Wood, predictedYield.Iron, predictedYield.Mana)
 	drawing.DrawText(screen, predictedText, 16, opt)
-	
+
 	// Calculate difference
 	diff := core.ResourceQuantity{
 		Money: predictedYield.Money - currentYield.Money,
@@ -320,14 +320,14 @@ func (tv *TerritoryView) drawYieldInfo(screen *ebiten.Image) {
 		Iron:  predictedYield.Iron - currentYield.Iron,
 		Mana:  predictedYield.Mana - currentYield.Mana,
 	}
-	
+
 	opt = &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(400, 320)
 	drawing.DrawText(screen, "Difference:", 20, opt)
-	
+
 	opt = &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(400, 340)
-	diffText := fmt.Sprintf("M:%+.0f F:%+.0f W:%+.0f I:%+.0f A:%+.0f", 
+	diffText := fmt.Sprintf("M:%+.0f F:%+.0f W:%+.0f I:%+.0f A:%+.0f",
 		diff.Money, diff.Food, diff.Wood, diff.Iron, diff.Mana)
 	drawing.DrawText(screen, diffText, 16, opt)
 }

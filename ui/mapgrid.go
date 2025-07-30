@@ -54,28 +54,28 @@ func (m *MapGridView) HandleInput(input *Input) error {
 func (m *MapGridView) getGridCoordinates(screenX, screenY int) (int, int) {
 	// This is a simplified implementation
 	// The actual conversion depends on the specific layout of the map grid
-	
+
 	// Main view area: (0,40,1040,560)
 	if screenX < 0 || screenX >= 1040 || screenY < 40 || screenY >= 600 {
 		return -1, -1
 	}
-	
+
 	// Convert to grid coordinates (this is a placeholder implementation)
-	gridX := screenX / 100  // assuming each grid cell is 100px wide
-	gridY := (screenY - 40) / 100  // assuming each grid cell is 100px tall
-	
+	gridX := screenX / 100        // assuming each grid cell is 100px wide
+	gridY := (screenY - 40) / 100 // assuming each grid cell is 100px tall
+
 	size := m.ViewModel.Size()
 	if gridX >= size.X || gridY >= size.Y {
 		return -1, -1
 	}
-	
+
 	return gridX, gridY
 }
 
 // Draw handles the drawing process
 func (m *MapGridView) Draw(screen *ebiten.Image) {
 	size := m.ViewModel.Size()
-	
+
 	// Draw grid points
 	for y := 0; y < size.Y; y++ {
 		for x := 0; x < size.X; x++ {
@@ -85,7 +85,7 @@ func (m *MapGridView) Draw(screen *ebiten.Image) {
 			}
 		}
 	}
-	
+
 	// Draw connections between points
 	m.drawConnections(screen, size)
 }
@@ -93,17 +93,17 @@ func (m *MapGridView) Draw(screen *ebiten.Image) {
 // drawPoint draws a single point on the grid
 func (m *MapGridView) drawPoint(screen *ebiten.Image, x, y int, pointVM *viewmodel.PointViewModel) {
 	// Calculate screen position
-	screenX := float64(x * 100 + 50)  // Center of grid cell
-	screenY := float64(y * 100 + 90)  // Center of grid cell (offset by 40 for main view)
-	
+	screenX := float64(x*100 + 50) // Center of grid cell
+	screenY := float64(y*100 + 90) // Center of grid cell (offset by 40 for main view)
+
 	// Draw point image
 	image := pointVM.Image()
 	if image != nil {
 		opt := &ebiten.DrawImageOptions{}
-		opt.GeoM.Translate(screenX-16, screenY-16)  // Center the 32x32 image
+		opt.GeoM.Translate(screenX-16, screenY-16) // Center the 32x32 image
 		screen.DrawImage(image, opt)
 	}
-	
+
 	// Draw point name
 	name := pointVM.Name()
 	if name != "" {
@@ -111,7 +111,7 @@ func (m *MapGridView) drawPoint(screen *ebiten.Image, x, y int, pointVM *viewmod
 		opt.GeoM.Translate(screenX-20, screenY+20)
 		drawing.DrawText(screen, name, 12, opt)
 	}
-	
+
 	// Draw enemy power if applicable
 	if pointVM.HasEnemy() {
 		power := pointVM.EnemyPower()
@@ -133,7 +133,7 @@ func (m *MapGridView) drawConnections(screen *ebiten.Image, size core.MapGridSiz
 				endY := float64(y*100 + 90)
 				m.drawLine(screen, startX, startY, endX, endY)
 			}
-			
+
 			// Draw line upward
 			if m.ViewModel.ShouldDrawLineToUpper(x, y) {
 				startX := float64(x*100 + 50)

@@ -21,7 +21,7 @@ func TestGameState_AddYield(t *testing.T) {
 	wilderness1.SetTerritoryForTest(territory1)
 
 	wilderness2 := &core.WildernessPoint{}
-	wilderness2.SetControlledForTest(true) 
+	wilderness2.SetControlledForTest(true)
 	wilderness2.SetTerritoryForTest(territory2)
 
 	// WildernessPoint for testing (uncontrolled)
@@ -157,13 +157,13 @@ func TestGameState_CanInteract(t *testing.T) {
 	// Create terrains and territories for testing
 	controlledTerrain := core.NewTerrain("controlled_terrain", core.ResourceQuantity{Money: 5}, 1)
 	controlledTerritory := core.NewTerritory("controlled", controlledTerrain)
-	
+
 	uncontrolledTerrain := core.NewTerrain("uncontrolled_terrain", core.ResourceQuantity{Money: 5}, 1)
 	uncontrolledTerritory := core.NewTerritory("uncontrolled", uncontrolledTerrain)
-	
+
 	// Create other nation
 	otherNation := core.NewOtherNation("other", "Other Nation")
-	
+
 	// Create enemy for boss point
 	bossEnemy := core.NewEnemy("boss", "dragon", 100.0, []*core.EnemySkill{}, 4)
 
@@ -171,23 +171,23 @@ func TestGameState_CanInteract(t *testing.T) {
 	controlledWilderness1 := &core.WildernessPoint{}
 	controlledWilderness1.SetControlledForTest(true)
 	controlledWilderness1.SetTerritoryForTest(controlledTerritory)
-	
+
 	uncontrolledWilderness1 := &core.WildernessPoint{}
 	uncontrolledWilderness1.SetControlledForTest(false)
 	uncontrolledWilderness1.SetTerritoryForTest(uncontrolledTerritory)
-	
+
 	uncontrolledWilderness2 := &core.WildernessPoint{}
 	uncontrolledWilderness2.SetControlledForTest(false)
 	uncontrolledWilderness2.SetTerritoryForTest(uncontrolledTerritory)
-	
+
 	controlledWilderness2 := &core.WildernessPoint{}
 	controlledWilderness2.SetControlledForTest(true)
 	controlledWilderness2.SetTerritoryForTest(controlledTerritory)
-	
+
 	controlledWilderness3 := &core.WildernessPoint{}
 	controlledWilderness3.SetControlledForTest(true)
 	controlledWilderness3.SetTerritoryForTest(controlledTerritory)
-	
+
 	// Create boss point
 	bossPoint := &core.BossPoint{}
 	bossPoint.SetBossForTest(bossEnemy)

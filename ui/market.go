@@ -349,7 +349,7 @@ func (mv *MarketView) PurchaseCardPack(item *core.MarketItem) error {
 	if market == nil {
 		return fmt.Errorf("market is nil")
 	}
-	
+
 	oldLevel := market.Level
 	cardPack, ok := market.Purchase(itemIndex, mv.GameState.Treasury)
 	if !ok {

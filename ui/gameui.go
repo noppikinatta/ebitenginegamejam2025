@@ -61,7 +61,7 @@ func NewGameUI(gameState *core.GameState) *GameUI {
 		InfoView:     infoView,
 		CardDeckView: cardDeckView,
 		GameState:    gameState,
-		
+
 		// Store flows and viewmodels
 		CardDeckFlow:      cardDeckFlow,
 		MapGridFlow:       mapGridFlow,
