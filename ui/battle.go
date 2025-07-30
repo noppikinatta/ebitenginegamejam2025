@@ -14,7 +14,6 @@ import (
 // Position: Drawn within MainView.
 type BattleView struct {
 	BattlePoint core.BattlePoint  // The point to be battled.
-	PointName   string            // The name of the battle point.
 	Battlefield *core.Battlefield // Battlefield information.
 	GameState   *core.GameState   // Game state.
 
@@ -41,7 +40,7 @@ func NewBattleView(onBackClicked func()) *BattleView {
 func (bv *BattleView) SetBattlePoint(point core.BattlePoint) {
 	bv.BattlePoint = point
 	bv.Battlefield = bv.createBattlefield(point)
-	
+
 	// Create viewmodel and flow with new battlefield
 	if bv.GameState != nil {
 		bv.BattleViewModel = viewmodel.NewBattleViewModel(bv.GameState, bv.Battlefield, point)
@@ -49,15 +48,10 @@ func (bv *BattleView) SetBattlePoint(point core.BattlePoint) {
 	}
 }
 
-// SetPointName sets the name of the battle point.
-func (bv *BattleView) SetPointName(pointName string) {
-	bv.PointName = pointName
-}
-
 // SetGameState sets the game state.
 func (bv *BattleView) SetGameState(gameState *core.GameState) {
 	bv.GameState = gameState
-	
+
 	// Recreate viewmodel and flow if battlefield exists
 	if bv.Battlefield != nil && bv.BattlePoint != nil {
 		bv.BattleViewModel = viewmodel.NewBattleViewModel(gameState, bv.Battlefield, bv.BattlePoint)
@@ -171,19 +165,19 @@ func (bv *BattleView) cardIndex(cursorX, cursorY int) int {
 	if cursorY < 400 || cursorY >= 520 { // Card area roughly
 		return -1
 	}
-	
+
 	cardX := (cursorX - 100) / 80 // Assuming cards start at x=100 and are 80px wide
 	if cardX < 0 {
 		return -1
 	}
-	
+
 	if bv.BattleViewModel != nil {
 		numCards := bv.BattleViewModel.NumCards()
 		if cardX >= numCards {
 			return -1
 		}
 	}
-	
+
 	return cardX
 }
 
@@ -201,10 +195,10 @@ func (bv *BattleView) createBattlefield(point core.BattlePoint) *core.Battlefiel
 	if point == nil || point.Enemy() == nil {
 		return nil
 	}
-	
+
 	enemy := point.Enemy()
 	supportPower := 0.0 // TODO: Calculate support power from adjacent territories
-	
+
 	return core.NewBattlefield(enemy, supportPower)
 }
 
@@ -264,25 +258,25 @@ func (bv *BattleView) drawEnemyInfo(screen *ebiten.Image) {
 // drawBattleCards draws the placed battle cards
 func (bv *BattleView) drawBattleCards(screen *ebiten.Image) {
 	numCards := bv.BattleViewModel.NumCards()
-	
+
 	for i := 0; i < numCards; i++ {
 		cardVM := bv.BattleViewModel.Card(i)
 		if cardVM != nil {
 			x := float64(100 + i*80)
 			y := float64(400)
-			
+
 			// Draw card background
 			alpha := float32(1.0)
 			if cardVM == bv.HoveredCard {
 				alpha = 0.8
 			}
 			DrawCardBackground(screen, x, y, alpha)
-			
+
 			// Draw card content (simplified)
 			opt := &ebiten.DrawImageOptions{}
 			opt.GeoM.Translate(x+10, y+10)
 			drawing.DrawText(screen, cardVM.Name(), 12, opt)
-			
+
 			opt = &ebiten.DrawImageOptions{}
 			opt.GeoM.Translate(x+10, y+90)
 			drawing.DrawText(screen, fmt.Sprintf("%.1f", cardVM.Power()), 16, opt)
@@ -305,7 +299,7 @@ func (bv *BattleView) drawButtons(screen *ebiten.Image) {
 	} else {
 		drawing.DrawRect(screen, 400, 560, 240, 40, 0.6, 0.2, 0.2, 1.0)
 	}
-	
+
 	opt = &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(480, 575)
 	buttonText := "Conquer"
@@ -319,15 +313,15 @@ func (bv *BattleView) drawButtons(screen *ebiten.Image) {
 func (bv *BattleView) drawBattleStatus(screen *ebiten.Image) {
 	totalPower := bv.BattleViewModel.TotalPower()
 	enemyPower := bv.BattleViewModel.EnemyPower()
-	
+
 	opt := &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(400, 350)
 	drawing.DrawText(screen, fmt.Sprintf("Your Power: %.1f", totalPower), 24, opt)
-	
+
 	opt = &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(600, 350)
 	drawing.DrawText(screen, fmt.Sprintf("Enemy: %.1f", enemyPower), 24, opt)
-	
+
 	canWin := bv.BattleViewModel.CanBeat()
 	opt = &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(500, 380)
