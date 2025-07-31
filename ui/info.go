@@ -1,12 +1,11 @@
 package ui
 
 import (
-	"fmt"
-
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/noppikinatta/ebitenginegamejam2025/core"
 	"github.com/noppikinatta/ebitenginegamejam2025/drawing"
 	"github.com/noppikinatta/ebitenginegamejam2025/lang"
+	"github.com/noppikinatta/ebitenginegamejam2025/viewmodel"
 )
 
 // InfoViewMode is the display mode of InfoView.
@@ -25,56 +24,15 @@ const (
 // Changes the content of the information displayed according to the situation.
 type InfoView struct {
 	CurrentMode InfoViewMode
-
-	// Display data.
-	SelectedCard  interface{}     // Selected card (BattleCard or StructureCard).
-	SelectedPoint core.Point      // Selected Point.
-	SelectedEnemy *core.Enemy     // Selected Enemy.
-	GameState     *core.GameState // Game state.
-
-	// Mouse cursor position (set externally).
-	MouseX, MouseY int
-	TmpMap         map[string]any
+	viewModel   *viewmodel.HistoryViewModel
 }
 
 // NewInfoView creates an InfoView.
-func NewInfoView(gameState *core.GameState) *InfoView {
+func NewInfoView(viewModel *viewmodel.HistoryViewModel) *InfoView {
 	return &InfoView{
 		CurrentMode: InfoModeHistory, // The default is HistoryView.
-		GameState:   gameState,
-		TmpMap:      make(map[string]any),
+		viewModel:   viewModel,
 	}
-}
-
-// SetSelectedCard sets the selected card.
-func (iv *InfoView) SetSelectedCard(card interface{}) {
-	iv.SelectedCard = card
-	if card != nil {
-		iv.CurrentMode = InfoModeCardInfo
-	} else {
-		iv.CurrentMode = InfoModeHistory
-	}
-}
-
-// SetSelectedPoint sets the selected Point.
-func (iv *InfoView) SetSelectedPoint(point core.Point) {
-	iv.SelectedPoint = point
-	if point != nil {
-		switch point.(type) {
-		case *core.MyNationPoint, *core.OtherNationPoint:
-			iv.CurrentMode = InfoModeNationPoint
-		case *core.WildernessPoint, *core.BossPoint:
-			iv.CurrentMode = InfoModeWildernessPoint
-		}
-	} else {
-		iv.CurrentMode = InfoModeHistory
-	}
-}
-
-// SetEnemySkillMode sets the mode to EnemySkillView.
-func (iv *InfoView) SetEnemySkillMode(enemy *core.Enemy) {
-	iv.SelectedEnemy = enemy
-	iv.CurrentMode = InfoModeEnemySkill
 }
 
 // HandleInput handles input.
@@ -123,445 +81,70 @@ func (iv *InfoView) drawHistoryView(screen *ebiten.Image) {
 	opt.GeoM.Translate(1050, 40)
 	drawing.DrawText(screen, lang.Text("ui-history"), 24, opt)
 
-	histories := iv.GameState.Histories
-	if len(histories) > 7 {
-		histories = histories[len(histories)-7:]
-	}
+	historyLen := iv.viewModel.HistoryLen()
 
 	// Display when there is no history.
-	if len(histories) == 0 {
+	if historyLen == 0 {
 		opt = &ebiten.DrawImageOptions{}
 		opt.GeoM.Translate(1050, 80)
 		drawing.DrawText(screen, lang.Text("ui-no-events"), 18, opt)
 		return
 	}
 
-	// Display history events
-	for i, history := range histories {
+	// Display history events.
+	historyDelta := 0
+	if historyLen > 7 {
+		historyDelta = historyLen - 7
+		historyLen = 7
+	}
+
+	for i := range historyLen {
+		historyIdx := i + historyDelta
+		dateText := iv.viewModel.HistoryDateText(historyIdx)
+		eventText := iv.viewModel.HistoryEventText(historyIdx)
+
+		opt = &ebiten.DrawImageOptions{}
+		opt.GeoM.Translate(1050, 80.0+float64(i)*70)
+		drawing.DrawText(screen, dateText, 18, opt)
+
 		y := 80.0 + float64(i)*70
 		opt = &ebiten.DrawImageOptions{}
 		opt.GeoM.Translate(1050, y)
-		year, month := history.Turn.YearMonth()
-		year += 1023
-		calendarText := lang.ExecuteTemplate("ui-calendar", map[string]any{"year": year, "month": month})
-		drawing.DrawText(screen, calendarText, 18, opt)
-		y += 24
+		drawing.DrawText(screen, dateText, 18, opt)
 
+		y += 24
 		opt = &ebiten.DrawImageOptions{}
 		opt.GeoM.Translate(1050, y)
-		for k, v := range history.Data {
-			if s, ok := v.(string); ok {
-				iv.TmpMap[k] = lang.Text(s)
-			} else {
-				iv.TmpMap[k] = v
-			}
-		}
-		text := lang.ExecuteTemplate(history.Key, iv.TmpMap)
-		drawing.DrawText(screen, text, 16, opt)
+		drawing.DrawText(screen, eventText, 16, opt)
 	}
 }
 
 // drawCardInfoView draws the CardInfoView.
 func (iv *InfoView) drawCardInfoView(screen *ebiten.Image) {
-	if iv.SelectedCard == nil {
-		iv.drawHistoryView(screen)
-		return
-	}
-
-	startY := 50.0
-
-	switch card := iv.SelectedCard.(type) {
-	case *core.BattleCard:
-		iv.drawBattleCardInfo(screen, card, startY)
-	case *core.StructureCard:
-		iv.drawStructureCardInfo(screen, card, startY)
-	default:
-		iv.drawHistoryView(screen)
-	}
+	// TODO: implement
 }
 
 // drawBattleCardInfo draws the detailed information of a BattleCard.
 func (iv *InfoView) drawBattleCardInfo(screen *ebiten.Image, card *core.BattleCard, y float64) {
-	// Card name (40).
-	opt := &ebiten.DrawImageOptions{}
-	opt.GeoM.Translate(1050, y)
-	drawing.DrawText(screen, fmt.Sprintf("Card: %s", card.CardID), 20, opt)
-	y += 40
-
-	// Illustration (120) - dummy rectangle.
-	vertices := []ebiten.Vertex{
-		{DstX: 1050, DstY: float32(y), SrcX: 0, SrcY: 0, ColorR: 0.6, ColorG: 0.4, ColorB: 0.2, ColorA: 1},
-		{DstX: 1170, DstY: float32(y), SrcX: 0, SrcY: 0, ColorR: 0.6, ColorG: 0.4, ColorB: 0.2, ColorA: 1},
-		{DstX: 1170, DstY: float32(y + 120), SrcX: 0, SrcY: 0, ColorR: 0.6, ColorG: 0.4, ColorB: 0.2, ColorA: 1},
-		{DstX: 1050, DstY: float32(y + 120), SrcX: 0, SrcY: 0, ColorR: 0.6, ColorG: 0.4, ColorB: 0.2, ColorA: 1},
-	}
-	indices := []uint16{0, 1, 2, 0, 2, 3}
-	screen.DrawTriangles(vertices, indices, drawing.WhitePixel, &ebiten.DrawTrianglesOptions{})
-	y += 120
-
-	// Card type (40).
-	opt = &ebiten.DrawImageOptions{}
-	opt.GeoM.Translate(1050, y)
-	drawing.DrawText(screen, "Type: Battle", 18, opt)
-	y += 40
-
-	// Card class (40).
-	opt = &ebiten.DrawImageOptions{}
-	opt.GeoM.Translate(1050, y)
-	drawing.DrawText(screen, fmt.Sprintf("Class: %s", card.Type), 18, opt)
-	y += 40
-
-	// Power (40).
-	opt = &ebiten.DrawImageOptions{}
-	opt.GeoM.Translate(1050, y)
-	drawing.DrawText(screen, fmt.Sprintf("Power: %.1f", card.BasePower), 18, opt)
-	y += 40
-
-	// Skill name (40).
-	opt = &ebiten.DrawImageOptions{}
-	opt.GeoM.Translate(1050, y)
-	if card.Skill != nil {
-		drawing.DrawText(screen, "Skill: Active", 18, opt) // Dummy text.
-	} else {
-		drawing.DrawText(screen, "Skill: None", 18, opt)
-	}
-	y += 40
-
-	// Skill description (80).
-	opt = &ebiten.DrawImageOptions{}
-	opt.GeoM.Translate(1050, y)
-	if card.Skill != nil {
-		drawing.DrawText(screen, "Special battle", 16, opt)
-		opt = &ebiten.DrawImageOptions{}
-		opt.GeoM.Translate(1050, y+24)
-		drawing.DrawText(screen, "effect active", 16, opt)
-	} else {
-		drawing.DrawText(screen, "No special effect", 16, opt)
-	}
+	// TODO: implement
 }
 
 // drawStructureCardInfo draws the detailed information of a StructureCard.
 func (iv *InfoView) drawStructureCardInfo(screen *ebiten.Image, card *core.StructureCard, y float64) {
-	// Card name (40).
-	opt := &ebiten.DrawImageOptions{}
-	opt.GeoM.Translate(1050, y)
-	drawing.DrawText(screen, fmt.Sprintf("Card: %s", card.ID()), 20, opt)
-	y += 40
-
-	// Illustration (120).
-	vertices := []ebiten.Vertex{
-		{DstX: 1050, DstY: float32(y), SrcX: 0, SrcY: 0, ColorR: 0.2, ColorG: 0.6, ColorB: 0.4, ColorA: 1},
-		{DstX: 1170, DstY: float32(y), SrcX: 0, SrcY: 0, ColorR: 0.2, ColorG: 0.6, ColorB: 0.4, ColorA: 1},
-		{DstX: 1170, DstY: float32(y + 120), SrcX: 0, SrcY: 0, ColorR: 0.2, ColorG: 0.6, ColorB: 0.4, ColorA: 1},
-		{DstX: 1050, DstY: float32(y + 120), SrcX: 0, SrcY: 0, ColorR: 0.2, ColorG: 0.6, ColorB: 0.4, ColorA: 1},
-	}
-	indices := []uint16{0, 1, 2, 0, 2, 3}
-	screen.DrawTriangles(vertices, indices, drawing.WhitePixel, &ebiten.DrawTrianglesOptions{})
-	y += 120
-
-	// Card type.
-	opt = &ebiten.DrawImageOptions{}
-	opt.GeoM.Translate(1050, y)
-	drawing.DrawText(screen, "Type: Structure", 18, opt)
-	y += 40
-
-	// YieldModifier effect (40×18)
-	if card.YieldModifier != nil {
-		opt = &ebiten.DrawImageOptions{}
-		opt.GeoM.Translate(1050, y)
-		drawing.DrawText(screen, "Yield Effect:", 18, opt)
-		y += 30
-
-		opt = &ebiten.DrawImageOptions{}
-		opt.GeoM.Translate(1050, y)
-		drawing.DrawText(screen, "Boosts resource", 16, opt)
-		y += 24
-
-		opt = &ebiten.DrawImageOptions{}
-		opt.GeoM.Translate(1050, y)
-		drawing.DrawText(screen, "production", 16, opt)
-	} else {
-		opt = &ebiten.DrawImageOptions{}
-		opt.GeoM.Translate(1050, y)
-		drawing.DrawText(screen, "No yield effect", 18, opt)
-	}
+	// TODO: implement
 }
 
 // drawNationPointView draws the NationPointView.
 func (iv *InfoView) drawNationPointView(screen *ebiten.Image) {
-	if iv.SelectedPoint == nil {
-		iv.drawHistoryView(screen)
-		return
-	}
-
-	y := 50.0
-
-	// Nation name.
-	opt := &ebiten.DrawImageOptions{}
-	opt.GeoM.Translate(1050, y)
-
-	switch point := iv.SelectedPoint.(type) {
-	case *core.MyNationPoint:
-		drawing.DrawText(screen, "My Nation", 24, opt)
-		y += 40
-
-		// Card Packs (40)
-		opt = &ebiten.DrawImageOptions{}
-		opt.GeoM.Translate(1050, y)
-		drawing.DrawText(screen, "Card Packs:", 20, opt)
-		y += 40
-
-		// CardPack list (40×12)
-		market := iv.getMarketForNation(point.MyNation)
-		if market != nil {
-			marketItems := market.VisibleMarketItems()
-			for i, item := range marketItems {
-				if i >= 12 {
-					break
-				}
-
-				opt = &ebiten.DrawImageOptions{}
-				opt.GeoM.Translate(1050, y)
-				cardPack := item.CardPack()
-				var packName string
-				if cardPack != nil {
-					packName = string(cardPack.CardPackID)
-				}
-				if len(packName) > 12 {
-					packName = packName[:9] + "..."
-				}
-				drawing.DrawText(screen, packName, 18, opt)
-				y += 36
-			}
-		}
-
-	case *core.OtherNationPoint:
-		drawing.DrawText(screen, fmt.Sprintf("Nation %s", point.OtherNation.ID()), 20, opt)
-		y += 40
-
-		// Card Packs (40)
-		opt = &ebiten.DrawImageOptions{}
-		opt.GeoM.Translate(1050, y)
-		drawing.DrawText(screen, "Card Packs:", 20, opt)
-		y += 40
-
-		// CardPack list (40×12)
-		market := iv.getMarketForNation(point.OtherNation)
-		if market != nil {
-			marketItems := market.VisibleMarketItems()
-			for i, item := range marketItems {
-				if i >= 12 {
-					break
-				}
-
-				opt = &ebiten.DrawImageOptions{}
-				opt.GeoM.Translate(1050, y)
-				cardPack := item.CardPack()
-				var packName string
-				if cardPack != nil {
-					packName = string(cardPack.CardPackID)
-				}
-				if len(packName) > 12 {
-					packName = packName[:9] + "..."
-				}
-				drawing.DrawText(screen, packName, 18, opt)
-				y += 36
-			}
-		}
-	}
+	// TODO: implement
 }
 
 // drawWildernessPointView draws the WildernessPointView.
 func (iv *InfoView) drawWildernessPointView(screen *ebiten.Image) {
-	if iv.SelectedPoint == nil {
-		iv.drawHistoryView(screen)
-		return
-	}
-
-	y := 50.0
-
-	switch point := iv.SelectedPoint.(type) {
-	case *core.WildernessPoint:
-		// Point name (40)
-		opt := &ebiten.DrawImageOptions{}
-		opt.GeoM.Translate(1050, y)
-		drawing.DrawText(screen, "Wilderness", 24, opt)
-		y += 40
-
-		// Enemy (40)
-		opt = &ebiten.DrawImageOptions{}
-		opt.GeoM.Translate(1050, y)
-		drawing.DrawText(screen, "Enemy:", 20, opt)
-		y += 40
-
-		// Enemy information (80)
-		if point.Enemy() != nil {
-			opt = &ebiten.DrawImageOptions{}
-			opt.GeoM.Translate(1050, y)
-			enemyName := string(point.Enemy().ID())
-			if len(enemyName) > 12 {
-				enemyName = enemyName[:9] + "..."
-			}
-			if point.Controlled() {
-				enemyName += " (X)" // Controlled
-			}
-			drawing.DrawText(screen, enemyName, 18, opt)
-			y += 40
-
-			// Enemy Power (40)
-			opt = &ebiten.DrawImageOptions{}
-			opt.GeoM.Translate(1050, y)
-			drawing.DrawText(screen, fmt.Sprintf("Power: %.1f", point.Enemy().Power()), 18, opt)
-			y += 40
-		}
-
-		// Yields (40)
-		if point.Territory() != nil {
-			opt = &ebiten.DrawImageOptions{}
-			opt.GeoM.Translate(1050, y)
-			drawing.DrawText(screen, "Yields:", 20, opt)
-			y += 40
-
-			// Yield by resource type (40×3 - 2 types per line)
-			yield := point.Territory().Yield()
-			resources := []struct {
-				name  string
-				value int
-			}{
-				{"Money", yield.Money},
-				{"Food", yield.Food},
-				{"Wood", yield.Wood},
-				{"Iron", yield.Iron},
-				{"Mana", yield.Mana},
-			}
-
-			for i := 0; i < len(resources); i += 2 {
-				opt = &ebiten.DrawImageOptions{}
-				opt.GeoM.Translate(1050, y)
-
-				text := fmt.Sprintf("%s:%d", resources[i].name[:3], resources[i].value)
-				if i+1 < len(resources) {
-					text += fmt.Sprintf(" %s:%d", resources[i+1].name[:3], resources[i+1].value)
-				}
-				drawing.DrawText(screen, text, 16, opt)
-				y += 32
-			}
-
-			// Structure Cards (40)
-			opt = &ebiten.DrawImageOptions{}
-			opt.GeoM.Translate(1050, y)
-			drawing.DrawText(screen, "Structures:", 18, opt)
-			y += 36
-
-			// Deployed StructureCards (40×4)
-			for i, card := range point.Territory().Cards() {
-				if i >= 4 {
-					break
-				}
-
-				opt = &ebiten.DrawImageOptions{}
-				opt.GeoM.Translate(1050, y)
-				cardName := string(card.ID())
-				if len(cardName) > 12 {
-					cardName = cardName[:9] + "..."
-				}
-				drawing.DrawText(screen, cardName, 16, opt)
-				y += 32
-			}
-		}
-
-	case *core.BossPoint:
-		// Point name (40)
-		opt := &ebiten.DrawImageOptions{}
-		opt.GeoM.Translate(1050, y)
-		drawing.DrawText(screen, "Boss Point", 24, opt)
-		y += 40
-
-		// Enemy (40)
-		opt = &ebiten.DrawImageOptions{}
-		opt.GeoM.Translate(1050, y)
-		drawing.DrawText(screen, "Boss:", 20, opt)
-		y += 40
-
-		// Boss information (80)
-		if point.Boss() != nil {
-			opt = &ebiten.DrawImageOptions{}
-			opt.GeoM.Translate(1050, y)
-			bossName := string(point.Boss().ID())
-			if len(bossName) > 12 {
-				bossName = bossName[:9] + "..."
-			}
-			// Check if defeated by checking if AsBattlePoint returns valid battle point
-			if _, canBattle := point.AsBattlePoint(); !canBattle {
-				bossName += " (X)" // Defeated
-			}
-			drawing.DrawText(screen, bossName, 18, opt)
-			y += 40
-
-			// Boss Power (40)
-			opt = &ebiten.DrawImageOptions{}
-			opt.GeoM.Translate(1050, y)
-			drawing.DrawText(screen, fmt.Sprintf("Power: %.1f", point.Boss().Power()), 18, opt)
-		}
-	}
+	// TODO: implement
 }
 
 // drawEnemySkillView draws the EnemySkillView.
 func (iv *InfoView) drawEnemySkillView(screen *ebiten.Image) {
-	if iv.SelectedEnemy == nil {
-		iv.drawHistoryView(screen)
-		return
-	}
-
-	y := 50.0
-
-	// Enemy name.
-	opt := &ebiten.DrawImageOptions{}
-	opt.GeoM.Translate(1050, y)
-	drawing.DrawText(screen, "Enemy Skills", 24, opt)
-	y += 40
-
-	// Enemy Skills (120×4)
-	if len(iv.SelectedEnemy.Skills()) == 0 {
-		opt = &ebiten.DrawImageOptions{}
-		opt.GeoM.Translate(1050, y)
-		drawing.DrawText(screen, "No special skills", 18, opt)
-		return
-	}
-
-	for i, _ := range iv.SelectedEnemy.Skills() {
-		if i >= 4 { // max 4 skills
-			break
-		}
-
-		// Skill name (40)
-		opt = &ebiten.DrawImageOptions{}
-		opt.GeoM.Translate(1050, y)
-		drawing.DrawText(screen, fmt.Sprintf("Skill %d", i+1), 20, opt) // Dummy text
-		y += 40
-
-		// Skill description (80)
-		opt = &ebiten.DrawImageOptions{}
-		opt.GeoM.Translate(1050, y)
-		drawing.DrawText(screen, "Special enemy", 16, opt)
-		y += 24
-
-		opt = &ebiten.DrawImageOptions{}
-		opt.GeoM.Translate(1050, y)
-		drawing.DrawText(screen, "ability effect", 16, opt)
-		y += 24
-
-		opt = &ebiten.DrawImageOptions{}
-		opt.GeoM.Translate(1050, y)
-		drawing.DrawText(screen, "in battle", 16, opt)
-		y += 32
-	}
-}
-
-// getMarketForNation gets the market for a given nation
-func (iv *InfoView) getMarketForNation(nation core.Nation) *core.Market {
-	if iv.GameState == nil || nation == nil {
-		return nil
-	}
-	return iv.GameState.Markets[nation.ID()]
+	// TODO: implement
 }

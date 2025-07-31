@@ -50,7 +50,7 @@ func NewGameUI(gameState *core.GameState) *GameUI {
 	resourceView := NewResourceView(resourceViewModel)
 	calendarView := NewCalendarView(calendarViewModel)
 	mainView := NewMainView(gameState, mapGridViewModel, mapGridFlow)
-	infoView := NewInfoView(gameState)
+	infoView := NewInfoView(viewmodel.NewHistoryViewModel(gameState))
 
 	cardDeckView := NewCardDeckView(cardDeckViewModel, cardDeckFlow)
 
@@ -72,7 +72,6 @@ func NewGameUI(gameState *core.GameState) *GameUI {
 	}
 
 	// Set up coordination between Widgets
-	ui.setupWidgetConnections()
 	ui.CardDeckView.OnBattleCardClicked = ui.onBattleCardClicked
 	ui.CardDeckView.OnStructureCardClicked = ui.onStructureCardClicked
 
@@ -105,19 +104,6 @@ func (gui *GameUI) onStructureCardClicked(card *core.StructureCard) bool {
 	}
 
 	return false
-}
-
-// setupWidgetConnections sets up coordination between Widgets.
-func (gui *GameUI) setupWidgetConnections() {
-	// Set up MainView point selection to update InfoView
-	gui.MainView.OnPointSelected = func(point core.Point) {
-		gui.SelectPoint(point)
-	}
-
-	// Set up CardDeckView card selection to update InfoView
-	gui.CardDeckView.OnCardSelected = func(card interface{}) {
-		gui.SelectCard(card)
-	}
 }
 
 // HandleInput handles input for all Widgets.
@@ -190,16 +176,6 @@ func (gui *GameUI) SwitchMainView(viewType ViewType) {
 	case ViewTypeTerritory:
 		// For Territory, display Point information
 	}
-}
-
-// SelectPoint selects a Point and reflects it in the InfoView.
-func (gui *GameUI) SelectPoint(point core.Point) {
-	gui.InfoView.SetSelectedPoint(point)
-}
-
-// SelectCard selects a card and reflects it in the InfoView.
-func (gui *GameUI) SelectCard(card interface{}) {
-	gui.InfoView.SetSelectedCard(card)
 }
 
 // SelectCardFromDeck selects a specific card from the CardDeck.
