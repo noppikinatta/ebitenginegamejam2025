@@ -27,23 +27,21 @@ func (rv *ResourceView) HandleInput(input *Input) error {
 // Draw handles drawing.
 func (rv *ResourceView) Draw(screen *ebiten.Image) {
 	resources := rv.ViewModel.Quantity()
-
-	// TODO: Get yield information from viewmodel (currently not available)
-	// For now, display without yield increment
+	yield := rv.ViewModel.Yield()
 
 	// Display 5 types of resources at 120x40 each.
 	// Money (0, 0, 120, 40).
-	DrawResource(screen, 0, 0, "resource-money", resources.Money, 0)
+	DrawResource(screen, 0, 0, "resource-money", resources.Money, yield.Money)
 
 	// Food (120, 0, 120, 40).
-	DrawResource(screen, 120, 0, "resource-food", resources.Food, 0)
+	DrawResource(screen, 120, 0, "resource-food", resources.Food, yield.Food)
 
 	// Wood (240, 0, 120, 40).
-	DrawResource(screen, 240, 0, "resource-wood", resources.Wood, 0)
+	DrawResource(screen, 240, 0, "resource-wood", resources.Wood, yield.Wood)
 
 	// Iron (360, 0, 120, 40).
-	DrawResource(screen, 360, 0, "resource-iron", resources.Iron, 0)
+	DrawResource(screen, 360, 0, "resource-iron", resources.Iron, yield.Iron)
 
 	// Mana (480, 0, 120, 40).
-	DrawResource(screen, 480, 0, "resource-mana", resources.Mana, 0)
+	DrawResource(screen, 480, 0, "resource-mana", resources.Mana, yield.Mana)
 }

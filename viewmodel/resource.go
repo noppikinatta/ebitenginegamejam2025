@@ -2,7 +2,6 @@ package viewmodel
 
 import (
 	"github.com/noppikinatta/ebitenginegamejam2025/core"
-	"github.com/noppikinatta/ebitenginegamejam2025/lang"
 )
 
 // ResourceViewModel provides display information for resource UI
@@ -25,36 +24,9 @@ func (vm *ResourceViewModel) Quantity() core.ResourceQuantity {
 	return vm.gameState.Treasury.Resources
 }
 
-// CalendarViewModel provides display information for calendar UI
-type CalendarViewModel struct {
-	gameState *core.GameState
-}
-
-// NewCalendarViewModel creates a new CalendarViewModel
-func NewCalendarViewModel(gameState *core.GameState) *CalendarViewModel {
-	return &CalendarViewModel{
-		gameState: gameState,
-	}
-}
-
-// YearMonth returns the formatted year and month string
-func (vm *CalendarViewModel) YearMonth() string {
+func (vm *ResourceViewModel) Yield() core.ResourceQuantity {
 	if vm.gameState == nil {
-		return ""
+		return core.ResourceQuantity{}
 	}
-
-	// Extract year and month from current turn
-	// This depends on how Turn is implemented in core
-	turn := vm.gameState.CurrentTurn
-
-	// Convert turn to year/month based on game logic
-	// For now, assume simple conversion
-	year := int(turn)/12 + 1  // Start from year 1
-	month := int(turn)%12 + 1 // 1-12
-
-	// Format year/month using template
-	return lang.ExecuteTemplate("year_month", map[string]any{
-		"year":  year,
-		"month": month,
-	})
+	return vm.gameState.GetYield()
 }
