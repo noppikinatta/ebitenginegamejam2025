@@ -17,16 +17,7 @@ type CardDeckView struct {
 	ViewModel *viewmodel.CardDeckViewModel // ViewModel for display information
 	Flow      *flow.CardDeckFlow           // Flow for operations
 
-	OnCardSelected func(interface{}) // Callback when a card is selected.
-
-	// New callbacks.
-	OnBattleCardClicked    func(*core.BattleCard) bool    // Callback when a BattleCard is clicked.
-	OnStructureCardClicked func(*core.StructureCard) bool // Callback when a StructureCard is clicked.
-
-	// Mouse cursor position (set externally).
-	MouseX, MouseY int
-
-	HoveredCard interface{}
+	HoveredCardIndex int
 }
 
 // NewCardDeckView creates a CardDeckView.
@@ -37,91 +28,20 @@ func NewCardDeckView(viewModel *viewmodel.CardDeckViewModel, flow *flow.CardDeck
 	}
 }
 
-// SetGameState sets the GameState reference
-func (c *CardDeckView) SetGameState(gameState *core.GameState) {
-	// This function is no longer needed as GameState is managed by ViewModel
-}
-
-// GetSelectedCard gets the selected card.
-func (c *CardDeckView) GetSelectedCard() interface{} {
-	return c.Flow.GetSelectedCard()
-}
-
-// SetSelectedIndex sets the selected card index
-func (c *CardDeckView) SetSelectedIndex(index int) {
-	c.Flow.Select(index)
-}
-
-// getAllCards gets all cards in a single slice, sorted by display order.
-func (c *CardDeckView) getAllCards() []interface{} {
-	return c.Flow.GetAllCards()
-}
-
-// SetDisplayOrder sets the display order of cards (legacy method for compatibility)
-func (c *CardDeckView) SetDisplayOrder(order []core.CardID) {
-	// This functionality should be moved to flow or viewmodel
-	// For now, we'll ignore this as it's handled by the viewmodel
-}
-
-// SelectCard selects a card at the specified index
-func (c *CardDeckView) SelectCard(index int) {
-	c.Flow.Select(index)
-}
-
-// RemoveSelectedCard removes the currently selected card (legacy method)
-func (c *CardDeckView) RemoveSelectedCard() {
-	// This operation should be handled by flows in other components
-	// For now, we'll implement a simple clear selection
-	c.Flow.ClearSelection()
-}
-
-// AddCard adds a card back to the deck (legacy method)
-func (c *CardDeckView) AddCard(card interface{}) {
-	// This operation should be handled by the appropriate flow
-	// For now, this is a placeholder
-}
-
 // HandleInput handles input for card selection and clicking.
 func (c *CardDeckView) HandleInput(input *Input) error {
-	if input.Mouse.IsJustReleased(ebiten.MouseButtonLeft) {
-		cursorX, cursorY := input.Mouse.CursorPosition()
-
-		// Determine card click area
-		index := c.cardIndex(cursorX, cursorY)
-		if index != -1 {
-			// Select the card
-			c.Flow.Select(index)
-
-			// Notify selection
-			if c.OnCardSelected != nil {
-				selectedCard := c.Flow.GetSelectedCard()
-				c.OnCardSelected(selectedCard)
-			}
-
-			// Handle card type specific clicks
-			selectedCard := c.Flow.GetSelectedCard()
-			if battleCard, ok := selectedCard.(*core.BattleCard); ok {
-				if c.OnBattleCardClicked != nil {
-					c.OnBattleCardClicked(battleCard)
-				}
-			} else if structureCard, ok := selectedCard.(*core.StructureCard); ok {
-				if c.OnStructureCardClicked != nil {
-					c.OnStructureCardClicked(structureCard)
-				}
-			}
-		}
-	}
-
-	// Update hovered card
 	cursorX, cursorY := input.Mouse.CursorPosition()
 	index := c.cardIndex(cursorX, cursorY)
-	if index != -1 {
-		allCards := c.getAllCards()
-		if index < len(allCards) {
-			c.HoveredCard = allCards[index]
-		}
-	} else {
-		c.HoveredCard = nil
+
+	if index == -1 {
+		c.HoveredCardIndex = -1
+		return nil
+	}
+
+	c.HoveredCardIndex = index
+
+	if input.Mouse.IsJustReleased(ebiten.MouseButtonLeft) {
+		c.Flow.Select(index)
 	}
 
 	return nil
@@ -135,21 +55,22 @@ func (c *CardDeckView) cardIndex(cursorX, cursorY int) int {
 	}
 
 	// Each card is 80px wide
-	cardX := cursorX / 80
-	if cardX >= 16 { // Maximum 16 cards displayed
+	idx := cursorX / 80
+	length := c.ViewModel.CountTypesInHand()
+	if idx >= length {
 		return -1
 	}
 
-	allCards := c.getAllCards()
-	if cardX >= len(allCards) {
-		return -1
-	}
-
-	return cardX
+	return idx
 }
 
 // Draw draws all cards in the deck.
 func (c *CardDeckView) Draw(screen *ebiten.Image) {
+	length := c.ViewModel.CountTypesInHand()
+	for i := range length {
+		x, y, width, height := c.boundsForCard(i)
+	}
+
 	allCards := c.getAllCards()
 	selectedIndex := c.Flow.GetSelectedIndex()
 
@@ -194,4 +115,8 @@ func (c *CardDeckView) Draw(screen *ebiten.Image) {
 // getDuplicateCount returns the number of duplicates for a card
 func (c *CardDeckView) getDuplicateCount(card interface{}) int {
 	return c.ViewModel.GetDuplicateCount(card)
+}
+
+func (c *CardDeckView) boundsForCard(index int) (x, y, width, height int) {
+	return index * 80, 600, 80, 120
 }

@@ -1,12 +1,16 @@
 package viewmodel
 
 import (
+	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/noppikinatta/ebitenginegamejam2025/core"
+	"github.com/noppikinatta/ebitenginegamejam2025/drawing"
+	"github.com/noppikinatta/ebitenginegamejam2025/lang"
 )
 
 // CardDeckViewModel provides display information for card deck UI
 type CardDeckViewModel struct {
-	gameState *core.GameState
+	gameState          *core.GameState
+	cardViewModelCache *CardViewModel
 }
 
 // NewCardDeckViewModel creates a new CardDeckViewModel
@@ -16,124 +20,61 @@ func NewCardDeckViewModel(gameState *core.GameState) *CardDeckViewModel {
 	}
 }
 
-// NumBattleCards returns the number of unique battle card types in the deck
-func (vm *CardDeckViewModel) NumBattleCards() int {
-	if vm.gameState == nil || vm.gameState.CardDeck == nil {
-		return 0
-	}
-
-	cardIDs := vm.gameState.CardDeck.GetAllCardIDs()
-
-	// Use a set to count unique battle card types
-	uniqueBattleCards := make(map[core.CardID]bool)
-
-	if vm.gameState.CardDictionary != nil {
-		cards, ok := vm.gameState.CardDictionary.Generate(cardIDs)
-		if ok {
-			for _, card := range cards.BattleCards {
-				uniqueBattleCards[card.CardID] = true
-			}
-		}
-	}
-
-	return len(uniqueBattleCards)
-}
-
-// NumStructureCards returns the number of unique structure card types in the deck
-func (vm *CardDeckViewModel) NumStructureCards() int {
-	if vm.gameState == nil || vm.gameState.CardDeck == nil {
-		return 0
-	}
-
-	cardIDs := vm.gameState.CardDeck.GetAllCardIDs()
-
-	// Use a set to count unique structure card types
-	uniqueStructureCards := make(map[core.CardID]bool)
-
-	if vm.gameState.CardDictionary != nil {
-		cards, ok := vm.gameState.CardDictionary.Generate(cardIDs)
-		if ok {
-			for _, card := range cards.StructureCards {
-				uniqueStructureCards[card.ID()] = true
-			}
-		}
-	}
-
-	return len(uniqueStructureCards)
-}
-
 // BattleCard returns battle card view model at the specified index
-func (vm *CardDeckViewModel) BattleCard(idx int) *BattleCardViewModel {
-	battleCards := vm.getBattleCards()
-	if idx < 0 || idx >= len(battleCards) {
-		return nil
+func (vm *CardDeckViewModel) Card(idx int) (*CardViewModel, bool) {
+	if vm.cardViewModelCache == nil {
+		vm.cardViewModelCache = &CardViewModel{}
 	}
 
-	card := battleCards[idx]
-	return NewBattleCardViewModel(vm.gameState, card, float64(card.Power()))
+	if idx < 0 || idx >= len(vm.gameState.CardDisplayOrder) {
+		return nil, false
+	}
+
+	cardID := vm.gameState.CardDisplayOrder[idx]
+	vm.cardViewModelCache.Duplicates = vm.gameState.CardDeck.Count(cardID)
+
+	battleCard, ok := vm.gameState.CardDictionary.BattleCard(cardID)
+	if ok {
+		vm.cardViewModelCache.FromBattleCard(battleCard)
+		return vm.cardViewModelCache, true
+	}
+
+	structureCard, ok := vm.gameState.CardDictionary.StructureCard(cardID)
+	if ok {
+		vm.setStructureCard(structureCard)
+		return vm.cardViewModelCache, true
+	}
+
+	return nil, false
 }
 
-// StructureCard returns structure card view model at the specified index
-func (vm *CardDeckViewModel) StructureCard(idx int) *StructureCardViewModel {
-	structureCards := vm.getStructureCards()
-	if idx < 0 || idx >= len(structureCards) {
-		return nil
-	}
-
-	card := structureCards[idx]
-	return NewStructureCardViewModel(vm.gameState, card)
+func (vm *CardDeckViewModel) CountTypesInHand() int {
+	return vm.gameState.CardDeck.CountTypesInHand()
 }
 
-// getBattleCards returns all battle cards in the deck
-func (vm *CardDeckViewModel) getBattleCards() []*core.BattleCard {
-	if vm.gameState == nil || vm.gameState.CardDeck == nil || vm.gameState.CardDictionary == nil {
-		return []*core.BattleCard{}
-	}
-
-	cardIDs := vm.gameState.CardDeck.GetAllCardIDs()
-	if len(cardIDs) == 0 {
-		return []*core.BattleCard{}
-	}
-
-	cards, ok := vm.gameState.CardDictionary.Generate(cardIDs)
-	if !ok {
-		return []*core.BattleCard{}
-	}
-
-	return cards.BattleCards
+type CardViewModel struct {
+	Image            *ebiten.Image
+	Name             string
+	Duplicates       int
+	HasCardType      bool
+	CardTypeImage    *ebiten.Image
+	CardTypeName     string
+	HasPower         bool
+	Power            float64
+	HasSkill         bool
+	SkillName        string
+	SkillDescription string
 }
 
-// getStructureCards returns all structure cards in the deck
-func (vm *CardDeckViewModel) getStructureCards() []*core.StructureCard {
-	if vm.gameState == nil || vm.gameState.CardDeck == nil || vm.gameState.CardDictionary == nil {
-		return []*core.StructureCard{}
-	}
+func (c *CardViewModel) FromBattleCard(battleCard *core.BattleCard) {
+	c.Image = drawing.Image(string(battleCard.CardID))
+	c.Name = lang.Text(string(battleCard.CardID))
+	c.HasCardType = true
+	c.CardTypeImage = drawing.Image(string(battleCard.Type))
+	c.CardTypeName = lang.Text(string(battleCard.Type))
+	c.HasPower = true
+	c.Power = float64(battleCard.Power())
+	c.HasSkill = true
+	c.SkillName = lang.Text(string(battleCard.Skill.BattleCardSkillID))
 
-	cardIDs := vm.gameState.CardDeck.GetAllCardIDs()
-	if len(cardIDs) == 0 {
-		return []*core.StructureCard{}
-	}
-
-	cards, ok := vm.gameState.CardDictionary.Generate(cardIDs)
-	if !ok {
-		return []*core.StructureCard{}
-	}
-
-	return cards.StructureCards
-}
-
-// GetDuplicateCount returns the number of duplicates for a specific card
-func (vm *CardDeckViewModel) GetDuplicateCount(card interface{}) int {
-	if vm.gameState == nil || vm.gameState.CardDeck == nil {
-		return 1
-	}
-
-	switch c := card.(type) {
-	case *core.BattleCard:
-		return vm.gameState.CardDeck.Count(c.CardID)
-	case *core.StructureCard:
-		return vm.gameState.CardDeck.Count(c.ID())
-	default:
-		return 1
-	}
 }

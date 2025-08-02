@@ -207,6 +207,10 @@ func (cd *CardDeck) Count(cardID CardID) int {
 	return cd.hand[cardID]
 }
 
+func (cd *CardDeck) CountTypesInHand() int {
+	return len(cd.hand)
+}
+
 // GetAllCardIDs returns all CardIDs in the deck, with duplicates for multiple copies.
 func (cd *CardDeck) GetAllCardIDs() []CardID {
 	var cardIDs []CardID
