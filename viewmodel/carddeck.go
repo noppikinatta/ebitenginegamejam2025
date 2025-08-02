@@ -6,15 +6,13 @@ import (
 
 // CardDeckViewModel provides display information for card deck UI
 type CardDeckViewModel struct {
-	gameState     *core.GameState
-	cardGenerator *core.CardGenerator
+	gameState *core.GameState
 }
 
 // NewCardDeckViewModel creates a new CardDeckViewModel
-func NewCardDeckViewModel(gameState *core.GameState, cardGenerator *core.CardGenerator) *CardDeckViewModel {
+func NewCardDeckViewModel(gameState *core.GameState) *CardDeckViewModel {
 	return &CardDeckViewModel{
-		gameState:     gameState,
-		cardGenerator: cardGenerator,
+		gameState: gameState,
 	}
 }
 
@@ -29,8 +27,8 @@ func (vm *CardDeckViewModel) NumBattleCards() int {
 	// Use a set to count unique battle card types
 	uniqueBattleCards := make(map[core.CardID]bool)
 
-	if vm.cardGenerator != nil {
-		cards, ok := vm.cardGenerator.Generate(cardIDs)
+	if vm.gameState.CardDictionary != nil {
+		cards, ok := vm.gameState.CardDictionary.Generate(cardIDs)
 		if ok {
 			for _, card := range cards.BattleCards {
 				uniqueBattleCards[card.CardID] = true
@@ -52,8 +50,8 @@ func (vm *CardDeckViewModel) NumStructureCards() int {
 	// Use a set to count unique structure card types
 	uniqueStructureCards := make(map[core.CardID]bool)
 
-	if vm.cardGenerator != nil {
-		cards, ok := vm.cardGenerator.Generate(cardIDs)
+	if vm.gameState.CardDictionary != nil {
+		cards, ok := vm.gameState.CardDictionary.Generate(cardIDs)
 		if ok {
 			for _, card := range cards.StructureCards {
 				uniqueStructureCards[card.ID()] = true
@@ -88,7 +86,7 @@ func (vm *CardDeckViewModel) StructureCard(idx int) *StructureCardViewModel {
 
 // getBattleCards returns all battle cards in the deck
 func (vm *CardDeckViewModel) getBattleCards() []*core.BattleCard {
-	if vm.gameState == nil || vm.gameState.CardDeck == nil || vm.cardGenerator == nil {
+	if vm.gameState == nil || vm.gameState.CardDeck == nil || vm.gameState.CardDictionary == nil {
 		return []*core.BattleCard{}
 	}
 
@@ -97,7 +95,7 @@ func (vm *CardDeckViewModel) getBattleCards() []*core.BattleCard {
 		return []*core.BattleCard{}
 	}
 
-	cards, ok := vm.cardGenerator.Generate(cardIDs)
+	cards, ok := vm.gameState.CardDictionary.Generate(cardIDs)
 	if !ok {
 		return []*core.BattleCard{}
 	}
@@ -107,7 +105,7 @@ func (vm *CardDeckViewModel) getBattleCards() []*core.BattleCard {
 
 // getStructureCards returns all structure cards in the deck
 func (vm *CardDeckViewModel) getStructureCards() []*core.StructureCard {
-	if vm.gameState == nil || vm.gameState.CardDeck == nil || vm.cardGenerator == nil {
+	if vm.gameState == nil || vm.gameState.CardDeck == nil || vm.gameState.CardDictionary == nil {
 		return []*core.StructureCard{}
 	}
 
@@ -116,7 +114,7 @@ func (vm *CardDeckViewModel) getStructureCards() []*core.StructureCard {
 		return []*core.StructureCard{}
 	}
 
-	cards, ok := vm.cardGenerator.Generate(cardIDs)
+	cards, ok := vm.gameState.CardDictionary.Generate(cardIDs)
 	if !ok {
 		return []*core.StructureCard{}
 	}

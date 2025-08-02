@@ -84,6 +84,11 @@ func NewBattleCard(cardID CardID, basePower BattleCardPower, skill *BattleCardSk
 	}
 }
 
+// ID returns the card ID.
+func (c *BattleCard) ID() CardID {
+	return c.CardID
+}
+
 // Power returns the combat power of the card.
 func (c *BattleCard) Power() BattleCardPower {
 	return c.BasePower
@@ -134,41 +139,37 @@ func (c *StructureCard) SupportCardSlot() int {
 	return c.supportCardSlot
 }
 
-// CardGenerator is a struct for generating cards.
-type CardGenerator struct {
-	BattleCards    map[CardID]*BattleCard
-	StructureCards map[CardID]*StructureCard
+// CardDictionary is a struct for generating cards.
+type CardDictionary struct {
+	battleCards    map[CardID]*BattleCard
+	structureCards map[CardID]*StructureCard
 }
 
-// Generate generates cards corresponding to the array of CardIDs given as an argument.
-// Returns false if even one corresponding card does not exist.
-// If the data is created correctly, Generate will always return true.
-func (g *CardGenerator) Generate(cardIDs []CardID) (*Cards, bool) {
-	cards := &Cards{
-		BattleCards:    make([]*BattleCard, 0),
-		StructureCards: make([]*StructureCard, 0),
+func NewCardDictionary(battleCards []*BattleCard, structureCards []*StructureCard) *CardDictionary {
+	dict := &CardDictionary{
+		battleCards:    make(map[CardID]*BattleCard),
+		structureCards: make(map[CardID]*StructureCard),
 	}
 
-	for _, cardID := range cardIDs {
-		// Check if it exists as a BattleCard
-		if battleCard, exists := g.BattleCards[cardID]; exists {
-			newBattleCard := *battleCard
-			cards.BattleCards = append(cards.BattleCards, &newBattleCard)
-			continue
-		}
-
-		// Check if it exists as a StructureCard
-		if structureCard, exists := g.StructureCards[cardID]; exists {
-			newStructureCard := *structureCard
-			cards.StructureCards = append(cards.StructureCards, &newStructureCard)
-			continue
-		}
-
-		// Return false if it does not exist in any type
-		return nil, false
+	for _, card := range battleCards {
+		dict.battleCards[card.ID()] = card
 	}
 
-	return cards, true
+	for _, card := range structureCards {
+		dict.structureCards[card.ID()] = card
+	}
+
+	return dict
+}
+
+func (d *CardDictionary) BattleCard(cardID CardID) (*BattleCard, bool) {
+	card, exists := d.battleCards[cardID]
+	return card, exists
+}
+
+func (d *CardDictionary) StructureCard(cardID CardID) (*StructureCard, bool) {
+	card, exists := d.structureCards[cardID]
+	return card, exists
 }
 
 // CardDeck is the player's card deck.

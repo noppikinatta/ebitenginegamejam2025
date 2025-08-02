@@ -37,13 +37,13 @@ type GameUI struct {
 // NewGameUI creates a GameUI.
 func NewGameUI(gameState *core.GameState) *GameUI {
 	// Create flow instances
-	cardDeckFlow := flow.NewCardDeckFlow(gameState, gameState.CardGenerator)
+	cardDeckFlow := flow.NewCardDeckFlow(gameState, gameState.CardDictionary)
 	mapGridFlow := flow.NewMapGridFlow(gameState)
 
 	// Create viewmodel instances
 	resourceViewModel := viewmodel.NewResourceViewModel(gameState)
 	calendarViewModel := viewmodel.NewCalendarViewModel(gameState)
-	cardDeckViewModel := viewmodel.NewCardDeckViewModel(gameState, gameState.CardGenerator)
+	cardDeckViewModel := viewmodel.NewCardDeckViewModel(gameState)
 	mapGridViewModel := viewmodel.NewMapGridViewModel(gameState)
 
 	// Initialize each Widget with viewmodels

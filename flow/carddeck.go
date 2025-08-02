@@ -6,17 +6,17 @@ import (
 
 // CardDeckFlow handles card deck operations
 type CardDeckFlow struct {
-	gameState     *core.GameState
-	cardGenerator *core.CardGenerator
-	selectedIndex int
+	gameState      *core.GameState
+	cardDictionary *core.CardDictionary
+	selectedIndex  int
 }
 
 // NewCardDeckFlow creates a new CardDeckFlow
-func NewCardDeckFlow(gameState *core.GameState, cardGenerator *core.CardGenerator) *CardDeckFlow {
+func NewCardDeckFlow(gameState *core.GameState, cardDictionary *core.CardDictionary) *CardDeckFlow {
 	return &CardDeckFlow{
-		gameState:     gameState,
-		cardGenerator: cardGenerator,
-		selectedIndex: -1, // No selection initially
+		gameState:      gameState,
+		cardDictionary: cardDictionary,
+		selectedIndex:  -1, // No selection initially
 	}
 }
 
@@ -64,7 +64,7 @@ func (cf *CardDeckFlow) GetAllCards() []interface{} {
 
 // getAllCards gets all cards in a single slice
 func (cf *CardDeckFlow) getAllCards() []interface{} {
-	if cf.gameState == nil || cf.gameState.CardDeck == nil || cf.cardGenerator == nil {
+	if cf.gameState == nil || cf.gameState.CardDeck == nil || cf.cardDictionary == nil {
 		return []interface{}{}
 	}
 
@@ -74,7 +74,7 @@ func (cf *CardDeckFlow) getAllCards() []interface{} {
 	}
 
 	// Generate cards from CardIDs
-	cards, ok := cf.cardGenerator.Generate(cardIDs)
+	cards, ok := cf.cardDictionary.Generate(cardIDs)
 	if !ok {
 		return []interface{}{}
 	}
@@ -96,7 +96,7 @@ func (cf *CardDeckFlow) getAllCards() []interface{} {
 
 // GetBattleCards returns only battle cards from the deck
 func (cf *CardDeckFlow) GetBattleCards() []*core.BattleCard {
-	if cf.gameState == nil || cf.gameState.CardDeck == nil || cf.cardGenerator == nil {
+	if cf.gameState == nil || cf.gameState.CardDeck == nil || cf.cardDictionary == nil {
 		return []*core.BattleCard{}
 	}
 
@@ -105,7 +105,7 @@ func (cf *CardDeckFlow) GetBattleCards() []*core.BattleCard {
 		return []*core.BattleCard{}
 	}
 
-	cards, ok := cf.cardGenerator.Generate(cardIDs)
+	cards, ok := cf.cardDictionary.Generate(cardIDs)
 	if !ok {
 		return []*core.BattleCard{}
 	}
@@ -115,7 +115,7 @@ func (cf *CardDeckFlow) GetBattleCards() []*core.BattleCard {
 
 // GetStructureCards returns only structure cards from the deck
 func (cf *CardDeckFlow) GetStructureCards() []*core.StructureCard {
-	if cf.gameState == nil || cf.gameState.CardDeck == nil || cf.cardGenerator == nil {
+	if cf.gameState == nil || cf.gameState.CardDeck == nil || cf.cardDictionary == nil {
 		return []*core.StructureCard{}
 	}
 
@@ -124,7 +124,7 @@ func (cf *CardDeckFlow) GetStructureCards() []*core.StructureCard {
 		return []*core.StructureCard{}
 	}
 
-	cards, ok := cf.cardGenerator.Generate(cardIDs)
+	cards, ok := cf.cardDictionary.Generate(cardIDs)
 	if !ok {
 		return []*core.StructureCard{}
 	}

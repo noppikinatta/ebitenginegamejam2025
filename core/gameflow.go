@@ -7,7 +7,7 @@ type GameState struct {
 	MapGrid          *MapGrid             // Map grid
 	Treasury         *Treasury            // Player's treasury
 	CurrentTurn      Turn                 // Current turn number
-	CardGenerator    *CardGenerator       // Card generator
+	CardDictionary   *CardDictionary      // Card generator
 	Histories        []History            // History of events
 	Markets          map[NationID]*Market // Markets for each nation
 	CardDisplayOrder []CardID             // Card display order for stable UI rendering

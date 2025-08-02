@@ -8,8 +8,8 @@ import (
 func LoadGameState() *core.GameState {
 	myNation := createMyNation()
 	treasury := createTreasury()
-	cardGenerator, cardDisplayOrder := createCardGenerator()
-	cardDeck := createCardDeck(cardGenerator)
+	cardDictionary, cardDisplayOrder := createCardDictionary()
+	cardDeck := createCardDeck()
 	cardPacks, cardPackPrices := createCardPacksAndPrices()
 	markets := createMarkets(cardPacks, cardPackPrices)
 	mapGrid := createMapGrid(myNation, cardPacks, cardPackPrices)
@@ -20,7 +20,7 @@ func LoadGameState() *core.GameState {
 		MapGrid:          mapGrid,
 		Treasury:         treasury,
 		CurrentTurn:      0,
-		CardGenerator:    cardGenerator,
+		CardDictionary:   cardDictionary,
 		Markets:          markets,
 		CardDisplayOrder: cardDisplayOrder,
 	}
@@ -36,7 +36,7 @@ func createTreasury() *core.Treasury {
 	return &core.Treasury{}
 }
 
-func createCardDeck(cardGenerator *core.CardGenerator) *core.CardDeck {
+func createCardDeck() *core.CardDeck {
 	deck := core.NewCardDeck()
 
 	// Add initial cards
@@ -437,63 +437,25 @@ func createMarkets(cardPacks map[string]*core.CardPack, cardPackPrices map[strin
 	return markets
 }
 
-func createCardGenerator() (*core.CardGenerator, []core.CardID) {
+func createCardDictionary() (*core.CardDictionary, []core.CardID) {
 	battleCards := createBattleCards()
 	structureCards := createStructureCards()
 
+	cardDictionary := core.NewCardDictionary(battleCards, structureCards)
+
 	// 表示順序を作成（BattleCard → StructureCard の順）
 	var displayOrder []core.CardID
-
-	// createBattleCardsで定義されている順序で追加
-	battleCardOrder := []core.CardID{
-		"battlecard-debug",
-		"battlecard-soldier",
-		"battlecard-knight",
-		"battlecard-general",
-		"battlecard-archer",
-		"battlecard-fortune",
-		"battlecard-wizard",
-		"battlecard-mage",
-		"battlecard-blacksmith",
-		"battlecard-samurai",
-		"battlecard-ninja",
-		"battlecard-monk",
-		"battlecard-bard",
-		"battlecard-artillery",
-		"battlecard-clown",
-		"battlecard-wrestler",
-		"battlecard-golem",
+	for _, card := range battleCards {
+		displayOrder = append(displayOrder, card.CardID)
 	}
-	displayOrder = append(displayOrder, battleCardOrder...)
-
-	// createStructureCardsで定義されている順序で追加
-	structureCardOrder := []core.CardID{
-		"structurecard-farm",
-		"structurecard-woodcutter",
-		"structurecard-tunnel",
-		"structurecard-market",
-		"structurecard-shrine",
-		"structurecard-granary",
-		"structurecard-sawmill",
-		"structurecard-smelter",
-		"structurecard-mint",
-		"structurecard-temple",
-		"structurecard-camp",
-		"structurecard-catapult",
-		"structurecard-ballista",
-		"structurecard-orban-cannon",
-	}
-	displayOrder = append(displayOrder, structureCardOrder...)
-
-	cardGenerator := &core.CardGenerator{
-		BattleCards:    battleCards,
-		StructureCards: structureCards,
+	for _, card := range structureCards {
+		displayOrder = append(displayOrder, card.ID())
 	}
 
-	return cardGenerator, displayOrder
+	return cardDictionary, displayOrder
 }
 
-func createBattleCards() map[core.CardID]*core.BattleCard {
+func createBattleCards() []*core.BattleCard {
 	cards := []*core.BattleCard{
 		{
 			CardID:    "battlecard-debug",
@@ -800,14 +762,10 @@ func createBattleCards() map[core.CardID]*core.BattleCard {
 		},
 	}
 
-	cardMap := make(map[core.CardID]*core.BattleCard)
-	for _, card := range cards {
-		cardMap[card.CardID] = card
-	}
-	return cardMap
+	return cards
 }
 
-func createStructureCards() map[core.CardID]*core.StructureCard {
+func createStructureCards() []*core.StructureCard {
 	cards := []*core.StructureCard{
 		// Yield Additive系
 		core.NewStructureCard(
@@ -888,11 +846,7 @@ func createStructureCards() map[core.CardID]*core.StructureCard {
 			8.0, 0),
 	}
 
-	cardMap := make(map[core.CardID]*core.StructureCard)
-	for _, card := range cards {
-		cardMap[card.ID()] = card
-	}
-	return cardMap
+	return cards
 }
 
 // Helper functions for generating enemy skills

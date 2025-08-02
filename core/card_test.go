@@ -108,78 +108,85 @@ func TestCardPack_Open(t *testing.T) {
 
 func TestCardDatabase_GetCards(t *testing.T) {
 	// Test card database
-	gen := core.CardGenerator{
-		BattleCards: map[core.CardID]*core.BattleCard{
-			"battle_1": {
+	dict := core.NewCardDictionary(
+		[]*core.BattleCard{
+			{
 				CardID:    "battle_1",
 				BasePower: 10.0,
 				Type:      "warrior",
 			},
-			"battle_2": {
+			{
 				CardID:    "battle_2",
 				BasePower: 15.0,
 				Type:      "mage",
 			},
 		},
-		StructureCards: map[core.CardID]*core.StructureCard{
-			"structure_1": core.NewStructureCard("structure_1", core.ResourceQuantity{}, core.NewResourceModifier(), 0.0, 0),
+		[]*core.StructureCard{
+			core.NewStructureCard("structure_1", core.ResourceQuantity{}, core.NewResourceModifier(), 0.0, 0),
 		},
-	}
+	)
 
-	tests := []struct {
-		name        string
-		cardIDs     []core.CardID
-		expectOk    bool
-		expectCards func(*core.Cards) bool
+	testsBattleCards := []struct {
+		name     string
+		cardID   core.CardID
+		expectOk bool
 	}{
 		{
-			name:     "Only existing cards",
-			cardIDs:  []core.CardID{"battle_1", "structure_1"},
+			name:     "Basic battle card",
+			cardID:   "battle_1",
 			expectOk: true,
-			expectCards: func(cards *core.Cards) bool {
-				return len(cards.BattleCards) == 1 &&
-					len(cards.StructureCards) == 1 &&
-					cards.BattleCards[0].CardID == "battle_1" &&
-					cards.StructureCards[0].ID() == "structure_1"
-			},
 		},
 		{
-			name:     "Contains non-existent cards",
-			cardIDs:  []core.CardID{"battle_1", "nonexistent"},
+			name:     "Non-existent battle card",
+			cardID:   "battle_3",
 			expectOk: false,
-			expectCards: func(cards *core.Cards) bool {
-				return cards == nil
-			},
-		},
-		{
-			name:     "Empty list",
-			cardIDs:  []core.CardID{},
-			expectOk: true,
-			expectCards: func(cards *core.Cards) bool {
-				return len(cards.BattleCards) == 0 &&
-					len(cards.StructureCards) == 0
-			},
-		},
-		{
-			name:     "Multiple cards of the same type",
-			cardIDs:  []core.CardID{"battle_1", "battle_2"},
-			expectOk: true,
-			expectCards: func(cards *core.Cards) bool {
-				return len(cards.BattleCards) == 2 &&
-					len(cards.StructureCards) == 0
-			},
 		},
 	}
 
-	for _, tt := range tests {
+	for _, tt := range testsBattleCards {
 		t.Run(tt.name, func(t *testing.T) {
-			cards, ok := gen.Generate(tt.cardIDs)
+			battleCard, ok := dict.BattleCard(tt.cardID)
 			if ok != tt.expectOk {
 				t.Errorf("GetCards() ok = %v, want %v", ok, tt.expectOk)
 				return
 			}
-			if !tt.expectCards(cards) {
-				t.Errorf("GetCards() returned unexpected cards")
+			if !tt.expectOk {
+				return
+			}
+			if battleCard.ID() != tt.cardID {
+				t.Errorf("GetCards() cardID = %v, want %v", battleCard.ID(), tt.cardID)
+			}
+		})
+	}
+
+	testsStructureCards := []struct {
+		name     string
+		cardID   core.CardID
+		expectOk bool
+	}{
+		{
+			name:     "Basic structure card",
+			cardID:   "structure_1",
+			expectOk: true,
+		},
+		{
+			name:     "Non-existent structure card",
+			cardID:   "structure_2",
+			expectOk: false,
+		},
+	}
+
+	for _, tt := range testsStructureCards {
+		t.Run(tt.name, func(t *testing.T) {
+			structureCard, ok := dict.StructureCard(tt.cardID)
+			if ok != tt.expectOk {
+				t.Errorf("GetCards() ok = %v, want %v", ok, tt.expectOk)
+			}
+			if !tt.expectOk {
+				return
+			}
+			if structureCard.ID() != tt.cardID {
+				t.Errorf("GetCards() cardID = %v, want %v", structureCard.ID(), tt.cardID)
 			}
 		})
 	}
