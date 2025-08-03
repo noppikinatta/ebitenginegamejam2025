@@ -20,17 +20,25 @@ func NewCardDeckViewModel(gameState *core.GameState) *CardDeckViewModel {
 	}
 }
 
-// BattleCard returns battle card view model at the specified index
-func (vm *CardDeckViewModel) Card(idx int) (*CardViewModel, bool) {
+func (vm *CardDeckViewModel) CardID(idx int) (core.CardID, bool) {
 	if vm.cardViewModelCache == nil {
 		vm.cardViewModelCache = &CardViewModel{}
 	}
 
 	if idx < 0 || idx >= len(vm.gameState.CardDisplayOrder) {
+		return "", false
+	}
+
+	return vm.gameState.CardDisplayOrder[idx], true
+}
+
+// BattleCard returns battle card view model at the specified index
+func (vm *CardDeckViewModel) Card(idx int) (*CardViewModel, bool) {
+	cardID, ok := vm.CardID(idx)
+	if !ok {
 		return nil, false
 	}
 
-	cardID := vm.gameState.CardDisplayOrder[idx]
 	vm.cardViewModelCache.Duplicates = vm.gameState.CardDeck.Count(cardID)
 
 	battleCard, ok := vm.gameState.CardDictionary.BattleCard(cardID)
@@ -41,7 +49,7 @@ func (vm *CardDeckViewModel) Card(idx int) (*CardViewModel, bool) {
 
 	structureCard, ok := vm.gameState.CardDictionary.StructureCard(cardID)
 	if ok {
-		vm.setStructureCard(structureCard)
+		vm.cardViewModelCache.FromStructureCard(structureCard)
 		return vm.cardViewModelCache, true
 	}
 
@@ -52,12 +60,22 @@ func (vm *CardDeckViewModel) CountTypesInHand() int {
 	return vm.gameState.CardDeck.CountTypesInHand()
 }
 
+func (vm *CardDeckViewModel) IsBattleCard(cardID core.CardID) bool {
+	_, ok := vm.gameState.CardDictionary.BattleCard(cardID)
+	return ok
+}
+
+func (vm *CardDeckViewModel) IsStructureCard(cardID core.CardID) bool {
+	_, ok := vm.gameState.CardDictionary.StructureCard(cardID)
+	return ok
+}
+
 type CardViewModel struct {
 	Image            *ebiten.Image
 	Name             string
 	Duplicates       int
 	HasCardType      bool
-	CardTypeImage    *ebiten.Image
+	CardTypeColor    drawing.ColorF32
 	CardTypeName     string
 	HasPower         bool
 	Power            float64
@@ -66,15 +84,43 @@ type CardViewModel struct {
 	SkillDescription string
 }
 
+func (c *CardViewModel) reset() {
+	c.Image = nil
+	c.Name = ""
+	c.HasCardType = false
+	c.CardTypeColor = drawing.ColorF32{}
+	c.CardTypeName = ""
+	c.HasPower = false
+	c.HasSkill = false
+	c.SkillName = ""
+	c.SkillDescription = ""
+}
+
 func (c *CardViewModel) FromBattleCard(battleCard *core.BattleCard) {
+	c.reset()
 	c.Image = drawing.Image(string(battleCard.CardID))
 	c.Name = lang.Text(string(battleCard.CardID))
 	c.HasCardType = true
-	c.CardTypeImage = drawing.Image(string(battleCard.Type))
+	switch battleCard.Type {
+	case "cardtype-str":
+		c.CardTypeColor = drawing.NewColorF32(1, 0.2, 0.2, 1)
+	case "cardtype-agi":
+		c.CardTypeColor = drawing.NewColorF32(0.2, 1, 0.2, 1)
+	case "cardtype-mag":
+		c.CardTypeColor = drawing.NewColorF32(0.2, 0.2, 1, 1)
+	}
 	c.CardTypeName = lang.Text(string(battleCard.Type))
 	c.HasPower = true
 	c.Power = float64(battleCard.Power())
-	c.HasSkill = true
-	c.SkillName = lang.Text(string(battleCard.Skill.BattleCardSkillID))
+	if battleCard.Skill != nil {
+		c.HasSkill = true
+		c.SkillName = lang.Text(string(battleCard.Skill.BattleCardSkillID))
+		c.SkillDescription = lang.Text(battleCard.Skill.DescriptionKey) // TODO: description should be moved from core package
+	}
+}
 
+func (c *CardViewModel) FromStructureCard(structureCard *core.StructureCard) {
+	c.reset()
+	c.Image = drawing.Image(string(structureCard.ID()))
+	c.Name = lang.Text(string(structureCard.ID()))
 }

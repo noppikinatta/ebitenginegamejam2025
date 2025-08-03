@@ -2,15 +2,16 @@ package core
 
 // GameState manages the overall state of the game.
 type GameState struct {
-	MyNation         *MyNation            // Player's nation
-	CardDeck         *CardDeck            // Player's card deck
-	MapGrid          *MapGrid             // Map grid
-	Treasury         *Treasury            // Player's treasury
-	CurrentTurn      Turn                 // Current turn number
-	CardDictionary   *CardDictionary      // Card generator
-	Histories        []History            // History of events
-	Markets          map[NationID]*Market // Markets for each nation
-	CardDisplayOrder []CardID             // Card display order for stable UI rendering
+	MyNation           *MyNation            // Player's nation
+	CardDeck           *CardDeck            // Player's card deck
+	MapGrid            *MapGrid             // Map grid
+	Treasury           *Treasury            // Player's treasury
+	CurrentTurn        Turn                 // Current turn number
+	CardDictionary     *CardDictionary      // Card generator
+	Histories          []History            // History of events
+	Markets            map[NationID]*Market // Markets for each nation
+	CardDisplayOrder   []CardID             // Card display order for stable UI rendering
+	currentBattlefield *Battlefield
 }
 
 func (g *GameState) GetYield() ResourceQuantity {
@@ -64,4 +65,21 @@ func (g *GameState) GetPoint(x, y int) Point {
 // AddHistory adds a history event to the game state.
 func (g *GameState) AddHistory(history History) {
 	g.Histories = append(g.Histories, history)
+}
+
+func (g *GameState) InitBattlefield(x, y int) bool {
+	point := g.MapGrid.GetPoint(x, y)
+	battlePoint, ok := point.(BattlePoint)
+	if !ok {
+		return false
+	}
+
+}
+
+func (g *GameState) Conquer() {
+	if g.currentBattlefield == nil {
+		return
+	}
+	g.currentBattlefield.Point.Conquer()
+	g.currentBattlefield = nil
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/noppikinatta/ebitenginegamejam2025/core"
 	"github.com/noppikinatta/ebitenginegamejam2025/drawing"
 	"github.com/noppikinatta/ebitenginegamejam2025/lang"
+	"github.com/noppikinatta/ebitenginegamejam2025/viewmodel"
 )
 
 type Widget interface {
@@ -56,54 +57,41 @@ func DrawCardBackground(screen *ebiten.Image, x, y float64, alpha float32) {
 }
 
 // DrawCard draws a card (80x120 area)
-func DrawCard(screen *ebiten.Image, x, y float64, cardID string) {
-	DrawCardBackground(screen, x, y, 1)
+func DrawCard(screen *ebiten.Image, x, y float64, card *viewmodel.CardViewModel, hovered bool) {
+	var bgAlpha float32 = 1.0
+	if hovered {
+		bgAlpha = 0.8
+	}
+	DrawCardBackground(screen, x, y, bgAlpha)
 
-	// Draw card name
 	opt := &ebiten.DrawImageOptions{}
 	opt.GeoM.Scale(2.0, 2.0)
 	opt.GeoM.Translate(x+8, y+8)
 	opt.ColorScale.Scale(1, 1, 1, 0.8)
-	cardImage := drawing.Image(cardID)
-	screen.DrawImage(cardImage, opt)
-	cardName := lang.Text(cardID)
+	screen.DrawImage(card.Image, opt)
 	opt = &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(x+2, y+96)
-	drawing.DrawText(screen, cardName, 18, opt)
-}
+	drawing.DrawText(screen, card.Name, 18, opt)
 
-func DrawBattleCard(screen *ebiten.Image, x, y float64, battleCard *core.BattleCard) {
-	DrawCard(screen, x, y, string(battleCard.CardID))
-	// Draw card type
-	var rectR, rectG, rectB, rectA float32
-	rectR, rectG, rectB, rectA = 1, 1, 1, 1
-	optText := &ebiten.DrawImageOptions{}
-	optText.GeoM.Translate(x+6, y+2)
-	cardTypeText := ""
-	switch battleCard.Type {
-	case "cardtype-str":
-		cardTypeText = "S"
-		rectR, rectG, rectB, rectA = 1, 0.2, 0.2, 1
-	case "cardtype-agi":
-		cardTypeText = "A"
-		rectR, rectG, rectB, rectA = 0.2, 1, 0.2, 1
-	case "cardtype-mag":
-		cardTypeText = "M"
-		rectR, rectG, rectB, rectA = 0.2, 0.2, 1, 1
+	if card.HasCardType {
+		rectR, rectG, rectB, rectA := card.CardTypeColor.RGBA()
+		optText := &ebiten.DrawImageOptions{}
+		optText.GeoM.Translate(x+6, y+2)
+		drawing.DrawRect(screen, x+6, y+6, 16, 24, rectR, rectG, rectB, rectA)
+		drawing.DrawText(screen, card.CardTypeName, 20, optText)
 	}
-	drawing.DrawRect(screen, x+6, y+6, 16, 24, rectR, rectG, rectB, rectA)
-	drawing.DrawText(screen, cardTypeText, 20, optText)
 
-	// Draw power
-	drawing.DrawRect(screen, x+6, y+68, 68, 28, 0.2, 0.2, 0.2, 0.75)
-	opt := &ebiten.DrawImageOptions{}
-	opt.GeoM.Scale(2.0, 2.0)
-	opt.GeoM.Translate(x+2, y+64)
-	powerIcon := drawing.Image("ui-power")
-	screen.DrawImage(powerIcon, opt)
-	opt = &ebiten.DrawImageOptions{}
-	opt.GeoM.Translate(x+2+32, y+64)
-	drawing.DrawText(screen, fmt.Sprintf("%.1f", battleCard.Power()), 24, opt)
+	if card.HasPower {
+		drawing.DrawRect(screen, x+6, y+68, 68, 28, 0.2, 0.2, 0.2, 0.75)
+		opt := &ebiten.DrawImageOptions{}
+		opt.GeoM.Scale(2.0, 2.0)
+		opt.GeoM.Translate(x+2, y+64)
+		powerIcon := drawing.Image("ui-power")
+		screen.DrawImage(powerIcon, opt)
+		opt = &ebiten.DrawImageOptions{}
+		opt.GeoM.Translate(x+2+32, y+64)
+		drawing.DrawText(screen, fmt.Sprintf("%.1f", card.Power), 24, opt)
+	}
 }
 
 // DrawButton draws a button (click detection to be implemented later)

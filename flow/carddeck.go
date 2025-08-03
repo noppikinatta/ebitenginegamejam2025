@@ -6,128 +6,30 @@ import (
 
 // CardDeckFlow handles card deck operations
 type CardDeckFlow struct {
-	gameState      *core.GameState
-	cardDictionary *core.CardDictionary
-	selectedIndex  int
+	gameState *core.GameState
 }
 
 // NewCardDeckFlow creates a new CardDeckFlow
-func NewCardDeckFlow(gameState *core.GameState, cardDictionary *core.CardDictionary) *CardDeckFlow {
+func NewCardDeckFlow(gameState *core.GameState) *CardDeckFlow {
 	return &CardDeckFlow{
-		gameState:      gameState,
-		cardDictionary: cardDictionary,
-		selectedIndex:  -1, // No selection initially
+		gameState: gameState,
 	}
 }
 
-// Select selects a card at the specified index
-func (cf *CardDeckFlow) Select(cardIndex int) bool {
-	allCards := cf.getAllCards()
-
-	if cardIndex < 0 || cardIndex >= len(allCards) {
-		cf.selectedIndex = -1
-		return false
-	}
-
-	cf.selectedIndex = cardIndex
-	return true
-}
-
-// GetSelectedCard returns the currently selected card
-func (cf *CardDeckFlow) GetSelectedCard() interface{} {
-	if cf.selectedIndex < 0 {
-		return nil
-	}
-
-	allCards := cf.getAllCards()
-	if cf.selectedIndex >= len(allCards) {
-		return nil
-	}
-
-	return allCards[cf.selectedIndex]
-}
-
-// GetSelectedIndex returns the currently selected index
-func (cf *CardDeckFlow) GetSelectedIndex() int {
-	return cf.selectedIndex
-}
-
-// ClearSelection clears the current selection
-func (cf *CardDeckFlow) ClearSelection() {
-	cf.selectedIndex = -1
-}
-
-// GetAllCards returns all cards in the deck
-func (cf *CardDeckFlow) GetAllCards() []interface{} {
-	return cf.getAllCards()
-}
-
-// getAllCards gets all cards in a single slice
-func (cf *CardDeckFlow) getAllCards() []interface{} {
-	if cf.gameState == nil || cf.gameState.CardDeck == nil || cf.cardDictionary == nil {
-		return []interface{}{}
-	}
-
-	cardIDs := cf.gameState.CardDeck.GetAllCardIDs()
-	if len(cardIDs) == 0 {
-		return []interface{}{}
-	}
-
-	// Generate cards from CardIDs
-	cards, ok := cf.cardDictionary.Generate(cardIDs)
+func (f *CardDeckFlow) PlayBattleCardInBattle(id core.CardID) {
+	battleCard, ok := f.gameState.CardDictionary.BattleCard(id)
 	if !ok {
-		return []interface{}{}
+		return
+	}
+	countInHand := f.gameState.CardDeck.Count(id)
+	if countInHand == 0 {
+		return
 	}
 
-	var allCards []interface{}
-
-	// Add battle cards
-	for _, card := range cards.BattleCards {
-		allCards = append(allCards, card)
-	}
-
-	// Add structure cards
-	for _, card := range cards.StructureCards {
-		allCards = append(allCards, card)
-	}
-
-	return allCards
+	f.gameState.CardDeck.Remove(id)
+	//f.gameState. // TODO: can reference battle field
 }
 
-// GetBattleCards returns only battle cards from the deck
-func (cf *CardDeckFlow) GetBattleCards() []*core.BattleCard {
-	if cf.gameState == nil || cf.gameState.CardDeck == nil || cf.cardDictionary == nil {
-		return []*core.BattleCard{}
-	}
+func (f *CardDeckFlow) PlayStructureCardInTerritory(id core.CardID) {
 
-	cardIDs := cf.gameState.CardDeck.GetAllCardIDs()
-	if len(cardIDs) == 0 {
-		return []*core.BattleCard{}
-	}
-
-	cards, ok := cf.cardDictionary.Generate(cardIDs)
-	if !ok {
-		return []*core.BattleCard{}
-	}
-
-	return cards.BattleCards
-}
-
-// GetStructureCards returns only structure cards from the deck
-func (cf *CardDeckFlow) GetStructureCards() []*core.StructureCard {
-	if cf.gameState == nil || cf.gameState.CardDeck == nil || cf.cardDictionary == nil {
-		return []*core.StructureCard{}
-	}
-
-	cardIDs := cf.gameState.CardDeck.GetAllCardIDs()
-	if len(cardIDs) == 0 {
-		return []*core.StructureCard{}
-	}
-
-	cards, ok := cf.cardDictionary.Generate(cardIDs)
-	if !ok {
-		return []*core.StructureCard{}
-	}
-
-	return cards.StructureCards
 }

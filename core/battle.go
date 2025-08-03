@@ -2,6 +2,7 @@ package core
 
 // Battlefield represents a battle instance, created when starting a battle in an unconquered Wilderness.
 type Battlefield struct {
+	Point            BattlePoint
 	Enemy            *Enemy        // Enemy is the opponent in the battle.
 	BaseSupportPower float64       // BaseSupportPower is the power gained from StructureCards in adjacent Territories.
 	BattleCards      []*BattleCard // BattleCards is a collection of BattleCards played during the battle.

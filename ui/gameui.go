@@ -52,7 +52,7 @@ func NewGameUI(gameState *core.GameState) *GameUI {
 	mainView := NewMainView(gameState, mapGridViewModel, mapGridFlow)
 	infoView := NewInfoView(viewmodel.NewHistoryViewModel(gameState))
 
-	cardDeckView := NewCardDeckView(cardDeckViewModel, cardDeckFlow)
+	cardDeckView := NewCardDeckView(mainView, cardDeckViewModel, cardDeckFlow)
 
 	ui := &GameUI{
 		ResourceView: resourceView,

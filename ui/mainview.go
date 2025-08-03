@@ -17,6 +17,10 @@ const (
 	ViewTypeTerritory
 )
 
+type CenterViewModer interface {
+	CurrentViewMode() ViewType
+}
+
 // MainView is the main view container Widget.
 // Position: (0,40,1040,560).
 // Switches between MapGridView, MarketView, BattleView, and TerritoryView.
@@ -92,6 +96,10 @@ func NewMainView(gameState *core.GameState, mapGridViewModel *viewmodel.MapGridV
 // SwitchView switches the View to be displayed.
 func (m *MainView) SwitchView(viewType ViewType) {
 	m.CurrentView = viewType
+}
+
+func (m *MainView) CurrentViewMode() ViewType {
+	return m.CurrentView
 }
 
 // HandleInput handles input.
