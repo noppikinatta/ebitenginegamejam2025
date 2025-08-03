@@ -33,8 +33,8 @@ func (vm *MapGridViewModel) Point(x, y int) *PointViewModel {
 		return nil
 	}
 
-	point := vm.gameState.MapGrid.GetPoint(x, y)
-	if point == nil {
+	point, ok := vm.gameState.MapGrid.GetPoint(x, y)
+	if !ok {
 		return nil
 	}
 

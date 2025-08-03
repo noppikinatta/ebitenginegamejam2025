@@ -57,23 +57,18 @@ func (g *GameState) CanInteract(x, y int) bool {
 	return g.MapGrid.CanInteract(x, y)
 }
 
-// GetPoint gets the Point at the specified coordinates.
-func (g *GameState) GetPoint(x, y int) Point {
-	return g.MapGrid.GetPoint(x, y)
-}
-
 // AddHistory adds a history event to the game state.
 func (g *GameState) AddHistory(history History) {
 	g.Histories = append(g.Histories, history)
 }
 
 func (g *GameState) InitBattlefield(x, y int) bool {
-	point := g.MapGrid.GetPoint(x, y)
-	battlePoint, ok := point.(BattlePoint)
+	battlefield, ok := g.MapGrid.CreateBattlefield(x, y)
 	if !ok {
 		return false
 	}
-
+	g.currentBattlefield = battlefield
+	return true
 }
 
 func (g *GameState) Conquer() {

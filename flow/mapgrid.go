@@ -23,8 +23,8 @@ func (mf *MapGridFlow) SelectPoint(x, y int) bool {
 		return false
 	}
 
-	point := mf.gameState.MapGrid.GetPoint(x, y)
-	if point == nil {
+	point, ok := mf.gameState.MapGrid.GetPoint(x, y)
+	if !ok {
 		return false
 	}
 

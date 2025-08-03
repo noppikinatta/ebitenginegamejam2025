@@ -297,14 +297,14 @@ func TestMapGrid_GetPoint(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			point := mapGrid.GetPoint(tt.x, tt.y)
+			point, ok := mapGrid.GetPoint(tt.x, tt.y)
 
 			if tt.expectedNil {
-				if point != nil {
+				if ok {
 					t.Errorf("GetPoint(%d, %d) = %v, want nil", tt.x, tt.y, point)
 				}
 			} else {
-				if point == nil {
+				if !ok {
 					t.Errorf("GetPoint(%d, %d) = nil, want non-nil", tt.x, tt.y)
 				} else if point != myNationPoint {
 					t.Errorf("GetPoint(%d, %d) = %v, want %v", tt.x, tt.y, point, myNationPoint)

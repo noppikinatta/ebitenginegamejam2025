@@ -257,12 +257,12 @@ type MapGrid struct {
 }
 
 // GetPoint gets the Point at the specified coordinates.
-func (m *MapGrid) GetPoint(x, y int) Point {
+func (m *MapGrid) GetPoint(x, y int) (Point, bool) {
 	index, ok := m.IndexFromXY(x, y)
 	if !ok {
-		return nil
+		return nil, false
 	}
-	return m.Points[index]
+	return m.Points[index], true
 }
 
 func (m *MapGrid) XYOfPoint(p Point) (int, int, bool) {
@@ -351,6 +351,55 @@ func (m *MapGrid) CanInteract(x, y int) bool {
 	}
 
 	return m.accesibles[idx]
+}
+
+func (m *MapGrid) CreateBattlefield(x, y int) (*Battlefield, bool) {
+	point, ok := m.GetPoint(x, y)
+	if !ok {
+		return nil, false
+	}
+
+	battlePoint, ok := point.AsBattlePoint()
+	if !ok {
+		return nil, false
+	}
+
+	around := [8]int{
+		-1, 0,
+		0, -1,
+		1, 0,
+		0, 1,
+	}
+
+	cardSlot := battlePoint.Enemy().battleCardSlot
+	supportPower := 0.0
+	for i := range 4 {
+		ax := x + around[2*1]
+		ay := y + around[2*i+1]
+
+		p, ok := m.GetPoint(ax, ay)
+		if !ok {
+			continue
+		}
+		tp, ok := p.AsTerritoryPoint()
+		if !ok {
+			continue
+		}
+
+		// FIXME: accessing private fields
+		for _, card := range tp.Cards() {
+			cardSlot += card.supportCardSlot
+			supportPower += card.supportPower
+		}
+	}
+
+	// TODO: use constructor
+	return &Battlefield{
+		Point:            battlePoint,
+		Enemy:            battlePoint.Enemy(),
+		BaseSupportPower: supportPower,
+		CardSlot:         cardSlot,
+	}, true
 }
 
 type MapGridSize struct {
