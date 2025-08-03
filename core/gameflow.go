@@ -2,16 +2,17 @@ package core
 
 // GameState manages the overall state of the game.
 type GameState struct {
-	MyNation           *MyNation            // Player's nation
-	CardDeck           *CardDeck            // Player's card deck
-	MapGrid            *MapGrid             // Map grid
-	Treasury           *Treasury            // Player's treasury
-	CurrentTurn        Turn                 // Current turn number
-	CardDictionary     *CardDictionary      // Card generator
-	Histories          []History            // History of events
-	Markets            map[NationID]*Market // Markets for each nation
-	CardDisplayOrder   []CardID             // Card display order for stable UI rendering
-	currentBattlefield *Battlefield
+	MyNation                *MyNation            // Player's nation
+	CardDeck                *CardDeck            // Player's card deck
+	MapGrid                 *MapGrid             // Map grid
+	Treasury                *Treasury            // Player's treasury
+	CurrentTurn             Turn                 // Current turn number
+	CardDictionary          *CardDictionary      // Card generator
+	Histories               []History            // History of events
+	Markets                 map[NationID]*Market // Markets for each nation
+	CardDisplayOrder        []CardID             // Card display order for stable UI rendering
+	currentBattlefield      *Battlefield
+	currentConstructionPlan *ConstructionPlan
 }
 
 func (g *GameState) GetYield() ResourceQuantity {
@@ -77,4 +78,26 @@ func (g *GameState) Conquer() {
 	}
 	g.currentBattlefield.Point.Conquer()
 	g.currentBattlefield = nil
+}
+
+func (g *GameState) Battlefield() (*Battlefield, bool) {
+	if g.currentBattlefield == nil {
+		return nil, false
+	}
+	return g.currentBattlefield, true
+}
+
+func (g *GameState) InitConstructionPlan(x, y int) {
+	plan, ok := g.MapGrid.CreateConstructionPlan(x, y)
+	if !ok {
+		return
+	}
+	g.currentConstructionPlan = plan
+}
+
+func (g *GameState) ConstructionPlan() (*ConstructionPlan, bool) {
+	if g.currentConstructionPlan == nil {
+		return nil, false
+	}
+	return g.currentConstructionPlan, true
 }

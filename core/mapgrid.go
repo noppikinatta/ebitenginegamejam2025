@@ -34,6 +34,7 @@ type TerritoryPoint interface {
 	Terrain() *Terrain
 	CardSlot() int
 	Cards() []*StructureCard
+	Territory() *Territory
 }
 
 // MarketPoint represents a point that provides market functionality.
@@ -400,6 +401,19 @@ func (m *MapGrid) CreateBattlefield(x, y int) (*Battlefield, bool) {
 		BaseSupportPower: supportPower,
 		CardSlot:         cardSlot,
 	}, true
+}
+
+func (m *MapGrid) CreateConstructionPlan(x, y int) (*ConstructionPlan, bool) {
+	point, ok := m.GetPoint(x, y)
+	if !ok {
+		return nil, false
+	}
+	territoryPoint, ok := point.AsTerritoryPoint()
+	if !ok {
+		return nil, false
+	}
+
+	return NewConstructionPlan(territoryPoint.Territory()), true
 }
 
 type MapGridSize struct {

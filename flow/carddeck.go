@@ -26,10 +26,29 @@ func (f *CardDeckFlow) PlayBattleCardInBattle(id core.CardID) {
 		return
 	}
 
+	battlefield, ok := f.gameState.Battlefield()
+	if !ok {
+		return
+	}
+
+	battlefield.AddBattleCard(battleCard)
 	f.gameState.CardDeck.Remove(id)
-	//f.gameState. // TODO: can reference battle field
 }
 
 func (f *CardDeckFlow) PlayStructureCardInTerritory(id core.CardID) {
+	structureCard, ok := f.gameState.CardDictionary.StructureCard(id)
+	if !ok {
+		return
+	}
+	countInHand := f.gameState.CardDeck.Count(id)
+	if countInHand == 0 {
+		return
+	}
 
+	plan, ok := f.gameState.ConstructionPlan()
+	if !ok {
+		return
+	}
+	plan.AddCard(structureCard)
+	f.gameState.CardDeck.Remove(id)
 }

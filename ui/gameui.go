@@ -37,7 +37,7 @@ type GameUI struct {
 // NewGameUI creates a GameUI.
 func NewGameUI(gameState *core.GameState) *GameUI {
 	// Create flow instances
-	cardDeckFlow := flow.NewCardDeckFlow(gameState, gameState.CardDictionary)
+	cardDeckFlow := flow.NewCardDeckFlow(gameState)
 	mapGridFlow := flow.NewMapGridFlow(gameState)
 
 	// Create viewmodel instances
@@ -71,49 +71,13 @@ func NewGameUI(gameState *core.GameState) *GameUI {
 		MapGridViewModel:  mapGridViewModel,
 	}
 
-	// Set up coordination between Widgets
-	ui.CardDeckView.OnBattleCardClicked = ui.onBattleCardClicked
-	ui.CardDeckView.OnStructureCardClicked = ui.onStructureCardClicked
-
 	return ui
-}
-
-// onBattleCardClicked handles the click on a BattleCard.
-func (gui *GameUI) onBattleCardClicked(card *core.BattleCard) bool {
-	if gui.MainView.CurrentView != ViewTypeBattle {
-		return false
-	}
-
-	// Use BattleFlow through MainView.Battle
-	if gui.MainView.Battle.CanPlaceCard() {
-		return gui.MainView.Battle.PlaceCard(card)
-	}
-
-	return false
-}
-
-// onStructureCardClicked handles the click on a StructureCard.
-func (gui *GameUI) onStructureCardClicked(card *core.StructureCard) bool {
-	if gui.MainView.CurrentView != ViewTypeTerritory {
-		return false
-	}
-
-	// Use TerritoryFlow through MainView.Territory
-	if gui.MainView.Territory.CanPlaceCard() {
-		return gui.MainView.Territory.PlaceCard(card)
-	}
-
-	return false
 }
 
 // HandleInput handles input for all Widgets.
 func (gui *GameUI) HandleInput(input *Input) error {
 	// Update mouse position
 	gui.MouseX, gui.MouseY = input.Mouse.CursorPosition()
-
-	// Pass mouse position to child Widgets
-	gui.CardDeckView.MouseX = gui.MouseX
-	gui.CardDeckView.MouseY = gui.MouseY
 
 	// MainView processes input first (important processes such as View switching).
 	if err := gui.MainView.HandleInput(input); err != nil {
@@ -176,36 +140,4 @@ func (gui *GameUI) SwitchMainView(viewType ViewType) {
 	case ViewTypeTerritory:
 		// For Territory, display Point information
 	}
-}
-
-// SelectCardFromDeck selects a specific card from the CardDeck.
-func (gui *GameUI) SelectCardFromDeck(index int) {
-	// Use CardDeckFlow for selection
-	gui.CardDeckFlow.Select(index)
-
-	// Update CardDeckView to reflect the selection
-	gui.CardDeckView.SetSelectedIndex(index)
-}
-
-// MoveCardToTerritory moves the selected card to the TerritoryView.
-func (gui *GameUI) MoveCardToTerritory() bool {
-	selectedCard := gui.CardDeckFlow.GetSelectedCard()
-	if selectedCard == nil {
-		return false
-	}
-
-	// Only StructureCards can be moved
-	if structureCard, ok := selectedCard.(*core.StructureCard); ok {
-		// This will be handled by TerritoryFlow in the TerritoryView
-		return gui.MainView.Territory.PlaceCard(structureCard)
-	}
-
-	return false
-}
-
-// ReturnCardToDeck returns a card to the CardDeck.
-func (gui *GameUI) ReturnCardToDeck(card interface{}) {
-	// This operation will be handled by the appropriate flow
-	// For now, we'll delegate to CardDeckView to handle the UI update
-	gui.CardDeckView.AddCard(card)
 }
