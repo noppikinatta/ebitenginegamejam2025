@@ -1,9 +1,6 @@
 package flow
 
 import (
-	"math/rand"
-	"time"
-
 	"github.com/noppikinatta/ebitenginegamejam2025/core"
 )
 
@@ -12,15 +9,34 @@ type MarketFlow struct {
 	gameState *core.GameState
 	market    *core.Market
 	nation    core.Nation
+	intner    core.Intner
 }
 
 // NewMarketFlow creates a new MarketFlow
-func NewMarketFlow(gameState *core.GameState, market *core.Market, nation core.Nation) *MarketFlow {
+func NewMarketFlow(gameState *core.GameState, intner core.Intner) *MarketFlow {
 	return &MarketFlow{
 		gameState: gameState,
-		market:    market,
-		nation:    nation,
+		intner:    intner,
 	}
+}
+
+func (mf *MarketFlow) SelectMarket(x, y int) {
+	point, ok := mf.gameState.MapGrid.GetPoint(x, y)
+	if !ok {
+		return
+	}
+	marketPoint, ok := point.AsMarketPoint()
+	if !ok {
+		return
+	}
+
+	market, ok := mf.gameState.Markets[marketPoint.Nation().ID()]
+	if !ok {
+		return
+	}
+
+	mf.nation = marketPoint.Nation()
+	mf.market = market
 }
 
 // Purchase attempts to purchase a market item at the specified index
@@ -63,22 +79,6 @@ func (mf *MarketFlow) Purchase(marketItemIdx int) bool {
 	return true
 }
 
-// CanPurchase checks if a market item can be purchased
-func (mf *MarketFlow) CanPurchase(marketItemIdx int) bool {
-	if mf.market == nil || mf.gameState == nil {
-		return false
-	}
-
-	if marketItemIdx < 0 || marketItemIdx >= len(mf.market.Items) {
-		return false
-	}
-
-	item := mf.market.Items[marketItemIdx]
-
-	// Check availability and affordability
-	return mf.isMarketItemAvailable(item) && item.CanPurchase(mf.gameState.Treasury)
-}
-
 // isMarketItemAvailable checks if a market item is available for purchase
 func (mf *MarketFlow) isMarketItemAvailable(item *core.MarketItem) bool {
 	if mf.market == nil {
@@ -110,25 +110,11 @@ func (mf *MarketFlow) processCardPack(cardPack *core.CardPack) {
 		return
 	}
 
-	// Create random number generator
-	rng := &simpleRand{
-		Rand: rand.New(rand.NewSource(time.Now().UnixNano())),
-	}
-
 	// Open card pack
-	cardIDs := cardPack.Open(rng)
+	cardIDs := cardPack.Open(mf.intner)
 
 	// Add cards to deck
 	for _, cardID := range cardIDs {
 		mf.gameState.CardDeck.Add(cardID)
 	}
-}
-
-// simpleRand implements core.RNG interface
-type simpleRand struct {
-	*rand.Rand
-}
-
-func (sr *simpleRand) Intn(n int) int {
-	return sr.Rand.Intn(n)
 }

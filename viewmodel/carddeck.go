@@ -21,10 +21,6 @@ func NewCardDeckViewModel(gameState *core.GameState) *CardDeckViewModel {
 }
 
 func (vm *CardDeckViewModel) CardID(idx int) (core.CardID, bool) {
-	if vm.cardViewModelCache == nil {
-		vm.cardViewModelCache = &CardViewModel{}
-	}
-
 	if idx < 0 || idx >= len(vm.gameState.CardDisplayOrder) {
 		return "", false
 	}
@@ -37,6 +33,10 @@ func (vm *CardDeckViewModel) Card(idx int) (*CardViewModel, bool) {
 	cardID, ok := vm.CardID(idx)
 	if !ok {
 		return nil, false
+	}
+
+	if vm.cardViewModelCache == nil {
+		vm.cardViewModelCache = &CardViewModel{}
 	}
 
 	vm.cardViewModelCache.Duplicates = vm.gameState.CardDeck.Count(cardID)

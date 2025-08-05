@@ -1,6 +1,9 @@
 package ui
 
 import (
+	"math/rand"
+	"time"
+
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/noppikinatta/ebitenginegamejam2025/core"
 	"github.com/noppikinatta/ebitenginegamejam2025/flow"
@@ -49,7 +52,7 @@ func NewGameUI(gameState *core.GameState) *GameUI {
 	// Initialize each Widget with viewmodels
 	resourceView := NewResourceView(resourceViewModel)
 	calendarView := NewCalendarView(calendarViewModel)
-	mainView := NewMainView(gameState, mapGridViewModel, mapGridFlow)
+	mainView := NewMainView(gameState, rand.New(rand.NewSource(time.Now().UnixNano())))
 	infoView := NewInfoView(viewmodel.NewHistoryViewModel(gameState))
 
 	cardDeckView := NewCardDeckView(mainView, cardDeckViewModel, cardDeckFlow)

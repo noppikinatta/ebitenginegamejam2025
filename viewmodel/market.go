@@ -7,28 +7,46 @@ import (
 
 // MarketViewModel provides display information for market UI
 type MarketViewModel struct {
-	gameState *core.GameState
-	market    *core.Market
-	nation    core.Nation
+	gameState          *core.GameState
+	market             *core.Market
+	nation             core.Nation
+	itemViewModelCache *MarketItemViewModel
 }
 
 // NewMarketViewModel creates a new MarketViewModel
-func NewMarketViewModel(gameState *core.GameState, market *core.Market, nation core.Nation) *MarketViewModel {
+func NewMarketViewModel(gameState *core.GameState) *MarketViewModel {
 	return &MarketViewModel{
 		gameState: gameState,
-		market:    market,
-		nation:    nation,
 	}
+}
+
+func (vm *MarketViewModel) SelectMarket(x, y int) {
+	point, ok := vm.gameState.MapGrid.GetPoint(x, y)
+	if !ok {
+		return
+	}
+
+	marketPoint, ok := point.AsMarketPoint()
+	if !ok {
+		return
+	}
+
+	market, ok := vm.gameState.Markets[marketPoint.Nation().ID()]
+	if !ok {
+		return
+	}
+
+	vm.nation = marketPoint.Nation()
+	vm.market = market
 }
 
 // Title returns the localized market title
 func (vm *MarketViewModel) Title() string {
 	if vm.nation == nil {
-		return lang.Text("market_title")
+		return ""
 	}
 
-	// Get localized market title based on nation
-	return lang.Text("market_title_" + string(vm.nation.ID()))
+	return lang.Text(string(vm.nation.ID()))
 }
 
 // Level returns the current market level
@@ -48,41 +66,41 @@ func (vm *MarketViewModel) NumItems() int {
 }
 
 // Item returns market item view model at the specified index
-func (vm *MarketViewModel) Item(idx int) *MarketItemViewModel {
+func (vm *MarketViewModel) Item(idx int) (*MarketItemViewModel, bool) {
 	if vm.market == nil || idx < 0 || idx >= len(vm.market.Items) {
-		return nil
+		return nil, false
+	}
+
+	if vm.itemViewModelCache == nil {
+		vm.itemViewModelCache = &MarketItemViewModel{}
 	}
 
 	item := vm.market.Items[idx]
-	return NewMarketItemViewModel(vm.gameState, vm.market, item)
+	vm.itemViewModelCache.Init(item, vm.market.Level, vm.gameState.Treasury)
+
+	return vm.itemViewModelCache, true
 }
 
 // MarketItemViewModel provides display information for market items
 type MarketItemViewModel struct {
-	gameState *core.GameState
-	market    *core.Market
-	item      *core.MarketItem
+	item        *core.MarketItem
+	marketLevel core.MarketLevel
+	treasury    *core.Treasury
 }
 
-// NewMarketItemViewModel creates a new MarketItemViewModel
-func NewMarketItemViewModel(gameState *core.GameState, market *core.Market, item *core.MarketItem) *MarketItemViewModel {
-	return &MarketItemViewModel{
-		gameState: gameState,
-		market:    market,
-		item:      item,
-	}
+func (m *MarketItemViewModel) Init(item *core.MarketItem, marketLevel core.MarketLevel, treasury *core.Treasury) {
+	m.item = item
+	m.marketLevel = marketLevel
+	m.treasury = treasury
 }
 
 // ItemName returns the localized item name
 func (vm *MarketItemViewModel) ItemName() string {
-	// Get localized market item name
-	// This might depend on the card pack or investment type
 	if vm.item.CardPack() != nil {
-		return lang.Text("cardpack_name_" + string(vm.item.CardPack().CardPackID))
+		return lang.Text(string(vm.item.CardPack().CardPackID))
 	}
 
-	// For investment items without card packs
-	return lang.Text("investment_item")
+	return ""
 }
 
 // RequiredLevel returns the required market level
@@ -95,19 +113,19 @@ func (vm *MarketItemViewModel) RequiredLevel() int {
 
 // Unlocked returns whether the item is unlocked (market level meets requirement)
 func (vm *MarketItemViewModel) Unlocked() bool {
-	if vm.market == nil || vm.item == nil {
+	if vm.item == nil {
 		return false
 	}
-	return vm.market.Level >= vm.item.RequiredLevel()
+	return vm.marketLevel >= vm.item.RequiredLevel()
 }
 
 // CanPurchase returns whether the item can be purchased
 func (vm *MarketItemViewModel) CanPurchase() bool {
-	if vm.gameState == nil || vm.item == nil {
+	if vm.treasury == nil || vm.item == nil {
 		return false
 	}
 
-	return vm.Unlocked() && vm.item.CanPurchase(vm.gameState.Treasury)
+	return vm.Unlocked() && vm.item.CanPurchase(vm.treasury)
 }
 
 // Price returns the item price
@@ -119,15 +137,15 @@ func (vm *MarketItemViewModel) Price() core.ResourceQuantity {
 }
 
 // ResourceSufficiency returns which resources are sufficient for purchase
-func (vm *MarketItemViewModel) ResourceSufficiency() *ResourceSufficiency {
-	if vm.gameState == nil || vm.item == nil {
-		return &ResourceSufficiency{}
+func (vm *MarketItemViewModel) ResourceSufficiency() ResourceSufficiency {
+	if vm.treasury == nil || vm.item == nil {
+		return ResourceSufficiency{}
 	}
 
-	treasury := vm.gameState.Treasury.Resources
+	treasury := vm.treasury.Resources
 	price := vm.item.Price()
 
-	return &ResourceSufficiency{
+	return ResourceSufficiency{
 		Money: treasury.Money >= price.Money,
 		Food:  treasury.Food >= price.Food,
 		Wood:  treasury.Wood >= price.Wood,

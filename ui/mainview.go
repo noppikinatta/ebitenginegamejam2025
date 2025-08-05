@@ -33,34 +33,20 @@ type MainView struct {
 
 	// Game state
 	GameState *core.GameState
-
-	// ViewModels and Flows
-	MapGridViewModel *viewmodel.MapGridViewModel
-	MapGridFlow      *flow.MapGridFlow
-
-	// Callbacks
-	OnPointSelected func(point core.Point)
 }
 
 // NewMainView creates a MainView.
-func NewMainView(gameState *core.GameState, mapGridViewModel *viewmodel.MapGridViewModel, mapGridFlow *flow.MapGridFlow) *MainView {
+func NewMainView(gameState *core.GameState, intner core.Intner) *MainView {
 	m := &MainView{
-		CurrentView:      ViewTypeMapGrid, // The initial display is MapGridView.
-		GameState:        gameState,
-		MapGridViewModel: mapGridViewModel,
-		MapGridFlow:      mapGridFlow,
+		CurrentView: ViewTypeMapGrid, // The initial display is MapGridView.
+		GameState:   gameState,
 	}
 
-	onBack := func() {
-		m.SwitchView(ViewTypeMapGrid)
-	}
-
-	m.Market = NewMarketView(onBack)
+	m.Market = NewMarketView(flow.NewMarketFlow(gameState, intner), viewmodel.NewMarketViewModel(gameState))
 	m.Battle = NewBattleView(onBack)
 	m.Territory = NewTerritoryView(onBack)
 
 	// Set GameState for each View.
-	m.Market.SetGameState(gameState)
 	m.Battle.SetGameState(gameState)
 	m.Territory.SetGameState(gameState)
 
@@ -104,9 +90,22 @@ func (m *MainView) CurrentViewMode() ViewType {
 
 // HandleInput handles input.
 func (m *MainView) HandleInput(input *Input) error {
+	shouldBackToMapGrid, err := m.handleChildren(input)
+	if err != nil {
+		return err
+	}
+
+	if shouldBackToMapGrid {
+		m.SwitchView(ViewTypeMapGrid)
+	}
+
+	return nil
+}
+
+func (m *MainView) handleChildren(input *Input) (bool, error) {
 	switch m.CurrentView {
 	case ViewTypeMapGrid:
-		return m.MapGrid.HandleInput(input)
+		return false, m.MapGrid.HandleInput(input)
 	case ViewTypeMarket:
 		return m.Market.HandleInput(input)
 	case ViewTypeBattle:
@@ -114,7 +113,8 @@ func (m *MainView) HandleInput(input *Input) error {
 	case ViewTypeTerritory:
 		return m.Territory.HandleInput(input)
 	}
-	return nil
+
+	return false, nil
 }
 
 // Draw handles drawing.
