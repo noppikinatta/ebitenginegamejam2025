@@ -7,104 +7,76 @@ import (
 
 // TerritoryViewModel provides display information for territory UI
 type TerritoryViewModel struct {
-	gameState *core.GameState
-	territory *core.Territory
+	territory          *core.Territory
+	constructionPlan   *core.ConstructionPlan
+	cardViewModelCache *CardViewModel
 }
 
 // NewTerritoryViewModel creates a new TerritoryViewModel
-func NewTerritoryViewModel(gameState *core.GameState, territory *core.Territory) *TerritoryViewModel {
+func NewTerritoryViewModel(territory *core.Territory, constructionPlan *core.ConstructionPlan) *TerritoryViewModel {
 	return &TerritoryViewModel{
-		gameState: gameState,
-		territory: territory,
+		territory:        territory,
+		constructionPlan: constructionPlan,
 	}
 }
 
 // Title returns the localized territory title
 func (vm *TerritoryViewModel) Title() string {
-	if vm.territory == nil {
-		return lang.Text("territory_title")
-	}
-
 	// Get localized territory title based on territory ID
-	return lang.Text("territory_title_" + string(vm.territory.ID()))
+	return lang.Text(string(vm.territory.Terrain().ID()))
 }
 
 // CardSlot returns the maximum number of cards that can be placed
 func (vm *TerritoryViewModel) CardSlot() int {
-	if vm.territory == nil || vm.territory.Terrain() == nil {
-		return 0
-	}
 	return vm.territory.Terrain().CardSlot()
 }
 
 // NumCards returns the current number of cards in the territory
 func (vm *TerritoryViewModel) NumCards() int {
-	if vm.territory == nil {
-		return 0
-	}
 	return len(vm.territory.Cards())
 }
 
 // Card returns structure card view model at the specified index
-func (vm *TerritoryViewModel) Card(idx int) *StructureCardViewModel {
-	if vm.territory == nil {
-		return nil
-	}
-
+func (vm *TerritoryViewModel) Card(idx int) (*CardViewModel, bool) {
 	cards := vm.territory.Cards()
 	if idx < 0 || idx >= len(cards) {
-		return nil
+		return nil, false
 	}
 
 	card := cards[idx]
-	return NewStructureCardViewModel(vm.gameState, card)
+	if vm.cardViewModelCache == nil {
+		vm.cardViewModelCache = &CardViewModel{}
+	}
+	vm.cardViewModelCache.FromStructureCard(card)
+	return vm.cardViewModelCache, true
 }
 
 // Yield returns the total yield of the territory including card effects
-func (vm *TerritoryViewModel) Yield() core.ResourceQuantity {
-	if vm.territory == nil {
-		return core.ResourceQuantity{}
-	}
+func (vm *TerritoryViewModel) CurrentYield() core.ResourceQuantity {
+	return vm.territory.Yield()
+}
 
-	// Start with base yield from terrain
-	totalYield := vm.territory.Terrain().BaseYield()
-
-	// Apply effects from placed structure cards
-	for _, card := range vm.territory.Cards() {
-		// Add additive yield value
-		totalYield = totalYield.Add(card.YieldAdditiveValue())
-
-		// Apply yield modifier
-		totalYield = card.YieldModifier().Modify(totalYield)
-	}
-
-	return totalYield
+// PredictedYield returns the predicted yield of the territory including card effects
+func (vm *TerritoryViewModel) PredictedYield() core.ResourceQuantity {
+	return vm.constructionPlan.Yield()
 }
 
 // SupportPower returns the total support power provided by structure cards
-func (vm *TerritoryViewModel) SupportPower() float64 {
-	if vm.territory == nil {
-		return 0.0
-	}
+func (vm *TerritoryViewModel) CurrentSupportPower() float64 {
+	return vm.territory.SupportPower()
+}
 
-	totalSupportPower := 0.0
-	for _, card := range vm.territory.Cards() {
-		totalSupportPower += card.SupportPower()
-	}
-
-	return totalSupportPower
+// PredictedSupportPower returns the predicted support power provided by structure cards
+func (vm *TerritoryViewModel) PredictedSupportPower() float64 {
+	return vm.constructionPlan.SupportPower()
 }
 
 // SupportCardSlot returns the additional card slots provided by structure cards
-func (vm *TerritoryViewModel) SupportCardSlot() int {
-	if vm.territory == nil {
-		return 0
-	}
+func (vm *TerritoryViewModel) CurrentSupportCardSlot() int {
+	return vm.territory.SupportCardSlot()
+}
 
-	totalSupportCardSlot := 0
-	for _, card := range vm.territory.Cards() {
-		totalSupportCardSlot += card.SupportCardSlot()
-	}
-
-	return totalSupportCardSlot
+// PredictedSupportCardSlot returns the additional card slots provided by structure cards
+func (vm *TerritoryViewModel) PredictedSupportCardSlot() int {
+	return vm.constructionPlan.SupportCardSlot()
 }

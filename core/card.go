@@ -184,6 +184,15 @@ func NewCardDeck() *CardDeck {
 	}
 }
 
+func (cd *CardDeck) ApplyDelta(delta map[CardID]int) {
+	for cardID, count := range delta {
+		cd.hand[cardID] += count
+		if cd.hand[cardID] <= 0 {
+			delete(cd.hand, cardID)
+		}
+	}
+}
+
 // Add adds a card to the deck by CardID.
 func (cd *CardDeck) Add(cardID CardID) {
 	cd.hand[cardID]++

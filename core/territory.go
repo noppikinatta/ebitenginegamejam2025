@@ -109,9 +109,33 @@ func (t *Territory) Yield() ResourceQuantity {
 	return yield
 }
 
+func (t *Territory) SupportPower() float64 {
+	supportPower := 0.0
+	for _, card := range t.cards {
+		supportPower += card.SupportPower()
+	}
+	return supportPower
+}
+
+func (t *Territory) SupportCardSlot() int {
+	supportCardSlot := 0
+	for _, card := range t.cards {
+		supportCardSlot += card.SupportCardSlot()
+	}
+	return supportCardSlot
+}
+
+// ApplyConstructionPlan applies the construction plan to the territory.
+func (t *Territory) ApplyConstructionPlan(plan *ConstructionPlan) {
+	// Defensive copy to avoid memory sharing
+	t.cards = make([]*StructureCard, len(plan.cards))
+	copy(t.cards, plan.cards)
+}
+
 // ConstructionPlan manages the planned construction of StructureCards in a Territory.
 type ConstructionPlan struct {
-	cards []*StructureCard
+	cards     []*StructureCard
+	territory *Territory
 }
 
 // NewConstructionPlan creates a new ConstructionPlan based on the current state of a Territory.
@@ -119,7 +143,7 @@ func NewConstructionPlan(territory *Territory) *ConstructionPlan {
 	// Defensive copy of existing cards
 	cards := make([]*StructureCard, len(territory.cards))
 	copy(cards, territory.cards)
-	return &ConstructionPlan{cards: cards}
+	return &ConstructionPlan{cards: cards, territory: territory}
 }
 
 // Cards returns a defensive copy of the cards in the construction plan.
@@ -127,6 +151,10 @@ func (cp *ConstructionPlan) Cards() []*StructureCard {
 	result := make([]*StructureCard, len(cp.cards))
 	copy(result, cp.cards)
 	return result
+}
+
+func (cp *ConstructionPlan) CanPlaceCard() bool {
+	return len(cp.cards) < cp.territory.Terrain().CardSlot()
 }
 
 // AddCard adds a StructureCard to the construction plan.
@@ -146,9 +174,53 @@ func (cp *ConstructionPlan) RemoveCard(index int) (*StructureCard, bool) {
 	return card, true
 }
 
-// ApplyConstructionPlan applies the construction plan to the territory.
-func (t *Territory) ApplyConstructionPlan(plan *ConstructionPlan) {
-	// Defensive copy to avoid memory sharing
-	t.cards = make([]*StructureCard, len(plan.cards))
-	copy(t.cards, plan.cards)
+func (cp *ConstructionPlan) Yield() ResourceQuantity {
+	yield := cp.territory.Terrain().BaseYield()
+	for _, card := range cp.cards {
+		yield = yield.Add(card.YieldAdditiveValue())
+	}
+	for _, card := range cp.cards {
+		yield = card.YieldModifier().Modify(yield)
+	}
+	return yield
+}
+
+func (cp *ConstructionPlan) SupportPower() float64 {
+	supportPower := 0.0
+	for _, card := range cp.cards {
+		supportPower += card.SupportPower()
+	}
+	return supportPower
+}
+
+func (cp *ConstructionPlan) SupportCardSlot() int {
+	supportCardSlot := 0
+	for _, card := range cp.cards {
+		supportCardSlot += card.SupportCardSlot()
+	}
+	return supportCardSlot
+}
+
+func (cp *ConstructionPlan) ContainsCard(card *StructureCard) bool {
+	for _, c := range cp.cards {
+		if c.ID() == card.ID() {
+			return true
+		}
+	}
+	return false
+}
+
+func (cp *ConstructionPlan) GetRollbackCards() (delta map[CardID]int) {
+	// First, add all cards in plan as removed
+	delta = make(map[CardID]int)
+	for _, card := range cp.cards {
+		delta[card.ID()] += -1
+	}
+
+	// Then, add all cards in territory as added
+	for _, card := range cp.territory.cards {
+		delta[card.ID()] += 1
+	}
+
+	return delta
 }

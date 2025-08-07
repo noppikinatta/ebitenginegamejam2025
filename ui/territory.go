@@ -13,115 +13,31 @@ import (
 // TerritoryView is a widget for displaying a Territory.
 // Position: Drawn within MainView
 type TerritoryView struct {
-	Territory   *core.Territory // Territory to display
-	TerrainType string          // Terrain name
-	GameState   *core.GameState // Game state
-
-	// ViewModels and Flows
 	TerritoryViewModel *viewmodel.TerritoryViewModel
 	TerritoryFlow      *flow.TerritoryFlow
 
-	HoveredCard interface{}
-	MouseX      int
-	MouseY      int
-
-	// View switching callbacks
-	OnBackClicked func()                         // Return to MapGridView
-	OnCardClicked func(card *core.StructureCard) // When a card is clicked (return to CardDeck)
+	hoveredCardIndex int
 }
 
 // NewTerritoryView creates a TerritoryView
-func NewTerritoryView(onBackClicked func()) *TerritoryView {
+func NewTerritoryView(territoryFlow *flow.TerritoryFlow) *TerritoryView {
 	return &TerritoryView{
-		OnBackClicked: onBackClicked,
+		TerritoryFlow: territoryFlow,
 	}
 }
 
-// SetTerritory sets the Territory to display
-func (tv *TerritoryView) SetTerritory(territory *core.Territory, terrainType string) {
-	tv.Territory = territory
-	tv.TerrainType = terrainType
-
-	// Create viewmodel and flow with new territory
-	if tv.GameState != nil {
-		tv.TerritoryViewModel = viewmodel.NewTerritoryViewModel(tv.GameState, territory)
-		tv.TerritoryFlow = flow.NewTerritoryFlow(tv.GameState, territory)
+func (tv *TerritoryView) Select(x, y int) {
+	vm, ok := tv.TerritoryFlow.SelectTerritory(x, y)
+	if ok {
+		tv.TerritoryViewModel = vm
 	}
-}
-
-// SetGameState sets the game state
-func (tv *TerritoryView) SetGameState(gameState *core.GameState) {
-	tv.GameState = gameState
-
-	// Recreate viewmodel and flow if territory exists
-	if tv.Territory != nil {
-		tv.TerritoryViewModel = viewmodel.NewTerritoryViewModel(gameState, tv.Territory)
-		tv.TerritoryFlow = flow.NewTerritoryFlow(gameState, tv.Territory)
-	}
-}
-
-// CanPlaceCard checks if a card can be placed
-func (tv *TerritoryView) CanPlaceCard() bool {
-	if tv.TerritoryFlow != nil {
-		return tv.TerritoryFlow.CanPlaceCard()
-	}
-	// Fallback logic
-	if tv.Territory == nil {
-		return false
-	}
-	// TODO: GetCardSlot method not available, use simple check
-	return len(tv.Territory.Cards()) < 10 // Default limit
-}
-
-// PlaceCard places a StructureCard
-func (tv *TerritoryView) PlaceCard(card *core.StructureCard) bool {
-	if tv.TerritoryFlow != nil {
-		return tv.TerritoryFlow.PlaceCard(card)
-	}
-	// Fallback logic
-	if tv.Territory == nil {
-		return false
-	}
-	return tv.Territory.AppendCard(card)
-}
-
-// GetCurrentYield gets the current yield
-func (tv *TerritoryView) GetCurrentYield() core.ResourceQuantity {
-	// TODO: Implement proper yield calculation once Territory API is available
-	if tv.Territory == nil {
-		return core.ResourceQuantity{}
-	}
-	// Simple calculation based on cards
-	var total core.ResourceQuantity
-	for _, card := range tv.Territory.Cards() {
-		// TODO: StructureCard.Yield() method not available yet
-		// For now, return default values
-		_ = card // Use card to avoid unused variable warning
-	}
-	return total
-}
-
-// GetNewYield gets the predicted yield after changes
-func (tv *TerritoryView) GetNewYield() core.ResourceQuantity {
-	// For now, return the same as current yield
-	return tv.GetCurrentYield()
 }
 
 // HandleInput handles input
-func (tv *TerritoryView) HandleInput(input *Input) error {
+func (tv *TerritoryView) HandleInput(input *Input) (back bool, err error) {
 	cursorX, cursorY := input.Mouse.CursorPosition()
 	cardIndex := tv.cardIndex(cursorX, cursorY)
-	tv.MouseX = cursorX
-	tv.MouseY = cursorY
-
-	if cardIndex != -1 && tv.TerritoryViewModel != nil {
-		cardVM := tv.TerritoryViewModel.Card(cardIndex)
-		if cardVM != nil {
-			tv.HoveredCard = cardVM
-		}
-	} else {
-		tv.HoveredCard = nil
-	}
+	tv.hoveredCardIndex = cardIndex
 
 	if input.Mouse.IsJustReleased(ebiten.MouseButtonLeft) {
 		if cardIndex != -1 {
@@ -130,28 +46,18 @@ func (tv *TerritoryView) HandleInput(input *Input) error {
 
 		// Click detection for back button (960,40,80,80)
 		if cursorX >= 960 && cursorX < 1040 && cursorY >= 40 && cursorY < 120 {
-			// Use flow to rollback cards
-			if tv.TerritoryFlow != nil {
-				tv.TerritoryFlow.Rollback()
-			}
-			if tv.OnBackClicked != nil {
-				tv.OnBackClicked()
-				return nil
-			}
+			tv.TerritoryFlow.Rollback()
+			return true, nil
 		}
 
 		// Click detection for confirm button (400,560,240,40)
 		if cursorX >= 400 && cursorX < 640 && cursorY >= 560 && cursorY < 600 {
-			// Use flow to commit construction changes
-			// TODO: Implement Confirm method in TerritoryFlow
-			if tv.OnBackClicked != nil {
-				tv.OnBackClicked()
-				return nil
-			}
+			tv.TerritoryFlow.Commit()
+			return true, nil
 		}
 	}
 
-	return nil
+	return false, nil
 }
 
 // cardIndex calculates which card index the cursor is over
@@ -178,13 +84,7 @@ func (tv *TerritoryView) cardIndex(cursorX, cursorY int) int {
 
 // handleCardClick handles clicking on territory cards
 func (tv *TerritoryView) handleCardClick(cardIndex int) {
-	if tv.Territory != nil && cardIndex >= 0 && cardIndex < len(tv.Territory.Cards()) {
-		// Remove card from territory
-		card, ok := tv.Territory.RemoveCard(cardIndex)
-		if ok && tv.OnCardClicked != nil {
-			tv.OnCardClicked(card)
-		}
-	}
+	tv.TerritoryFlow.RemoveFromPlan(cardIndex)
 }
 
 // Draw handles drawing
@@ -218,16 +118,11 @@ func (tv *TerritoryView) Draw(screen *ebiten.Image) {
 
 // drawTerritoryInfo draws territory information
 func (tv *TerritoryView) drawTerritoryInfo(screen *ebiten.Image) {
-	// Draw terrain type
-	opt := &ebiten.DrawImageOptions{}
-	opt.GeoM.Translate(50, 120)
-	drawing.DrawText(screen, fmt.Sprintf("Terrain: %s", tv.TerrainType), 24, opt)
-
 	// Draw card slots
 	currentCards := tv.TerritoryViewModel.NumCards()
-	maxCards := 10 // Default max cards, TODO: get from terrain
-	opt = &ebiten.DrawImageOptions{}
-	opt.GeoM.Translate(50, 150)
+	maxCards := tv.TerritoryViewModel.CardSlot()
+	opt := &ebiten.DrawImageOptions{}
+	opt.GeoM.Translate(50, 120)
 	drawing.DrawText(screen, fmt.Sprintf("Cards: %d/%d", currentCards, maxCards), 20, opt)
 }
 
@@ -236,33 +131,20 @@ func (tv *TerritoryView) drawStructureCards(screen *ebiten.Image) {
 	numCards := tv.TerritoryViewModel.NumCards()
 
 	for i := 0; i < numCards; i++ {
-		cardVM := tv.TerritoryViewModel.Card(i)
-		if cardVM != nil {
-			x := float64(100 + i*80)
-			y := float64(400)
+		x := float64(100 + i*80)
+		y := float64(400)
 
-			// Draw card background
-			alpha := float32(1.0)
-			if cardVM == tv.HoveredCard {
-				alpha = 0.8
-			}
-			DrawCardBackground(screen, x, y, alpha)
-
-			// Draw card content (simplified)
-			opt := &ebiten.DrawImageOptions{}
-			opt.GeoM.Translate(x+10, y+10)
-			drawing.DrawText(screen, cardVM.Name(), 12, opt)
-
-			// Draw card name only for now
-			// TODO: Add yield display once StructureCardViewModel.Yield() is implemented
-			opt = &ebiten.DrawImageOptions{}
-			opt.GeoM.Translate(x+10, y+90)
-			drawing.DrawText(screen, "Structure", 8, opt)
+		card, ok := tv.TerritoryViewModel.Card(i)
+		if !ok {
+			DrawCardBackground(screen, x, y, 0.5)
+			continue
 		}
+
+		DrawCard(screen, x, y, card, i == tv.hoveredCardIndex)
 	}
 
 	// Draw empty card slots
-	maxCards := 10 // Default max cards
+	maxCards := tv.TerritoryViewModel.CardSlot()
 	for i := numCards; i < maxCards; i++ {
 		x := float64(100 + i*80)
 		y := float64(400)
@@ -287,8 +169,8 @@ func (tv *TerritoryView) drawButtons(screen *ebiten.Image) {
 
 // drawYieldInfo draws yield information
 func (tv *TerritoryView) drawYieldInfo(screen *ebiten.Image) {
-	currentYield := tv.GetCurrentYield()
-	predictedYield := tv.GetNewYield()
+	currentYield := tv.TerritoryViewModel.CurrentYield()
+	predictedYield := tv.TerritoryViewModel.PredictedYield()
 
 	// Current yield
 	opt := &ebiten.DrawImageOptions{}

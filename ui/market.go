@@ -24,6 +24,11 @@ func NewMarketView(flow *flow.MarketFlow, viewModel *viewmodel.MarketViewModel) 
 	}
 }
 
+func (mv *MarketView) Select(x, y int) {
+	mv.flow.SelectMarket(x, y)
+	mv.viewModel.SelectMarket(x, y)
+}
+
 // HandleInput processes input
 func (mv *MarketView) HandleInput(input *Input) (back bool, err error) {
 	if input.Mouse.IsJustReleased(ebiten.MouseButtonLeft) {
