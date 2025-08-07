@@ -44,7 +44,7 @@ func NewMainView(gameState *core.GameState, intner core.Intner) *MainView {
 
 	m.Market = NewMarketView(flow.NewMarketFlow(gameState, intner), viewmodel.NewMarketViewModel(gameState))
 	m.Battle = NewBattleView(onBack)
-	m.Territory = NewTerritoryView(onBack)
+	m.Territory = NewTerritoryView(flow.NewTerritoryFlow(gameState))
 
 	// Set GameState for each View.
 	m.Battle.SetGameState(gameState)

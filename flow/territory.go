@@ -13,10 +13,9 @@ type TerritoryFlow struct {
 }
 
 // NewTerritoryFlow creates a new TerritoryFlow
-func NewTerritoryFlow(gameState *core.GameState, territory *core.Territory) *TerritoryFlow {
+func NewTerritoryFlow(gameState *core.GameState) *TerritoryFlow {
 	return &TerritoryFlow{
 		gameState: gameState,
-		territory: territory,
 	}
 }
 
