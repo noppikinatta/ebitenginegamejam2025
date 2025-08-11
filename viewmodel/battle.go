@@ -9,9 +9,10 @@ import (
 
 // BattleViewModel provides display information for battle UI
 type BattleViewModel struct {
-	gameState   *core.GameState
-	battlefield *core.Battlefield
-	point       core.BattlePoint
+	gameState          *core.GameState
+	battlefield        *core.Battlefield
+	point              core.BattlePoint
+	cardViewModelCache *CardViewModel
 }
 
 // NewBattleViewModel creates a new BattleViewModel
@@ -138,15 +139,16 @@ func (vm *BattleViewModel) NumCards() int {
 }
 
 // Card returns battle card view model at the specified index
-func (vm *BattleViewModel) Card(idx int) *BattleCardViewModel {
+func (vm *BattleViewModel) Card(idx int) (*CardViewModel, bool) {
 	if vm.battlefield == nil || idx < 0 || idx >= len(vm.battlefield.BattleCards) {
-		return nil
+		return nil, false
+	}
+
+	if vm.cardViewModelCache == nil {
+		vm.cardViewModelCache = &CardViewModel{}
 	}
 
 	card := vm.battlefield.BattleCards[idx]
-	// Calculate the power for this specific card position
-	// This might involve skill calculations specific to battlefield position
-	calculatedPower := float64(card.Power()) // Simplified - may need battle calculations
-
-	return NewBattleCardViewModel(vm.gameState, card, calculatedPower)
+	vm.cardViewModelCache.FromBattleCard(card) // TODO: show calculated battle power
+	return vm.cardViewModelCache, true
 }

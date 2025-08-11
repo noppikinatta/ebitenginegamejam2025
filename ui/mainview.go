@@ -42,36 +42,51 @@ func NewMainView(gameState *core.GameState, intner core.Intner) *MainView {
 		GameState:   gameState,
 	}
 
+	// Construct child views
 	m.Market = NewMarketView(flow.NewMarketFlow(gameState, intner), viewmodel.NewMarketViewModel(gameState))
-	m.Battle = NewBattleView(onBack)
+	m.Battle = NewBattleView(flow.NewBattleFlow(gameState))
 	m.Territory = NewTerritoryView(flow.NewTerritoryFlow(gameState))
 
-	// Set GameState for each View.
-	m.Battle.SetGameState(gameState)
-	m.Territory.SetGameState(gameState)
+	// No direct GameState injection to views; views use flow/viewmodel
 
+	mapGridViewModel := viewmodel.NewMapGridViewModel(gameState)
+	mapGridFlow := flow.NewMapGridFlow(gameState)
 	m.MapGrid = NewMapGridView(mapGridViewModel, mapGridFlow, func(point core.Point) {
 		m.SetSelectedPoint(point)
 
-		// Notify parent about point selection
-		if m.OnPointSelected != nil {
-			m.OnPointSelected(point)
-		}
-
 		switch p := point.(type) {
 		case *core.MyNationPoint:
-			m.SetSelectedNation(p.MyNation)
+			x, y, ok := gameState.MapGrid.XYOfPoint(point)
+			if ok {
+				m.Market.Select(x, y)
+			}
 			m.SwitchView(ViewTypeMarket)
 		case *core.OtherNationPoint:
-			m.SetSelectedNation(p.OtherNation)
+			x, y, ok := gameState.MapGrid.XYOfPoint(point)
+			if ok {
+				m.Market.Select(x, y)
+			}
 			m.SwitchView(ViewTypeMarket)
 		case *core.WildernessPoint:
 			if p.Controlled() {
+				x, y, ok := gameState.MapGrid.XYOfPoint(point)
+				if ok {
+					m.Territory.Select(x, y)
+				}
 				m.SwitchView(ViewTypeTerritory)
 			} else {
+				// Initialize battlefield and bind VM/Flow to Battle view
+				x, y, ok := gameState.MapGrid.XYOfPoint(point)
+				if ok {
+					m.Battle.Select(x, y)
+				}
 				m.SwitchView(ViewTypeBattle)
 			}
 		case *core.BossPoint:
+			x, y, ok := gameState.MapGrid.XYOfPoint(point)
+			if ok {
+				m.Battle.Select(x, y)
+			}
 			m.SwitchView(ViewTypeBattle)
 		}
 	})
@@ -133,10 +148,7 @@ func (m *MainView) Draw(screen *ebiten.Image) {
 
 // SetSelectedNation sets the nation to be displayed
 func (m *MainView) SetSelectedNation(nation core.Nation) {
-	switch m.CurrentView {
-	case ViewTypeMarket:
-		m.Market.SetNation(nation)
-	}
+	// Deprecated: MarketView now determines nation from Select(x,y) via flow/viewmodel
 }
 
 // SetSelectedPoint sets the point to be displayed
@@ -144,17 +156,11 @@ func (m *MainView) SetSelectedPoint(point core.Point) {
 	switch p := point.(type) {
 	case *core.WildernessPoint:
 		if p.Controlled() {
-			// Set territory for TerritoryView
-			territory := p.Territory()
-			if territory != nil {
-				m.Territory.SetTerritory(territory, "wilderness") // terrain type placeholder
-			}
+			// Territory selection is handled in MapGrid callback using coordinates
 		} else {
-			// Set battle point for BattleView
-			m.Battle.SetBattlePoint(p)
+			// Battle binding is handled in MapGrid callback using coordinates
 		}
 	case *core.BossPoint:
-		// Set battle point for BattleView
-		m.Battle.SetBattlePoint(p)
+		// Battle binding is handled in MapGrid callback using coordinates
 	}
 }

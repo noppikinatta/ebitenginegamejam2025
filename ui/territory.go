@@ -179,7 +179,7 @@ func (tv *TerritoryView) drawYieldInfo(screen *ebiten.Image) {
 
 	opt = &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(400, 220)
-	currentText := fmt.Sprintf("M:%.0f F:%.0f W:%.0f I:%.0f A:%.0f",
+	currentText := fmt.Sprintf("M:%d F:%d W:%d I:%d A:%d",
 		currentYield.Money, currentYield.Food, currentYield.Wood, currentYield.Iron, currentYield.Mana)
 	drawing.DrawText(screen, currentText, 16, opt)
 
@@ -190,7 +190,7 @@ func (tv *TerritoryView) drawYieldInfo(screen *ebiten.Image) {
 
 	opt = &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(400, 280)
-	predictedText := fmt.Sprintf("M:%.0f F:%.0f W:%.0f I:%.0f A:%.0f",
+	predictedText := fmt.Sprintf("M:%d F:%d W:%d I:%d A:%d",
 		predictedYield.Money, predictedYield.Food, predictedYield.Wood, predictedYield.Iron, predictedYield.Mana)
 	drawing.DrawText(screen, predictedText, 16, opt)
 
@@ -209,7 +209,7 @@ func (tv *TerritoryView) drawYieldInfo(screen *ebiten.Image) {
 
 	opt = &ebiten.DrawImageOptions{}
 	opt.GeoM.Translate(400, 340)
-	diffText := fmt.Sprintf("M:%+.0f F:%+.0f W:%+.0f I:%+.0f A:%+.0f",
+	diffText := fmt.Sprintf("M:%+.0d F:%+.0d W:%+.0d I:%+.0d A:%+.0d",
 		diff.Money, diff.Food, diff.Wood, diff.Iron, diff.Mana)
 	drawing.DrawText(screen, diffText, 16, opt)
 }

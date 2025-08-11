@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/noppikinatta/ebitenginegamejam2025/core"
 	"github.com/noppikinatta/ebitenginegamejam2025/drawing"
 	"github.com/noppikinatta/ebitenginegamejam2025/flow"
 	"github.com/noppikinatta/ebitenginegamejam2025/viewmodel"
@@ -13,115 +12,32 @@ import (
 // BattleView is a Widget for displaying battles.
 // Position: Drawn within MainView.
 type BattleView struct {
-	BattlePoint core.BattlePoint  // The point to be battled.
-	Battlefield *core.Battlefield // Battlefield information.
-	GameState   *core.GameState   // Game state.
-
-	// ViewModels and Flows
-	BattleViewModel *viewmodel.BattleViewModel
 	BattleFlow      *flow.BattleFlow
+	BattleViewModel *viewmodel.BattleViewModel
 
-	HoveredCard interface{}
-	MouseX      int
-	MouseY      int
-
-	// Callback for view switching.
-	OnBackClicked func() // Return to MapGridView.
+	HoveredCardIndex int
 }
 
 // NewBattleView creates a BattleView.
-func NewBattleView(onBackClicked func()) *BattleView {
+func NewBattleView(battleFlow *flow.BattleFlow) *BattleView {
 	return &BattleView{
-		OnBackClicked: onBackClicked,
+		BattleFlow: battleFlow,
 	}
 }
 
-// SetBattlePoint sets the battle point to be displayed.
-func (bv *BattleView) SetBattlePoint(point core.BattlePoint) {
-	bv.BattlePoint = point
-	bv.Battlefield = bv.createBattlefield(point)
-
-	// Create viewmodel and flow with new battlefield
-	if bv.GameState != nil {
-		bv.BattleViewModel = viewmodel.NewBattleViewModel(bv.GameState, bv.Battlefield, point)
-		bv.BattleFlow = flow.NewBattleFlow(bv.GameState, bv.Battlefield)
+func (bv *BattleView) Select(x, y int) {
+	vm, ok := bv.BattleFlow.Select(x, y)
+	if !ok {
+		return
 	}
-}
-
-// SetGameState sets the game state.
-func (bv *BattleView) SetGameState(gameState *core.GameState) {
-	bv.GameState = gameState
-
-	// Recreate viewmodel and flow if battlefield exists
-	if bv.Battlefield != nil && bv.BattlePoint != nil {
-		bv.BattleViewModel = viewmodel.NewBattleViewModel(gameState, bv.Battlefield, bv.BattlePoint)
-		bv.BattleFlow = flow.NewBattleFlow(gameState, bv.Battlefield)
-	}
-}
-
-// GetTotalPower calculates the total Power value of the placed BattleCards.
-func (bv *BattleView) GetTotalPower() float64 {
-	if bv.BattleViewModel != nil {
-		return bv.BattleViewModel.TotalPower()
-	}
-	// Fallback to direct calculation
-	if bv.Battlefield != nil {
-		return bv.Battlefield.CalculateTotalPower()
-	}
-	return 0.0
-}
-
-// CanDefeatEnemy determines if the enemy can be defeated.
-func (bv *BattleView) CanDefeatEnemy() bool {
-	if bv.BattleViewModel != nil {
-		return bv.BattleViewModel.CanBeat()
-	}
-	// Fallback logic
-	if bv.Battlefield != nil {
-		return bv.Battlefield.CanBeat()
-	}
-	if bv.BattlePoint == nil {
-		return false
-	}
-	return bv.GetTotalPower() >= bv.BattlePoint.Enemy().Power()
-}
-
-// CanPlaceCard checks if a card can be placed
-func (bv *BattleView) CanPlaceCard() bool {
-	if bv.BattleFlow != nil {
-		return bv.BattleFlow.CanPlaceCard()
-	}
-	// Fallback logic
-	if bv.Battlefield == nil {
-		return false
-	}
-	return len(bv.Battlefield.BattleCards) < bv.Battlefield.CardSlot
-}
-
-// PlaceCard places a battle card on the battlefield
-func (bv *BattleView) PlaceCard(card *core.BattleCard) bool {
-	if bv.BattleFlow != nil {
-		return bv.BattleFlow.PlaceCard(card)
-	}
-	// Fallback logic
-	return false
+	bv.BattleViewModel = vm
 }
 
 // HandleInput handles input.
-func (bv *BattleView) HandleInput(input *Input) error {
+func (bv *BattleView) HandleInput(input *Input) (bool, error) {
 	cursorX, cursorY := input.Mouse.CursorPosition()
 	cardIndex := bv.cardIndex(cursorX, cursorY)
-	bv.MouseX = cursorX
-	bv.MouseY = cursorY
-
-	if cardIndex != -1 && bv.BattleViewModel != nil {
-		cardVM := bv.BattleViewModel.Card(cardIndex)
-		if cardVM != nil {
-			bv.HoveredCard = cardVM
-		}
-	} else {
-		bv.HoveredCard = nil
-	}
+	bv.HoveredCardIndex = cardIndex
 
 	if input.Mouse.IsJustReleased(ebiten.MouseButtonLeft) {
 		if cardIndex != -1 {
@@ -130,32 +46,21 @@ func (bv *BattleView) HandleInput(input *Input) error {
 
 		// Click detection for the back button (960,40,80,80).
 		if cursorX >= 960 && cursorX < 1040 && cursorY >= 40 && cursorY < 120 {
-			// Use flow to rollback cards
-			if bv.BattleFlow != nil {
-				bv.BattleFlow.Rollback()
-			}
-			if bv.OnBackClicked != nil {
-				bv.OnBackClicked()
-				return nil
-			}
+			bv.BattleFlow.Rollback()
+			return true, nil
 		}
 
 		// Click detection for the conquer button (400,560,240,40).
 		if cursorX >= 400 && cursorX < 640 && cursorY >= 560 && cursorY < 600 {
-			if bv.CanDefeatEnemy() {
-				// Use flow to attempt conquest
-				if bv.BattleFlow != nil && bv.BattleFlow.Conquer() {
-					// Conquest successful, return to map view
-					if bv.OnBackClicked != nil {
-						bv.OnBackClicked()
-						return nil
-					}
-				}
+			ok := bv.BattleFlow.Conquer()
+			if !ok {
+				bv.BattleFlow.Rollback()
 			}
+			return true, nil
 		}
 	}
 
-	return nil
+	return false, nil
 }
 
 // cardIndex calculates which card index the cursor is over
@@ -188,18 +93,6 @@ func (bv *BattleView) handleBattleCardClick(cursorX, cursorY int) {
 		// Remove card from battlefield
 		bv.BattleFlow.RemoveFromBattle(cardIndex)
 	}
-}
-
-// createBattlefield creates a battlefield from a battle point
-func (bv *BattleView) createBattlefield(point core.BattlePoint) *core.Battlefield {
-	if point == nil || point.Enemy() == nil {
-		return nil
-	}
-
-	enemy := point.Enemy()
-	supportPower := 0.0 // TODO: Calculate support power from adjacent territories
-
-	return core.NewBattlefield(enemy, supportPower)
 }
 
 // Draw handles drawing.
@@ -260,26 +153,22 @@ func (bv *BattleView) drawBattleCards(screen *ebiten.Image) {
 	numCards := bv.BattleViewModel.NumCards()
 
 	for i := 0; i < numCards; i++ {
-		cardVM := bv.BattleViewModel.Card(i)
-		if cardVM != nil {
+		x := float64(100 + i*80)
+		y := float64(400)
+
+		cardVM, ok := bv.BattleViewModel.Card(i)
+		if !ok {
+			DrawCardBackground(screen, x, y, 0.5)
+			continue
+		}
+
+		DrawCard(screen, x, y, cardVM, i == bv.HoveredCardIndex)
+
+		maxCards := bv.BattleViewModel.CardSlot()
+		for i := numCards; i < maxCards; i++ {
 			x := float64(100 + i*80)
 			y := float64(400)
-
-			// Draw card background
-			alpha := float32(1.0)
-			if cardVM == bv.HoveredCard {
-				alpha = 0.8
-			}
-			DrawCardBackground(screen, x, y, alpha)
-
-			// Draw card content (simplified)
-			opt := &ebiten.DrawImageOptions{}
-			opt.GeoM.Translate(x+10, y+10)
-			drawing.DrawText(screen, cardVM.Name(), 12, opt)
-
-			opt = &ebiten.DrawImageOptions{}
-			opt.GeoM.Translate(x+10, y+90)
-			drawing.DrawText(screen, fmt.Sprintf("%.1f", cardVM.Power()), 16, opt)
+			DrawCardBackground(screen, x, y, 0.3)
 		}
 	}
 }

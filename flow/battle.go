@@ -2,6 +2,7 @@ package flow
 
 import (
 	"github.com/noppikinatta/ebitenginegamejam2025/core"
+	"github.com/noppikinatta/ebitenginegamejam2025/viewmodel"
 )
 
 // BattleFlow handles battle-related operations
@@ -11,46 +12,40 @@ type BattleFlow struct {
 }
 
 // NewBattleFlow creates a new BattleFlow
-func NewBattleFlow(gameState *core.GameState, battlefield *core.Battlefield) *BattleFlow {
+func NewBattleFlow(gameState *core.GameState) *BattleFlow {
 	return &BattleFlow{
-		gameState:   gameState,
-		battlefield: battlefield,
+		gameState: gameState,
 	}
 }
 
-// PlaceCard adds a battle card to the battlefield
-func (bf *BattleFlow) PlaceCard(card *core.BattleCard) bool {
-	if bf.battlefield == nil {
-		return false
+func (bf *BattleFlow) Select(x, y int) (*viewmodel.BattleViewModel, bool) {
+	ok := bf.gameState.InitBattlefield(x, y)
+	if !ok {
+		return nil, false
 	}
 
-	// Check if there's space for the card
-	if len(bf.battlefield.BattleCards) >= bf.battlefield.CardSlot {
-		return false
+	bf.battlefield, ok = bf.gameState.Battlefield()
+	if !ok {
+		return nil, false
 	}
 
-	// Add card to battlefield
-	bf.battlefield.BattleCards = append(bf.battlefield.BattleCards, card)
-
-	// Remove from deck
-	bf.gameState.CardDeck.Remove(card.CardID)
-
-	return true
+	return viewmodel.NewBattleViewModel(bf.gameState, bf.battlefield, bf.battlefield.Point), true
 }
 
 // RemoveFromBattle removes a card from battle at the specified index
 func (bf *BattleFlow) RemoveFromBattle(cardIndex int) bool {
-	if bf.battlefield == nil || cardIndex < 0 || cardIndex >= len(bf.battlefield.BattleCards) {
+	battlefield, ok := bf.gameState.Battlefield()
+	if !ok || cardIndex < 0 || cardIndex >= len(battlefield.BattleCards) {
 		return false
 	}
 
 	// Get the card to remove
-	card := bf.battlefield.BattleCards[cardIndex]
+	card := battlefield.BattleCards[cardIndex]
 
 	// Remove from battlefield
-	bf.battlefield.BattleCards = append(
-		bf.battlefield.BattleCards[:cardIndex],
-		bf.battlefield.BattleCards[cardIndex+1:]...,
+	battlefield.BattleCards = append(
+		battlefield.BattleCards[:cardIndex],
+		battlefield.BattleCards[cardIndex+1:]...,
 	)
 
 	// Return to deck
@@ -61,39 +56,32 @@ func (bf *BattleFlow) RemoveFromBattle(cardIndex int) bool {
 
 // Conquer attempts to conquer the current battle point
 func (bf *BattleFlow) Conquer() bool {
-	if bf.battlefield == nil {
+	battlefield, ok := bf.gameState.Battlefield()
+	if !ok {
 		return false
 	}
 
-	if !bf.battlefield.CanBeat() {
+	if !battlefield.CanBeat() {
 		return false
 	}
 
-	// Conquest logic - mark point as conquered
-	// The actual conquest logic should be implemented based on the point type
-	// For now, we return true to indicate successful conquest
+	// Mark conquest on game state
+	bf.gameState.Conquer()
 	return true
 }
 
 // Rollback returns all cards from battlefield to deck and resets battlefield
 func (bf *BattleFlow) Rollback() {
-	if bf.battlefield == nil {
+	battlefield, ok := bf.gameState.Battlefield()
+	if !ok {
 		return
 	}
 
 	// Return all cards to deck
-	for _, card := range bf.battlefield.BattleCards {
+	for _, card := range battlefield.BattleCards {
 		bf.gameState.CardDeck.Add(card.CardID)
 	}
 
 	// Clear battlefield
-	bf.battlefield.BattleCards = make([]*core.BattleCard, 0)
-}
-
-// CanPlaceCard checks if a card can be placed
-func (bf *BattleFlow) CanPlaceCard() bool {
-	if bf.battlefield == nil {
-		return false
-	}
-	return len(bf.battlefield.BattleCards) < bf.battlefield.CardSlot
+	battlefield.BattleCards = make([]*core.BattleCard, 0)
 }
